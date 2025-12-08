@@ -30,35 +30,63 @@ exports.handler = async (event, context) => {
     };
   }
 
-  // For now, hardcode Alpena (APN) departures – you can extend later.
-  // AviationStack "flight" endpoint example with dep_iata filter.
-  const params = new URLSearchParams({
-    access_key: apiKey,
-    dep_iata: 'APN',   // Alpena
-    limit: '20'
-  });
-
-  const url = `https://api.aviationstack.com/v1/flights?${params.toString()}`;
-
-  console.log('Fetching AviationStack URL:', url);
+  // We want BOTH directions:
+  // 1) APN -> DTW
+  // 2) DTW -> APN
+  const routes = [
+    { dep: 'APN', arr: 'DTW' },
+    { dep: 'DTW', arr: 'APN' }
+  ];
 
   try {
-    const flightsResponse = await fetchJson(url);
+    const allFlights = [];
 
-    // Normalize the AviationStack data into what your frontend expects
-    const flights = (flightsResponse.data || []).map(item => {
-      const flight = item.flight || {};
-      const departure = item.departure || {};
-      const arrival = item.arrival || {};
+    // Fetch each route from AviationStack and normalize
+    for (const route of routes) {
+      const params = new URLSearchParams({
+        access_key: apiKey,
+        dep_iata: route.dep,
+        arr_iata: route.arr,
+        limit: '50'
+      });
 
-      return {
-        flightNumber: flight.iata || flight.number || '',
-        origin: departure.iata || departure.airport || '',
-        destination: arrival.iata || arrival.airport || '',
-        departureTime: departure.scheduled || departure.estimated || '',
-        arrivalTime: arrival.scheduled || arrival.estimated || '',
-        days: [] // could derive a human-readable "today" or day-of-week if you want
-      };
+      const url = `https://api.aviationstack.com/v1/flights?${params.toString()}`;
+      console.log('Fetching AviationStack URL:', url);
+
+      const flightsResponse = await fetchJson(url);
+
+      const normalized = (flightsResponse.data || [])
+        .filter(item => {
+          const departure = item.departure || {};
+          const arrival = item.arrival || {};
+          const depIata = (departure.iata || '').toUpperCase();
+          const arrIata = (arrival.iata || '').toUpperCase();
+          return depIata === route.dep && arrIata === route.arr;
+        })
+        .map(item => {
+          const flight = item.flight || {};
+          const departure = item.departure || {};
+          const arrival = item.arrival || {};
+
+          return {
+            flightNumber: flight.iata || flight.number || '',
+            origin: (departure.iata || departure.airport || '').toUpperCase(),
+            destination: (arrival.iata || arrival.airport || '').toUpperCase(),
+            departureTime: departure.scheduled || departure.estimated || '',
+            arrivalTime: arrival.scheduled || arrival.estimated || '',
+            // optional: quick label for direction (not used by your table yet, but handy later)
+            direction: `${route.dep}-${route.arr}`,
+            days: []
+          };
+        });
+
+      allFlights.push(...normalized);
+    }
+
+    // Optional: sort by departure time if present
+    allFlights.sort((a, b) => {
+      if (!a.departureTime || !b.departureTime) return 0;
+      return new Date(a.departureTime) - new Date(b.departureTime);
     });
 
     return {
@@ -67,7 +95,7 @@ exports.handler = async (event, context) => {
         'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(flights)
+      body: JSON.stringify(allFlights)
     };
   } catch (err) {
     console.error('flight-proxy error:', err);
