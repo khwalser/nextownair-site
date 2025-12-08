@@ -27,51 +27,69 @@
     <a href="index.html">← Back to NextTownAir home</a>
   </p>
 
-  <script>
-    async function loadFlightData() {
-      const statusEl = document.getElementById('flight-status');
-      const tbody = document.getElementById('flight-table-body');
+   <script>
+  function formatDateTime(isoString) {
+    if (!isoString) return '';
 
-      statusEl.textContent = 'Loading flight data...';
+    const d = new Date(isoString);
 
-      try {
-        const response = await fetch(
-          'https://transcendent-selkie-15860a.netlify.app/.netlify/functions/flight-proxy'
-        );
+    // Example output: "Mon 10:25 AM"
+    const day = d.toLocaleDateString('en-US', { weekday: 'short' });
+    const time = d.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit'
+    });
 
-        if (!response.ok) {
-          throw new Error('HTTP ' + response.status);
-        }
+    return day + ' ' + time;
+  }
 
-        const flights = await response.json();
-        statusEl.textContent = '';
+  async function loadFlightData() {
+    const statusEl = document.getElementById('flight-status');
+    const tbody = document.getElementById('flight-table-body');
 
-        // Clear any existing rows
-        tbody.innerHTML = '';
+    statusEl.textContent = 'Loading flight data...';
 
-        flights.forEach(f => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${f.flightNumber || ''}</td>
-            <td>${f.origin || ''}</td>
-            <td>${f.destination || ''}</td>
-            <td>${f.departureTime || ''}</td>
-            <td>${f.arrivalTime || ''}</td>
-            <td>${(f.days || []).join(', ')}</td>
-          `;
-          tbody.appendChild(row);
-        });
+    try {
+      const response = await fetch(
+        'https://transcendent-selkie-15860a.netlify.app/.netlify/functions/flight-proxy'
+      );
 
-        if (!flights.length) {
-          statusEl.textContent = 'No flights found.';
-        }
-      } catch (err) {
-        console.error('Error loading flight data:', err);
-        statusEl.textContent = 'Failed to load flight data';
+      if (!response.ok) {
+        throw new Error('HTTP ' + response.status);
       }
-    }
 
-    document.addEventListener('DOMContentLoaded', loadFlightData);
-  </script>
+      const flights = await response.json();
+      statusEl.textContent = '';
+
+      tbody.innerHTML = '';
+
+      flights.forEach(f => {
+        const row = document.createElement('tr');
+
+        const dep = formatDateTime(f.departureTime);
+        const arr = formatDateTime(f.arrivalTime);
+
+        row.innerHTML = `
+          <td>${f.flightNumber || ''}</td>
+          <td>${f.origin || ''}</td>
+          <td>${f.destination || ''}</td>
+          <td>${dep}</td>
+          <td>${arr}</td>
+          <td>${(f.days || []).join(', ')}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      if (!flights.length) {
+        statusEl.textContent = 'No flights found.';
+      }
+    } catch (err) {
+      console.error('Error loading flight data:', err);
+      statusEl.textContent = 'Failed to load flight data';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadFlightData);
+</script>
 </body>
 </html>
