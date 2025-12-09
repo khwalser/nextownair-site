@@ -4,64 +4,293 @@
   <meta charset="UTF-8">
   <title>Your Air-RV Itinerary</title>
   <style>
-    body { font-family: sans-serif; margin: 40px; }
-    .leg { 
-      border-left: 4px solid #2196f3; 
-      padding-left: 10px; 
-      margin-bottom: 20px; 
+    body {
+      font-family: sans-serif;
+      margin: 40px;
+      background: #f7f7f7;
     }
-    .stay { 
-      border-left: 4px solid #4caf50; 
-      padding-left: 10px; 
-      margin-bottom: 20px; 
+    h2 {
+      margin-top: 0;
     }
-    h3 { margin-top:0; }
+    #status {
+      margin-bottom: 16px;
+      color: #555;
+      font-size: 0.95rem;
+    }
+    .leg,
+    .stay {
+      background: white;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+    .leg {
+      border-left: 4px solid #2196f3;
+    }
+    .stay {
+      border-left: 4px solid #4caf50;
+    }
+    h3 {
+      margin-top: 0;
+      margin-bottom: 4px;
+    }
+    .sub {
+      margin: 4px 0 0 0;
+      color: #555;
+      font-size: 0.9rem;
+    }
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 16px;
+    }
   </style>
 </head>
 <body>
 
 <h2>Your Air-RV Adventure</h2>
-<p>This is a sample itinerary to show the concept. Later, this page will be generated from live data.</p>
+<p id="status">Loading live flights where available…</p>
 
-<div class="leg">
-  <h3>DAY 1 — Detroit (DTW) → Escanaba (ESC) · Flight</h3>
-  <p>~1h 15m · Regional carrier (example)</p>
-  <p><a href="#">Book Flight (placeholder)</a></p>
-</div>
+<div id="itinerary-container"></div>
 
-<div class="stay">
-  <h3>Stay in Escanaba · 2 nights</h3>
-  <p>
-    • Fayette Historic State Park<br>
-    • Pasties at a local shop<br>
-    • Walk along Little Bay de Noc at sunset
-  </p>
-</div>
+<a href="index.html" class="back-link">← Back to Start</a>
 
-<div class="leg">
-  <h3>DAY 3 — Escanaba (ESC) → Houghton/Hancock (CMX) · Car</h3>
-  <p>~2h 25m scenic drive through Upper Michigan</p>
-  <p><a href="#">Find Car Rental (placeholder)</a></p>
-</div>
+<script>
+  // 🔗 Your Netlify flight proxy (already deployed)
+  const API_BASE =
+    "https://transcendent-selkie-15860a.netlify.app/.netlify/functions/flight-proxy";
 
-<div class="stay">
-  <h3>Stay in Houghton · 2 nights</h3>
-  <p>
-    • Quincy Mine Tour<br>
-    • Keweenaw Peninsula drives &amp; hikes<br>
-    • Lake Superior views
-  </p>
-</div>
+  // 🧭 Define the trip once: all legs (flight + car) here.
+  // offsetDays = how many days after "Day 0" this leg occurs.
+  const TRIP_LEGS = [
+    {
+      kind: "flight",
+      dayLabel: "DAY 1",
+      origin: "DTW",
+      destination: "ESC",
+      offsetDays: 0,
+      stayNights: 2,
+      stayLocation: "Escanaba",
+      stayHighlights: [
+        "Fayette Historic State Park",
+        "Pasties at a local shop",
+        "Walk along Little Bay de Noc at sunset"
+      ]
+    },
+    {
+      kind: "car",
+      dayLabel: "DAY 3",
+      origin: "ESC",
+      destination: "CMX",
+      driveDescription: "~2h 25m scenic drive through Upper Michigan",
+      stayNights: 2,
+      stayLocation: "Houghton",
+      stayHighlights: [
+        "Quincy Mine Tour",
+        "Keweenaw Peninsula drives & hikes",
+        "Lake Superior views"
+      ]
+    },
+    {
+      kind: "flight",
+      dayLabel: "DAY 5",
+      origin: "CMX",
+      destination: "MSP",
+      offsetDays: 4
+    }
+  ];
 
-<div class="leg">
-  <h3>DAY 5 — Houghton (CMX) → Minneapolis (MSP) · Flight</h3>
-  <p>~1h 10m · Regional carrier (example)</p>
-  <p><a href="#">Book Flight (placeholder)</a></p>
-</div>
+  function addDays(baseDate, offset) {
+    const d = new Date(baseDate);
+    d.setDate(d.getDate() + offset);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
 
-<br>
+  function formatFlightSummary(flight, origin, destination, date) {
+    if (!flight) {
+      return {
+        line1: `${origin} → ${destination}`,
+        line2: `No live flights found for ${date}. Check airlines or OTAs.`,
+        bookUrl: ""
+      };
+    }
 
-<a href="index.html">← Back to Start</a>
+    const dep = flight.departureTime
+      ? new Date(flight.departureTime).toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit"
+        })
+      : "";
+    const arr = flight.arrivalTime
+      ? new Date(flight.arrivalTime).toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit"
+        })
+      : "";
+    const priceText =
+      flight.priceFrom != null
+        ? `$${Math.round(flight.priceFrom)} ${flight.currency || "USD"}`
+        : "See options";
+
+    return {
+      line1: `${origin} → ${destination}`,
+      line2: `${dep || "?"} – ${arr || "?"} · ${priceText}`,
+      bookUrl: flight.bookUrl || ""
+    };
+  }
+
+  async function fetchBestFlight(origin, destination, date) {
+    try {
+      const url = `${API_BASE}?origin=${origin}&destination=${destination}&date=${date}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        console.error("HTTP error for", origin, destination, date, res.status);
+        return null;
+      }
+      const flights = await res.json();
+      if (!Array.isArray(flights) || flights.length === 0) {
+        return null;
+      }
+      // For now, just take the first result (already sorted by departure).
+      return flights[0];
+    } catch (err) {
+      console.error("Error fetching flight", origin, destination, date, err);
+      return null;
+    }
+  }
+
+  async function buildItinerary() {
+    const container = document.getElementById("itinerary-container");
+    const statusEl = document.getElementById("status");
+    container.innerHTML = "";
+
+    const today = new Date();
+
+    for (const leg of TRIP_LEGS) {
+      if (leg.kind === "flight") {
+        const dateStr = addDays(today, leg.offsetDays || 0);
+        const loadingText = document.createElement("div");
+        loadingText.textContent = `${leg.dayLabel} — ${leg.origin} → ${leg.destination} (loading…)`;
+        container.appendChild(loadingText);
+
+        const flight = await fetchBestFlight(
+          leg.origin,
+          leg.destination,
+          dateStr
+        );
+
+        // Replace the loading text with a proper card
+        container.removeChild(loadingText);
+
+        const summary = formatFlightSummary(
+          flight,
+          leg.origin,
+          leg.destination,
+          dateStr
+        );
+
+        const legDiv = document.createElement("div");
+        legDiv.className = "leg";
+
+        const h3 = document.createElement("h3");
+        h3.textContent = `${leg.dayLabel} — ${leg.origin} → ${leg.destination} · Flight`;
+        legDiv.appendChild(h3);
+
+        const p1 = document.createElement("p");
+        p1.textContent = summary.line2;
+        legDiv.appendChild(p1);
+
+        if (summary.bookUrl) {
+          const p2 = document.createElement("p");
+          const link = document.createElement("a");
+          link.href = summary.bookUrl;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = "Book Flight";
+          p2.appendChild(link);
+          legDiv.appendChild(p2);
+        }
+
+        container.appendChild(legDiv);
+
+        if (leg.stayNights && leg.stayLocation && leg.stayHighlights) {
+          const stayDiv = document.createElement("div");
+          stayDiv.className = "stay";
+
+          const hStay = document.createElement("h3");
+          hStay.textContent = `Stay in ${leg.stayLocation} · ${leg.stayNights} night${
+            leg.stayNights > 1 ? "s" : ""
+          }`;
+          stayDiv.appendChild(hStay);
+
+          const pStay = document.createElement("p");
+          pStay.innerHTML = leg.stayHighlights
+            .map((h) => "• " + h)
+            .join("<br>");
+          stayDiv.appendChild(pStay);
+
+          container.appendChild(stayDiv);
+        }
+      } else if (leg.kind === "car") {
+        const legDiv = document.createElement("div");
+        legDiv.className = "leg";
+
+        const h3 = document.createElement("h3");
+        h3.textContent = `${leg.dayLabel} — ${leg.origin} → ${leg.destination} · Car`;
+        legDiv.appendChild(h3);
+
+        const p1 = document.createElement("p");
+        p1.textContent = leg.driveDescription || "";
+        legDiv.appendChild(p1);
+
+        const p2 = document.createElement("p");
+        const link = document.createElement("a");
+        link.href = `https://www.kayak.com/cars`;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "Find Car Rental";
+        p2.appendChild(link);
+        legDiv.appendChild(p2);
+
+        container.appendChild(legDiv);
+
+        if (leg.stayNights && leg.stayLocation && leg.stayHighlights) {
+          const stayDiv = document.createElement("div");
+          stayDiv.className = "stay";
+
+          const hStay = document.createElement("h3");
+          hStay.textContent = `Stay in ${leg.stayLocation} · ${leg.stayNights} night${
+            leg.stayNights > 1 ? "s" : ""
+          }`;
+          stayDiv.appendChild(hStay);
+
+          const pStay = document.createElement("p");
+          pStay.innerHTML = leg.stayHighlights
+            .map((h) => "• " + h)
+            .join("<br>");
+          stayDiv.appendChild(pStay);
+
+          container.appendChild(stayDiv);
+        }
+      }
+    }
+
+    statusEl.textContent =
+      "Live flights loaded where available. This is a prototype; details are for illustration only.";
+  }
+
+  document.addEventListener("DOMContentLoaded", buildItinerary);
+</script>
 
 </body>
 </html>
