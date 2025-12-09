@@ -10,16 +10,18 @@
   <p id="flight-status">Loading flight data...</p>
 
   <table border="1" cellpadding="6" cellspacing="0">
-    <thead>
-      <tr>
-        <th>Flight</th>
-        <th>From</th>
-        <th>To</th>
-        <th>Departs</th>
-        <th>Arrives</th>
-        <th>Days</th>
-      </tr>
-    </thead>
+   <thead>
+  <tr>
+    <th>Flight</th>
+    <th>From</th>
+    <th>To</th>
+    <th>Departs</th>
+    <th>Arrives</th>
+    <th>Price (from)</th>
+    <th>Book</th>
+  </tr>
+</thead>
+
     <tbody id="flight-table-body"></tbody>
   </table>
 
@@ -27,13 +29,12 @@
     <a href="index.html">← Back to NextTownAir home</a>
   </p>
 
-   <script>
+ <script>
   function formatDateTime(isoString) {
     if (!isoString) return '';
 
     const d = new Date(isoString);
 
-    // Example output: "Mon 10:25 AM"
     const day = d.toLocaleDateString('en-US', { weekday: 'short' });
     const time = d.toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -41,6 +42,13 @@
     });
 
     return day + ' ' + time;
+  }
+
+  function formatPrice(from, currency) {
+    if (from == null) return 'See options';
+    const rounded = Math.round(from);
+    const symbol = currency === 'USD' ? '$' : '';
+    return `${symbol}${rounded}`;
   }
 
   async function loadFlightData() {
@@ -68,6 +76,10 @@
 
         const dep = formatDateTime(f.departureTime);
         const arr = formatDateTime(f.arrivalTime);
+        const priceText = formatPrice(f.priceFrom, f.currency);
+        const bookLink = f.bookUrl
+          ? `<a href="${f.bookUrl}" target="_blank" rel="noopener noreferrer">Book</a>`
+          : '';
 
         row.innerHTML = `
           <td>${f.flightNumber || ''}</td>
@@ -75,7 +87,8 @@
           <td>${f.destination || ''}</td>
           <td>${dep}</td>
           <td>${arr}</td>
-          <td>${(f.days || []).join(', ')}</td>
+          <td>${priceText}</td>
+          <td>${bookLink}</td>
         `;
         tbody.appendChild(row);
       });
@@ -91,5 +104,6 @@
 
   document.addEventListener('DOMContentLoaded', loadFlightData);
 </script>
+
 </body>
 </html>
