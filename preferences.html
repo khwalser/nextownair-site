@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Travel Preferences</title>
+  <style>
+    body { font-family: sans-serif; margin: 40px; }
+    .button { 
+      display:inline-block; 
+      padding:12px 20px; 
+      background:#17a2b8; 
+      color:white; 
+      border-radius:6px; 
+      text-decoration:none; 
+      margin-top:30px; 
+    }
+    .slider { width:300px; }
+    label { font-size:16px; }
+  </style>
+</head>
+<body>
+
+<h2>Tune Your Journey</h2>
+
+<p><strong>Journey Style</strong></p>
+<p>Fastest → EAS Scenic</p>
+<input type="range" min="0" max="100" class="slider"><br><br>
+
+<label><input type="checkbox" checked> Avoid large hubs</label><br>
+<label><input type="checkbox"> Quick outbound, slow return</label><br>
+<label><input type="checkbox"> Circle Tour (start = end)</label><br><br>
+
+<h3>Interests</h3>
+<label><input type="checkbox"> Nature &amp; Outdoors</label><br>
+<label><input type="checkbox"> Food / Local Cuisine</label><br>
+<label><input type="checkbox"> History</label><br>
+<label><input type="checkbox"> Weird Americana</label><br><br>
+
+<a href="stops.html" class="button">Next → Choose Stops</a>
+
+<br><br>
+<a href="route-builder.html">← Back</a>
+
+</body>
+</html>
