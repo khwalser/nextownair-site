@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Select Your Route</title>
+  <style>
+    body { font-family: sans-serif; margin: 40px; }
+    .map-placeholder { 
+      width: 100%; 
+      height: 250px; 
+      background:#eee; 
+      border:1px solid #ccc; 
+      margin-bottom:20px; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      color:#555;
+    }
+    .button { 
+      display:inline-block; 
+      padding:12px 20px; 
+      background:#28a745; 
+      color:white; 
+      border-radius:6px; 
+      text-decoration:none; 
+      margin-top:20px; 
+    }
+    select { padding:8px; font-size:16px; width:260px; }
+  </style>
+</head>
+<body>
+
+<h2>Choose Your Start and Finish</h2>
+
+<div class="map-placeholder">[ Map: Pick Start & End (wireframe) ]</div>
+
+<label>Start City:</label><br>
+<select>
+  <option>Detroit (DTW)</option>
+  <option>Escanaba (ESC)</option>
+  <option>Hancock/Houghton (CMX)</option>
+  <option>Brainerd (BRD)</option>
+  <option>Boise (BOI)</option>
+</select><br><br>
+
+<label>End City:</label><br>
+<select>
+  <option>Boise (BOI)</option>
+  <option>Detroit (DTW)</option>
+  <option>Escanaba (ESC)</option>
+  <option>Minneapolis (MSP)</option>
+  <option>Circle Tour</option>
+</select><br><br>
+
+<a href="preferences.html" class="button">Next → Preferences</a>
+
+<br><br>
+<a href="index.html">← Back</a>
+
+</body>
+</html>
