@@ -67,6 +67,19 @@
   const API_BASE =
     "https://transcendent-selkie-15860a.netlify.app/.netlify/functions/flight-proxy";
 
+  // Read ?startDate=YYYY-MM-DD if present, else use today.
+  function getBaseDate() {
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get("startDate");
+    if (fromUrl) {
+      const parsed = new Date(fromUrl);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
+    return new Date();
+  }
+
   // 🧭 Define the trip once: all legs (flight + car) here.
   // offsetDays = how many days after "Day 0" this leg occurs.
   const TRIP_LEGS = [
@@ -144,7 +157,7 @@
 
     return {
       line1: `${origin} → ${destination}`,
-      line2: `${dep || "?"} – ${arr || "?"} · ${priceText}`,
+      line2: `${date} · ${dep || "?"} – ${arr || "?"} · ${priceText}`,
       bookUrl: flight.bookUrl || ""
     };
   }
@@ -174,11 +187,12 @@
     const statusEl = document.getElementById("status");
     container.innerHTML = "";
 
-    const today = new Date();
+    const baseDate = getBaseDate();
 
     for (const leg of TRIP_LEGS) {
       if (leg.kind === "flight") {
-        const dateStr = addDays(today, leg.offsetDays || 0);
+        const dateStr = addDays(baseDate, leg.offsetDays || 0);
+
         const loadingText = document.createElement("div");
         loadingText.textContent = `${leg.dayLabel} — ${leg.origin} → ${leg.destination} (loading…)`;
         container.appendChild(loadingText);
@@ -189,7 +203,7 @@
           dateStr
         );
 
-        // Replace the loading text with a proper card
+        // Replace loading indicator with card
         container.removeChild(loadingText);
 
         const summary = formatFlightSummary(
