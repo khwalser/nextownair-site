@@ -1,11 +1,11 @@
 // NexTownAir airport network.
-// EAS communities and served hubs are based on the U.S. DOT May 2026 subsidized EAS report.
+// EAS communities and served hubs are based on the U.S. DOT May 2026 subsidized EAS reports.
 window.NTA_DATA = {
   "source": {
-    "label": "U.S. DOT Subsidized Essential Air Service report — May 2026",
+    "label": "U.S. DOT Subsidized Essential Air Service reports — May 2026",
     "url": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
     "asOf": "2026-05-01",
-    "coverage": "112 subsidized EAS communities in the 48 contiguous states, Hawaii, and Puerto Rico"
+    "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
   "airports": [
     {
@@ -1916,6 +1916,1170 @@ window.NTA_DATA = {
       "lon": -106.9179993,
       "type": "regional",
       "note": "Example regional destination near Vail."
+    },
+    {
+      "code": "NCN",
+      "name": "Chenega Bay Airport",
+      "city": "Chenega",
+      "state": "AK",
+      "lat": 60.077602,
+      "lon": -147.99468,
+      "type": "eas",
+      "hubs": [
+        "MRI"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via MRI.",
+      "dotCode": "C05",
+      "aliases": [
+        "C05"
+      ]
+    },
+    {
+      "code": "UNK",
+      "name": "Unalakleet Airport",
+      "city": "Unalakleet",
+      "state": "AK",
+      "lat": 63.888401,
+      "lon": -160.798996,
+      "type": "eas",
+      "hubs": [
+        "ANC"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska table does not list a hub; current EAS service materials connect Unalakleet with Anchorage."
+    },
+    {
+      "code": "ADK",
+      "name": "Adak Airport",
+      "city": "Adak",
+      "state": "AK",
+      "lat": 51.883564,
+      "lon": -176.642783,
+      "type": "eas",
+      "hubs": [
+        "ANC"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ANC."
+    },
+    {
+      "code": "AKK",
+      "name": "Akhiok Airport",
+      "city": "Akhiok",
+      "state": "AK",
+      "lat": 56.938702,
+      "lon": -154.182999,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "KQA",
+      "name": "Akutan Airport",
+      "city": "Akutan",
+      "state": "AK",
+      "lat": 54.14459,
+      "lon": -165.604332,
+      "type": "eas",
+      "hubs": [
+        "DUT"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via DUT.",
+      "dotCode": "7AK",
+      "aliases": [
+        "7AK"
+      ]
+    },
+    {
+      "code": "AOS",
+      "name": "Amook Bay Seaplane Base",
+      "city": "Amook Bay",
+      "state": "AK",
+      "lat": 57.4715,
+      "lon": -153.815002,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "AGN",
+      "name": "Angoon Seaplane Base",
+      "city": "Angoon",
+      "state": "AK",
+      "lat": 57.497097,
+      "lon": -134.56722,
+      "type": "eas",
+      "hubs": [
+        "JNU"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via JNU."
+    },
+    {
+      "code": "AKB",
+      "name": "Atka Airport",
+      "city": "Atka",
+      "state": "AK",
+      "lat": 52.220299,
+      "lon": -174.205994,
+      "type": "eas",
+      "hubs": [
+        "DUT"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via DUT."
+    },
+    {
+      "code": "CEM",
+      "name": "Central Airport",
+      "city": "Central",
+      "state": "AK",
+      "lat": 65.573815,
+      "lon": -144.780707,
+      "type": "eas",
+      "hubs": [
+        "FAI"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via FAI."
+    },
+    {
+      "code": "KCG",
+      "name": "Chignik Airport",
+      "city": "Chignik",
+      "state": "AK",
+      "lat": 56.311501,
+      "lon": -158.373001,
+      "type": "eas",
+      "hubs": [
+        "AKN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via AKN."
+    },
+    {
+      "code": "KCQ",
+      "name": "Chignik Lake Airport",
+      "city": "Chignik Lake",
+      "state": "AK",
+      "lat": 56.255001,
+      "lon": -158.774994,
+      "type": "eas",
+      "hubs": [
+        "AKN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via AKN."
+    },
+    {
+      "code": "CZN",
+      "name": "Chisana Airport",
+      "city": "Chisana",
+      "state": "AK",
+      "lat": 62.071201,
+      "lon": -142.048004,
+      "type": "eas",
+      "hubs": [
+        "TKJ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via TKJ."
+    },
+    {
+      "code": "IRC",
+      "name": "Circle City Airport",
+      "city": "Circle",
+      "state": "AK",
+      "lat": 65.828056,
+      "lon": -144.076111,
+      "type": "eas",
+      "hubs": [
+        "FAI"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via FAI."
+    },
+    {
+      "code": "CLP",
+      "name": "Clarks Point Airport",
+      "city": "Clark's Point",
+      "state": "AK",
+      "lat": 58.833698,
+      "lon": -158.529007,
+      "type": "eas",
+      "hubs": [
+        "DLG"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via DLG."
+    },
+    {
+      "code": "CDV",
+      "name": "Merle K (Mudhole) Smith Airport",
+      "city": "Cordova",
+      "state": "AK",
+      "lat": 60.491798,
+      "lon": -145.477997,
+      "type": "eas",
+      "hubs": [
+        "ANC",
+        "JNU"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ANC / JNU."
+    },
+    {
+      "code": "DIO",
+      "name": "Diomede Heliport",
+      "city": "Diomede",
+      "state": "AK",
+      "lat": 65.758367,
+      "lon": -168.953676,
+      "type": "eas",
+      "hubs": [
+        "OME"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via OME.",
+      "dotCode": "DM2",
+      "aliases": [
+        "DM2"
+      ]
+    },
+    {
+      "code": "EGX",
+      "name": "Egegik Airport",
+      "city": "Egegik",
+      "state": "AK",
+      "lat": 58.184386,
+      "lon": -157.374873,
+      "type": "eas",
+      "hubs": [
+        "AKN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via AKN."
+    },
+    {
+      "code": "KEK",
+      "name": "Ekwok Airport",
+      "city": "Ekwok",
+      "state": "AK",
+      "lat": 59.3568,
+      "lon": -157.470993,
+      "type": "eas",
+      "hubs": [
+        "DLG"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via DLG."
+    },
+    {
+      "code": "ELV",
+      "name": "Elfin Cove Seaplane Base",
+      "city": "Elfin Cove",
+      "state": "AK",
+      "lat": 58.195202,
+      "lon": -136.347,
+      "type": "eas",
+      "hubs": [
+        "JNU"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via JNU."
+    },
+    {
+      "code": "EXI",
+      "name": "Excursion Inlet Seaplane Base",
+      "city": "Excursion Inlet",
+      "state": "AK",
+      "lat": 58.420502,
+      "lon": -135.449005,
+      "type": "eas",
+      "hubs": [
+        "JNU"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via JNU."
+    },
+    {
+      "code": "KFP",
+      "name": "False Pass Airport",
+      "city": "False Pass",
+      "state": "AK",
+      "lat": 54.84751,
+      "lon": -163.407168,
+      "type": "eas",
+      "hubs": [
+        "CDB"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via CDB."
+    },
+    {
+      "code": "GKN",
+      "name": "Gulkana Airport",
+      "city": "Gulkana",
+      "state": "AK",
+      "lat": 62.155859,
+      "lon": -145.454662,
+      "type": "eas",
+      "hubs": [
+        "ANC"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ANC."
+    },
+    {
+      "code": "GST",
+      "name": "Gustavus Airport",
+      "city": "Gustavus",
+      "state": "AK",
+      "lat": 58.425301,
+      "lon": -135.707001,
+      "type": "eas",
+      "hubs": [
+        "JNU"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via JNU."
+    },
+    {
+      "code": "HKB",
+      "name": "Healy Lake Airport",
+      "city": "Healy Lake",
+      "state": "AK",
+      "lat": 63.9958,
+      "lon": -144.6926,
+      "type": "eas",
+      "hubs": [
+        "FAI"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via FAI."
+    },
+    {
+      "code": "HYG",
+      "name": "Hydaburg Seaplane Base",
+      "city": "Hydaburg",
+      "state": "AK",
+      "lat": 55.205227,
+      "lon": -132.830286,
+      "type": "eas",
+      "hubs": [
+        "WFB"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via WFB."
+    },
+    {
+      "code": "IGG",
+      "name": "Igiugig Airport",
+      "city": "Igiugig",
+      "state": "AK",
+      "lat": 59.324,
+      "lon": -155.901833,
+      "type": "eas",
+      "hubs": [
+        "AKN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via AKN."
+    },
+    {
+      "code": "KAE",
+      "name": "Kake Seaplane Base",
+      "city": "Kake",
+      "state": "AK",
+      "lat": 56.973,
+      "lon": -133.945999,
+      "type": "eas",
+      "hubs": [
+        "JNU"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via JNU."
+    },
+    {
+      "code": "KYK",
+      "name": "Karluk Airport",
+      "city": "Karluk",
+      "state": "AK",
+      "lat": 57.565919,
+      "lon": -154.453762,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "KVC",
+      "name": "King Cove Airport",
+      "city": "King Cove",
+      "state": "AK",
+      "lat": 55.116299,
+      "lon": -162.266006,
+      "type": "eas",
+      "hubs": [
+        "CDB"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via CDB."
+    },
+    {
+      "code": "KKB",
+      "name": "Kitoi Bay Seaplane Base",
+      "city": "Kitoi Bay",
+      "state": "AK",
+      "lat": 58.190899,
+      "lon": -152.369995,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "KGK",
+      "name": "Koliganek Airport",
+      "city": "Koliganek",
+      "state": "AK",
+      "lat": 59.726601,
+      "lon": -157.259003,
+      "type": "eas",
+      "hubs": [
+        "DLG"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via DLG."
+    },
+    {
+      "code": "LMA",
+      "name": "Minchumina Airport",
+      "city": "Lake Minchumina",
+      "state": "AK",
+      "lat": 63.886002,
+      "lon": -152.302002,
+      "type": "eas",
+      "hubs": [
+        "FAI"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via FAI."
+    },
+    {
+      "code": "KLN",
+      "name": "Larsen Bay Airport",
+      "city": "Larsen Bay",
+      "state": "AK",
+      "lat": 57.53516,
+      "lon": -153.976455,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "ALZ",
+      "name": "Alitak Seaplane Base",
+      "city": "Lazy Bay/Alitak",
+      "state": "AK",
+      "lat": 56.896214,
+      "lon": -154.246858,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "KLL",
+      "name": "Levelock Airport",
+      "city": "Levelock",
+      "state": "AK",
+      "lat": 59.12694444,
+      "lon": -156.86,
+      "type": "eas",
+      "hubs": [
+        "AKN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via AKN."
+    },
+    {
+      "code": "MLY",
+      "name": "Manley Hot Springs Airport",
+      "city": "Manley Hot Springs",
+      "state": "AK",
+      "lat": 64.98805556,
+      "lon": -150.6475,
+      "type": "eas",
+      "hubs": [
+        "FAI"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via FAI."
+    },
+    {
+      "code": "KMO",
+      "name": "Manokotak Seaplane Base",
+      "city": "Manokotak",
+      "state": "AK",
+      "lat": 58.98166667,
+      "lon": -159.05666667,
+      "type": "eas",
+      "hubs": [
+        "DLG"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via DLG."
+    },
+    {
+      "code": "MYK",
+      "name": "May Creek Airport",
+      "city": "May Creek",
+      "state": "AK",
+      "lat": 61.33611111,
+      "lon": -142.68583333,
+      "type": "eas",
+      "hubs": [
+        "GKN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via GKN."
+    },
+    {
+      "code": "MXY",
+      "name": "McCarthy Airport",
+      "city": "McCarthy",
+      "state": "AK",
+      "lat": 61.43777778,
+      "lon": -142.9025,
+      "type": "eas",
+      "hubs": [
+        "GKN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via GKN."
+    },
+    {
+      "code": "MCG",
+      "name": "McGrath Airport",
+      "city": "McGrath",
+      "state": "AK",
+      "lat": 62.95277778,
+      "lon": -155.60694444,
+      "type": "eas",
+      "hubs": [
+        "MRI"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via MRI."
+    },
+    {
+      "code": "MTM",
+      "name": "Metlakatla Seaplane Base",
+      "city": "Metlakatla",
+      "state": "AK",
+      "lat": 55.13333333,
+      "lon": -131.58333333,
+      "type": "eas",
+      "hubs": [
+        "WFB"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via WFB."
+    },
+    {
+      "code": "MNT",
+      "name": "Minto Al Wright Airport",
+      "city": "Minto",
+      "state": "AK",
+      "lat": 65.14805556,
+      "lon": -149.36861111,
+      "type": "eas",
+      "hubs": [
+        "FAI"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via FAI."
+    },
+    {
+      "code": "KMY",
+      "name": "Moser Bay Airport",
+      "city": "Moser Bay",
+      "state": "AK",
+      "lat": 57.02638889,
+      "lon": -154.14361111,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "KNW",
+      "name": "New Stuyahok Airport",
+      "city": "New Stuyahok",
+      "state": "AK",
+      "lat": 59.45166667,
+      "lon": -157.37305556,
+      "type": "eas",
+      "hubs": [
+        "DLG"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via DLG."
+    },
+    {
+      "code": "IKO",
+      "name": "Nikolski Air Station",
+      "city": "Nikolski",
+      "state": "AK",
+      "lat": 52.94166667,
+      "lon": -168.84916667,
+      "type": "eas",
+      "hubs": [
+        "DUT"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via DUT."
+    },
+    {
+      "code": "KOY",
+      "name": "Olga Bay Seaplane Base",
+      "city": "Olga Bay",
+      "state": "AK",
+      "lat": 57.16222222,
+      "lon": -154.2275,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "PEC",
+      "name": "Pelican Seaplane Base",
+      "city": "Pelican",
+      "state": "AK",
+      "lat": 57.95,
+      "lon": -136.23333333,
+      "type": "eas",
+      "hubs": [
+        "JNU"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via JNU."
+    },
+    {
+      "code": "KPV",
+      "name": "Perryville Airport",
+      "city": "Perryville",
+      "state": "AK",
+      "lat": 55.90666667,
+      "lon": -159.16083333,
+      "type": "eas",
+      "hubs": [
+        "AKN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via AKN."
+    },
+    {
+      "code": "PSG",
+      "name": "Petersburg James A Johnson Airport",
+      "city": "Petersburg",
+      "state": "AK",
+      "lat": 56.80138889,
+      "lon": -132.94611111,
+      "type": "eas",
+      "hubs": [
+        "JNU",
+        "KTN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via JNU / KTN."
+    },
+    {
+      "code": "PIP",
+      "name": "Pilot Point Airport",
+      "city": "Pilot Point",
+      "state": "AK",
+      "lat": 57.58027778,
+      "lon": -157.57194444,
+      "type": "eas",
+      "hubs": [
+        "AKN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via AKN."
+    },
+    {
+      "code": "PTD",
+      "name": "Port Alexander Airport",
+      "city": "Port Alexander",
+      "state": "AK",
+      "lat": 56.24722222,
+      "lon": -134.64638889,
+      "type": "eas",
+      "hubs": [
+        "SIT"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via SIT."
+    },
+    {
+      "code": "KPY",
+      "name": "Port Bailey Airport",
+      "city": "Port Bailey",
+      "state": "AK",
+      "lat": 57.93333333,
+      "lon": -153.03333333,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "PTH",
+      "name": "Port Heiden Airport",
+      "city": "Port Heiden",
+      "state": "AK",
+      "lat": 56.95916667,
+      "lon": -158.63333333,
+      "type": "eas",
+      "hubs": [
+        "AKN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via AKN."
+    },
+    {
+      "code": "KPR",
+      "name": "Port Williams Airport",
+      "city": "Port Williams",
+      "state": "AK",
+      "lat": 58.43333333,
+      "lon": -152.58333333,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "SYB",
+      "name": "Seal Bay Airport",
+      "city": "Seal Bay",
+      "state": "AK",
+      "lat": 58.38333333,
+      "lon": -152.23333333,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "SWD",
+      "name": "Seward Airport",
+      "city": "Seward",
+      "state": "AK",
+      "lat": 60.13,
+      "lon": -149.41694444,
+      "type": "eas",
+      "hubs": [
+        "ANC"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ANC."
+    },
+    {
+      "code": "SKW",
+      "name": "Skwentna Airport",
+      "city": "Skwentna",
+      "state": "AK",
+      "lat": 61.96611111,
+      "lon": -151.19527778,
+      "type": "eas",
+      "hubs": [
+        "MRI"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via MRI."
+    },
+    {
+      "code": "WSN",
+      "name": "South Naknek Airport",
+      "city": "South Naknek",
+      "state": "AK",
+      "lat": 58.70194444,
+      "lon": -157.0025,
+      "type": "eas",
+      "hubs": [
+        "AKN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via AKN."
+    },
+    {
+      "code": "STG",
+      "name": "St. George Island Airport",
+      "city": "St. George",
+      "state": "AK",
+      "lat": 56.60083333,
+      "lon": -169.56416667,
+      "type": "eas",
+      "hubs": [
+        "DUT"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via DUT."
+    },
+    {
+      "code": "KSM",
+      "name": "St. Mary's Airport",
+      "city": "St. Mary's",
+      "state": "AK",
+      "lat": 62.06083333,
+      "lon": -163.30194444,
+      "type": "eas",
+      "hubs": [
+        "ANC"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ANC."
+    },
+    {
+      "code": "SNP",
+      "name": "St. Paul Island Airport",
+      "city": "St. Paul Island",
+      "state": "AK",
+      "lat": 57.16638889,
+      "lon": -170.2225,
+      "type": "eas",
+      "hubs": [
+        "ANC"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ANC."
+    },
+    {
+      "code": "TEK",
+      "name": "Tatitlek Airport",
+      "city": "Tatitlek",
+      "state": "AK",
+      "lat": 60.8725,
+      "lon": -146.69111111,
+      "type": "eas",
+      "hubs": [
+        "MRI"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via MRI."
+    },
+    {
+      "code": "TKE",
+      "name": "Tenakee Seaplane Base",
+      "city": "Tenakee",
+      "state": "AK",
+      "lat": 57.71666667,
+      "lon": -135.2,
+      "type": "eas",
+      "hubs": [
+        "JNU"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via JNU."
+    },
+    {
+      "code": "TWA",
+      "name": "Twin Hills Airport",
+      "city": "Twin Hills",
+      "state": "AK",
+      "lat": 59.07444444,
+      "lon": -160.275,
+      "type": "eas",
+      "hubs": [
+        "DLG"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via DLG."
+    },
+    {
+      "code": "UGI",
+      "name": "Uganik Seaplane Base",
+      "city": "Uganik",
+      "state": "AK",
+      "lat": 57.75,
+      "lon": -153.31666667,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "UGS",
+      "name": "Ugashik Airport",
+      "city": "Ugashik",
+      "state": "AK",
+      "lat": 57.52333333,
+      "lon": -157.39611111,
+      "type": "eas",
+      "hubs": [
+        "AKN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via AKN."
+    },
+    {
+      "code": "VDZ",
+      "name": "Valdez Pioneer Field",
+      "city": "Valdez",
+      "state": "AK",
+      "lat": 61.13416667,
+      "lon": -146.24472222,
+      "type": "eas",
+      "hubs": [
+        "ANC"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ANC."
+    },
+    {
+      "code": "KWP",
+      "name": "West Point Village Seaplane Base",
+      "city": "West Point",
+      "state": "AK",
+      "lat": 57.76694444,
+      "lon": -153.55,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "WRG",
+      "name": "Wrangell Airport",
+      "city": "Wrangell",
+      "state": "AK",
+      "lat": 56.48444444,
+      "lon": -132.36972222,
+      "type": "eas",
+      "hubs": [
+        "JNU",
+        "KTN"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via JNU / KTN."
+    },
+    {
+      "code": "YAK",
+      "name": "Yakutat Airport",
+      "city": "Yakutat",
+      "state": "AK",
+      "lat": 59.50333333,
+      "lon": -139.66027778,
+      "type": "eas",
+      "hubs": [
+        "ANC",
+        "JNU"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ANC / JNU."
+    },
+    {
+      "code": "KZB",
+      "name": "Zachar Bay Seaplane Base",
+      "city": "Zachar Bay",
+      "state": "AK",
+      "lat": 57.55,
+      "lon": -153.75,
+      "type": "eas",
+      "hubs": [
+        "ADQ"
+      ],
+      "region": "alaska",
+      "note": "Alaska Essential Air Service community. May 2026 DOT Alaska report lists service via ADQ."
+    },
+    {
+      "code": "MRI",
+      "name": "Merrill Field",
+      "city": "Anchorage",
+      "state": "AK",
+      "lat": 61.212792,
+      "lon": -149.843988,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "ANC",
+      "name": "Ted Stevens Anchorage International Airport",
+      "city": "Anchorage",
+      "state": "AK",
+      "lat": 61.179004,
+      "lon": -149.992561,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "ADQ",
+      "name": "Kodiak Airport",
+      "city": "Kodiak",
+      "state": "AK",
+      "lat": 57.75,
+      "lon": -152.494003,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "DUT",
+      "name": "Tom Madsen (Dutch Harbor) Airport",
+      "city": "Unalaska",
+      "state": "AK",
+      "lat": 53.89881,
+      "lon": -166.544996,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "JNU",
+      "name": "Juneau International Airport",
+      "city": "Juneau",
+      "state": "AK",
+      "lat": 58.354935,
+      "lon": -134.574416,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "FAI",
+      "name": "Fairbanks International Airport",
+      "city": "Fairbanks",
+      "state": "AK",
+      "lat": 64.815102,
+      "lon": -147.856003,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "AKN",
+      "name": "King Salmon Airport",
+      "city": "King Salmon",
+      "state": "AK",
+      "lat": 58.677845,
+      "lon": -156.651965,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "TKJ",
+      "name": "Tok Junction Airport",
+      "city": "Tok",
+      "state": "AK",
+      "lat": 63.329498,
+      "lon": -142.953995,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "DLG",
+      "name": "Dillingham Airport",
+      "city": "Dillingham",
+      "state": "AK",
+      "lat": 59.044701,
+      "lon": -158.505005,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "OME",
+      "name": "Nome Airport",
+      "city": "Nome",
+      "state": "AK",
+      "lat": 64.512199,
+      "lon": -165.445007,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "CDB",
+      "name": "Cold Bay Airport",
+      "city": "Cold Bay",
+      "state": "AK",
+      "lat": 55.207871,
+      "lon": -162.725029,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "WFB",
+      "name": "Ketchikan Harbor Seaplane Base",
+      "city": "Ketchikan",
+      "state": "AK",
+      "lat": 55.344464,
+      "lon": -131.663439,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "KTN",
+      "name": "Ketchikan International Airport",
+      "city": "Ketchikan",
+      "state": "AK",
+      "lat": 55.355598,
+      "lon": -131.714005,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "SIT",
+      "name": "Sitka Rocky Gutierrez Airport",
+      "city": "Sitka",
+      "state": "AK",
+      "lat": 57.0471,
+      "lon": -135.362,
+      "type": "hub",
+      "region": "alaska",
+      "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
     }
   ],
   "routes": [
@@ -2550,6 +3714,306 @@ window.NTA_DATA = {
     [
       "DTW",
       "ORD"
+    ],
+    [
+      "NCN",
+      "MRI"
+    ],
+    [
+      "UNK",
+      "ANC"
+    ],
+    [
+      "ADK",
+      "ANC"
+    ],
+    [
+      "AKK",
+      "ADQ"
+    ],
+    [
+      "KQA",
+      "DUT"
+    ],
+    [
+      "AOS",
+      "ADQ"
+    ],
+    [
+      "AGN",
+      "JNU"
+    ],
+    [
+      "AKB",
+      "DUT"
+    ],
+    [
+      "CEM",
+      "FAI"
+    ],
+    [
+      "KCG",
+      "AKN"
+    ],
+    [
+      "KCQ",
+      "AKN"
+    ],
+    [
+      "CZN",
+      "TKJ"
+    ],
+    [
+      "IRC",
+      "FAI"
+    ],
+    [
+      "CLP",
+      "DLG"
+    ],
+    [
+      "CDV",
+      "ANC"
+    ],
+    [
+      "CDV",
+      "JNU"
+    ],
+    [
+      "DIO",
+      "OME"
+    ],
+    [
+      "EGX",
+      "AKN"
+    ],
+    [
+      "KEK",
+      "DLG"
+    ],
+    [
+      "ELV",
+      "JNU"
+    ],
+    [
+      "EXI",
+      "JNU"
+    ],
+    [
+      "KFP",
+      "CDB"
+    ],
+    [
+      "GKN",
+      "ANC"
+    ],
+    [
+      "GST",
+      "JNU"
+    ],
+    [
+      "HKB",
+      "FAI"
+    ],
+    [
+      "HYG",
+      "WFB"
+    ],
+    [
+      "IGG",
+      "AKN"
+    ],
+    [
+      "KAE",
+      "JNU"
+    ],
+    [
+      "KYK",
+      "ADQ"
+    ],
+    [
+      "KVC",
+      "CDB"
+    ],
+    [
+      "KKB",
+      "ADQ"
+    ],
+    [
+      "KGK",
+      "DLG"
+    ],
+    [
+      "LMA",
+      "FAI"
+    ],
+    [
+      "KLN",
+      "ADQ"
+    ],
+    [
+      "ALZ",
+      "ADQ"
+    ],
+    [
+      "KLL",
+      "AKN"
+    ],
+    [
+      "MLY",
+      "FAI"
+    ],
+    [
+      "KMO",
+      "DLG"
+    ],
+    [
+      "MYK",
+      "GKN"
+    ],
+    [
+      "MXY",
+      "GKN"
+    ],
+    [
+      "MCG",
+      "MRI"
+    ],
+    [
+      "MTM",
+      "WFB"
+    ],
+    [
+      "MNT",
+      "FAI"
+    ],
+    [
+      "KMY",
+      "ADQ"
+    ],
+    [
+      "KNW",
+      "DLG"
+    ],
+    [
+      "IKO",
+      "DUT"
+    ],
+    [
+      "KOY",
+      "ADQ"
+    ],
+    [
+      "PEC",
+      "JNU"
+    ],
+    [
+      "KPV",
+      "AKN"
+    ],
+    [
+      "PSG",
+      "JNU"
+    ],
+    [
+      "PSG",
+      "KTN"
+    ],
+    [
+      "PIP",
+      "AKN"
+    ],
+    [
+      "PTD",
+      "SIT"
+    ],
+    [
+      "KPY",
+      "ADQ"
+    ],
+    [
+      "PTH",
+      "AKN"
+    ],
+    [
+      "KPR",
+      "ADQ"
+    ],
+    [
+      "SYB",
+      "ADQ"
+    ],
+    [
+      "SWD",
+      "ANC"
+    ],
+    [
+      "SKW",
+      "MRI"
+    ],
+    [
+      "WSN",
+      "AKN"
+    ],
+    [
+      "STG",
+      "DUT"
+    ],
+    [
+      "KSM",
+      "ANC"
+    ],
+    [
+      "SNP",
+      "ANC"
+    ],
+    [
+      "TEK",
+      "MRI"
+    ],
+    [
+      "TKE",
+      "JNU"
+    ],
+    [
+      "TWA",
+      "DLG"
+    ],
+    [
+      "UGI",
+      "ADQ"
+    ],
+    [
+      "UGS",
+      "AKN"
+    ],
+    [
+      "VDZ",
+      "ANC"
+    ],
+    [
+      "KWP",
+      "ADQ"
+    ],
+    [
+      "WRG",
+      "JNU"
+    ],
+    [
+      "WRG",
+      "KTN"
+    ],
+    [
+      "YAK",
+      "ANC"
+    ],
+    [
+      "YAK",
+      "JNU"
+    ],
+    [
+      "KZB",
+      "ADQ"
     ]
   ]
 };
