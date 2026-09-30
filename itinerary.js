@@ -69,7 +69,7 @@
     const s=defaultStay(i),plan=stayPlan(i,arrivalDate,arrivalMin,hasExactArrival);
     const isHub=airport.type!=='eas';
     const section=document.createElement('section');section.className=`stay${isHub?' connector':''}`;
-    const arriveText=hasExactArrival?`${window.NTA.fmtDate(arrivalDate)} · ${F.timeFrom(arrivalMin)}`:`${window.NTA.fmtDate(arrivalDate)} · time depends on the previous leg`;
+    const arriveText=hasExactArrival?`${window.NTA.fmtDate(arrivalDate)} · ${F.timeFrom(arrivalMin)}`:`${window.NTA.fmtDate(arrivalDate)} · choose the inbound flight to set the arrival time`;
     section.innerHTML=`
       <div class="eyebrow">At ${airport.city}, ${airport.state} · ${airport.code}${isHub?' · Hub / connector':''}</div>
       <h3>${isHub?'Connect onward, or stay a while?':'Stay a while, or keep going?'}</h3>
@@ -100,16 +100,24 @@
     const knownRoute=F.hasKnownRoute(a,b);
     let opts=F.getOptions(a,b,departDate,i);
     let note=knownRoute?'Choose zero or one planning flight.':'No routable planning link is available for this pair yet.';
-    if(i>0&&plan&&plan.notBefore!=null){
+    const locked=i>0&&!priorSelected;
+    if(!locked&&i>0&&plan&&plan.notBefore!=null){
       opts=opts.filter(o=>o.departMin>=plan.notBefore);
       if(plan.mode==='asap'&&opts.length===0){
         departDate=window.NTA.addDays(departDate,1);opts=F.getOptions(a,b,departDate,i);note='No practical same-day connection in this sample schedule, so the next available choices are tomorrow.';
       } else if(plan.mode==='later'&&opts.length===0){note='No later same-day sample flights fit this plan. Choose 1 night, another date, or ASAP.';}
-    } else if(i>0&&!priorSelected){note='Pick the previous leg to calculate the exact connection window. You can still browse these sample flights.';}
+    } else if(locked){
+      note='Choose the inbound flight first. NexTownAir will then show only departures that leave after you arrive and clear the connection buffer.';
+    }
 
-    const A=by(a),B=by(b),leg=document.createElement('section');leg.className='leg';
+    const A=by(a),B=by(b),leg=document.createElement('section');leg.className=`leg${locked?' leg-locked':''}`;
     leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${a} → ${b}</h2><div class="muted">${A.city}, ${A.state} → ${B.city}, ${B.state}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div><p class="small">${note}</p><div class="options"></div>`;
     const box=leg.querySelector('.options');
+    if(locked){
+      if(state.selections[String(i)]){delete state.selections[String(i)];save();}
+      box.outerHTML=`<div class="pending-flights"><strong>Waiting for your arrival at ${a}.</strong><br>Select Leg ${i} first. Once the inbound flight is chosen, departures from ${a} will be filtered to your actual arrival time and connection plan.</div>`;
+      return {section:leg,chosen:null,departDate,options:[]};
+    }
     if(!knownRoute){
       box.outerHTML=`<div class="no-flights"><strong>No planning route for ${a} → ${b}.</strong><br>Return to the map and re-add the destination so NexTownAir can insert a connector path. <a href="${window.NTA.buildUrl('index.html',state)}">Edit this route on the map</a>.</div>`;
       if(state.selections[String(i)]){delete state.selections[String(i)];save();}
@@ -152,7 +160,7 @@
         const stayRendered=renderStay(i,by(state.route[i]),previousArrivalDate,previousArrivalMin,Boolean(previousChosen));
         el.content.appendChild(stayRendered.section);plan=stayRendered.plan;departDate=plan.date;
       }
-      const legRendered=renderLeg(i,state.route[i],state.route[i+1],departDate,plan&&previousChosen);
+      const legRendered=renderLeg(i,state.route[i],state.route[i+1],departDate,plan,previousChosen);
       el.content.appendChild(legRendered.section);
       previousChosen=legRendered.chosen;
       departDate=legRendered.departDate;
