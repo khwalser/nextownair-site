@@ -3,6 +3,14 @@
   const KEY='nextownair.trip.v1';
   const D=window.NTA_DATA||{airports:[]};
   const airportCodes=new Set((D.airports||[]).map(a=>a.code));
+  const listedAdj=new Map((D.airports||[]).map(a=>[a.code,new Set()]));
+  const hubCodes=new Set();
+  (D.airports||[]).forEach(a=>(a.hubs||[]).forEach(h=>hubCodes.add(h)));
+  (D.routes||[]).forEach(([a,b])=>{
+    if(!listedAdj.has(a))listedAdj.set(a,new Set());
+    if(!listedAdj.has(b))listedAdj.set(b,new Set());
+    listedAdj.get(a).add(b);listedAdj.get(b).add(a);
+  });
 
   function todayLocal(){
     const d=new Date();
@@ -14,6 +22,37 @@
   function validDate(s){return /^\d{4}-\d{2}-\d{2}$/.test(String(s||''));}
   function normalizeRoute(route){
     return Array.isArray(route)?route.map(x=>String(x).trim().toUpperCase()).filter(c=>airportCodes.has(c)):[];
+  }
+  function hasListedRoute(a,b){return Boolean(listedAdj.get(a)&&listedAdj.get(a).has(b));}
+  function isNetworkHub(code){return hubCodes.has(code);}
+  function hasFlightLink(a,b){
+    if(!airportCodes.has(a)||!airportCodes.has(b)||a===b)return false;
+    return hasListedRoute(a,b)||(isNetworkHub(a)&&isNetworkHub(b));
+  }
+  function flightNeighbors(code){
+    const out=new Set(listedAdj.get(code)||[]);
+    if(isNetworkHub(code))hubCodes.forEach(h=>{if(h!==code&&airportCodes.has(h))out.add(h);});
+    return [...out].filter(c=>airportCodes.has(c));
+  }
+  function findFlightPath(from,to){
+    const a=String(from||'').toUpperCase(),b=String(to||'').toUpperCase();
+    if(!airportCodes.has(a)||!airportCodes.has(b))return null;
+    if(a===b)return [a];
+    const q=[a],seen=new Set([a]),prev=new Map();
+    while(q.length){
+      const cur=q.shift();
+      for(const next of flightNeighbors(cur)){
+        if(seen.has(next))continue;
+        seen.add(next);prev.set(next,cur);
+        if(next===b){
+          const path=[b];let p=b;
+          while(prev.has(p)){p=prev.get(p);path.push(p);}
+          return path.reverse();
+        }
+        q.push(next);
+      }
+    }
+    return null;
   }
   function baseState(){return {version:1,route:[],startDate:todayLocal(),stays:{},selections:{}};}
   function sanitize(raw){
@@ -84,5 +123,5 @@
     if(!validDate(s))return '';
     return parseDate(s).toLocaleDateString(undefined,Object.assign({month:'short',day:'numeric',timeZone:'UTC'},opts||{}));
   }
-  window.NTA={KEY,todayLocal,validDate,normalizeRoute,load,save,setRoute,clearTrip,buildUrl,updateAddress,byCode,addDays,diffDays,fmtDate};
+  window.NTA={KEY,todayLocal,validDate,normalizeRoute,load,save,setRoute,clearTrip,buildUrl,updateAddress,byCode,addDays,diffDays,fmtDate,hasListedRoute,isNetworkHub,hasFlightLink,findFlightPath};
 })();
