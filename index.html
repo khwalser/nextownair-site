@@ -22,7 +22,7 @@
   </div>
   <div class="eyebrow">Map mode</div>
   <h1>Where would you like to wander?</h1>
-  <p class="lead">Explore 112 subsidized Essential Air Service communities from the U.S. DOT May 2026 report, plus the hub airports that connect them. Pick places in any order; when a nonstop link is not in the EAS network, NexTownAir inserts a connector path automatically.</p>
+  <p class="lead">Explore 183 subsidized Essential Air Service communities from the U.S. DOT May 2026 reports, including 71 Alaska passenger-service communities, plus the hub airports that connect them. Pick places in any order; when a nonstop link is not in the EAS network, NexTownAir inserts a connector path automatically.</p>
 
   <div class="layout">
     <section class="mapcolumn" aria-label="Airport map">
@@ -30,6 +30,7 @@
         <span class="small"><strong>Jump to:</strong></span>
         <button type="button" class="map-tool active" data-region="lower48">Lower 48</button>
         <button type="button" class="map-tool" data-region="michigan">Michigan & U.P.</button>
+        <button type="button" class="map-tool" data-region="alaska">Alaska</button>
         <button type="button" class="map-tool" data-region="hawaii">Hawaii</button>
         <button type="button" class="map-tool" data-region="puerto-rico">Puerto Rico</button>
         <button type="button" class="map-tool" data-region="all">All</button>
@@ -41,7 +42,7 @@
         <span class="legend-item"><span class="dot warning"></span>Selected leg needs a connector</span>
         <span class="legend-item">Hover or tap a pin: city, state, airport code</span>
       </div>
-      <p class="prototype-note"><strong>Network coverage:</strong> 112 subsidized EAS communities in the contiguous U.S., Hawaii, and Puerto Rico, using the U.S. DOT May 2026 status report. Hover an EAS pin to preview its listed hub connection(s). Alaska uses a separate DOT table and a mix of IATA, FAA, and local identifiers; that layer is being normalized separately so the map does not publish bad airport matches. <a href="https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports" target="_blank" rel="noopener">View the DOT source report</a>.</p>
+      <p class="prototype-note"><strong>Network coverage:</strong> 183 subsidized EAS communities using the U.S. DOT May 2026 reports: 112 in the contiguous U.S., Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities. Alaska local identifiers are normalized to traveler-facing airport codes where available while retaining the DOT code as a searchable alias. <a href="https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports" target="_blank" rel="noopener">View the DOT source reports</a>.</p>
     </section>
 
     <aside class="side" aria-label="Your trip">
@@ -54,7 +55,7 @@
       <form id="airportFinder" class="finder">
         <label for="airportSearch">Find an airport</label>
         <div class="finder-row">
-          <input id="airportSearch" list="airportOptions" autocomplete="off" placeholder="Try Escanaba, ESC, Denver or DEN" aria-describedby="finderStatus">
+          <input id="airportSearch" list="airportOptions" autocomplete="off" placeholder="Try Escanaba, ESC, Chenega or NCN" aria-describedby="finderStatus">
           <button class="btn tertiary" type="submit">Add airport</button>
         </div>
         <datalist id="airportOptions"></datalist>
@@ -75,7 +76,7 @@
     </aside>
   </div>
 </main>
-<footer class="footer">NexTownAir · EAS network source: U.S. DOT May 2026 status report. <a href="index.html">Back to the map</a>.</footer>
+<footer class="footer">NexTownAir · EAS network source: U.S. DOT May 2026 status reports. <a href="index.html">Back to the map</a>.</footer>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="data.js"></script>
 <script src="trip-state.js"></script>
