@@ -25,7 +25,9 @@
   };
 
   function by(code){return window.NTA.byCode(code);}
-  function hasKnownRoute(a,b){return (D.routes||[]).some(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a));}
+  function hasKnownRoute(a,b){
+    return window.NTA.hasFlightLink?window.NTA.hasFlightLink(a,b):(D.routes||[]).some(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a));
+  }
   function routeLabel(i){
     const n=state.route.length;
     if(i===0)return 'Start';
@@ -38,8 +40,16 @@
     const a=by(code);
     if(!a)return;
     if(state.route.length&&state.route[state.route.length-1]===code){el.finderStatus.textContent=`${a.city} is already your current stop. Choose another airport before returning here.`;return;}
-    const next=state.route.slice();next.push(code);setRoute(next);
-    el.finderStatus.textContent=`Added ${a.city}, ${a.state} (${a.code}).`;
+    const next=state.route.slice();
+    let inserted=[];
+    if(next.length){
+      const from=next[next.length-1];
+      const path=window.NTA.findFlightPath?window.NTA.findFlightPath(from,code):null;
+      if(path&&path.length>1){inserted=path.slice(1,-1);next.push(...path.slice(1));}
+      else next.push(code);
+    }else next.push(code);
+    setRoute(next);
+    el.finderStatus.textContent=inserted.length?`Added ${a.city}, ${a.state} (${a.code}) via ${inserted.join(' → ')}.`:`Added ${a.city}, ${a.state} (${a.code}).`;
     el.search.value='';
     if(map&&markers.has(code)){
       const m=markers.get(code);map.panTo(m.getLatLng());m.openTooltip();
@@ -76,7 +86,7 @@
   function renderTrip(){
     el.trip.innerHTML='';
     const n=state.route.length;
-    el.tripTitle.textContent=n?`${n} place${n===1?'':'s'} selected`:'Start anywhere';
+    el.tripTitle.textContent=n?`${n} route point${n===1?'':'s'}`:'Start anywhere';
     if(!n){
       el.trip.innerHTML='<div class="empty">Click a pin on the map or use the airport search above.</div>';
     } else {
@@ -86,7 +96,7 @@
         const num=document.createElement('div');num.className='stopnum';num.textContent=String(i+1);
         const body=document.createElement('div');body.className='stopbody';
         const title=document.createElement('strong');title.textContent=`${a.city}, ${a.state} · ${a.code}`;
-        const label=document.createElement('div');label.className='stoplabel';label.textContent=`${routeLabel(i)}${a.type==='eas'?' · EAS spotlight':''}`;
+        const label=document.createElement('div');label.className='stoplabel';label.textContent=`${routeLabel(i)} · ${a.type==='eas'?'EAS stop':'Hub / connector'}`;
         const controls=document.createElement('div');controls.className='stopcontrols';
         const up=document.createElement('button');up.type='button';up.className='smallbtn';up.textContent='Move up';up.disabled=i===0;up.setAttribute('aria-label',`Move ${a.city} earlier in trip`);up.addEventListener('click',()=>move(i,-1));
         const down=document.createElement('button');down.type='button';down.className='smallbtn';down.textContent='Move down';down.disabled=i===n-1;down.setAttribute('aria-label',`Move ${a.city} later in trip`);down.addEventListener('click',()=>move(i,1));
@@ -106,7 +116,7 @@
     el.plan.setAttribute('aria-disabled',String(!ready));
     el.returnStart.disabled=n<2 || state.route[n-1]===state.route[0];
     el.returnStart.textContent=(n>1&&state.route[n-1]===state.route[0])?'Round trip complete':'Return to start';
-    el.status.textContent=ready?(unsupported?`${n-1} flight legs · ${unsupported} ${unsupported===1?'leg needs':'legs need'} a connector before flight choices will appear.`:`${n-1} flight leg${n-1===1?'':'s'} ready. Reorder or add stops any time.`):'Choose at least two places to create your first flight leg.';
+    el.status.textContent=ready?(unsupported?`${n-1} flight legs · ${unsupported} ${unsupported===1?'leg still needs':'legs still need'} routing help.`:`${n-1} flight leg${n-1===1?'':'s'} ready. Connector hubs are inserted automatically when needed.`):'Choose at least two places to create your first flight leg.';
   }
   function render(){syncLinks();renderTrip();renderRouteLine();}
 
