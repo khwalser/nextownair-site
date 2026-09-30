@@ -3,7 +3,9 @@
   function hash(text){let n=2166136261;for(const ch of text){n^=ch.charCodeAt(0);n=Math.imul(n,16777619)>>>0;}return n;}
   function timeFrom(min){const wrapped=((min%1440)+1440)%1440;const h=Math.floor(wrapped/60),m=wrapped%60,ap=h>=12?'PM':'AM';return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`;}
   const D=window.NTA_DATA||{routes:[]};
-  function hasKnownRoute(a,b){return (D.routes||[]).some(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a));}
+  function hasKnownRoute(a,b){
+    return window.NTA&&window.NTA.hasFlightLink?window.NTA.hasFlightLink(a,b):(D.routes||[]).some(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a));
+  }
   function carrierFor(a,b){
     if(a==='DTW'||b==='DTW')return 'Delta Connection';
     if(a==='ORD'||b==='ORD')return 'United Express';
