@@ -24,6 +24,23 @@
     const opts=visibleOptions||F.getOptions(a,b,date,legIndex);
     return opts.find(o=>o.id===id)||null;
   }
+  function minutesBetween(startDate,startMin,endDate,endMin){
+    return Math.max(0,window.NTA.diffDays(startDate,endDate)*1440+(endMin-startMin));
+  }
+  function fmtDuration(min){
+    const total=Math.max(0,Math.round(Number(min)||0));
+    const days=Math.floor(total/1440),hours=Math.floor((total%1440)/60),mins=total%60;
+    if(days)return `${days}d ${hours}h${mins?` ${mins}m`:''}`;
+    if(hours)return `${hours}h${mins?` ${mins}m`:''}`;
+    return `${mins}m`;
+  }
+  function groundLabel(i,minutes){
+    if(i===0||minutes<=0)return '—';
+    const s=defaultStay(i);
+    if(s.mode==='nights'||(s.mode==='date'&&s.date&&window.NTA.diffDays(state.startDate,s.date)>0))return 'Stopover';
+    if(s.mode==='later'||minutes>=240)return 'Long layover';
+    return 'Connection';
+  }
   function defaultStay(i){return state.stays[String(i)]||{mode:'asap',nights:0,date:null};}
   function save(){state=window.NTA.save(state);syncLinks();}
   function syncLinks(){
@@ -135,9 +152,58 @@
     if(state.selections[String(i)]&&!chosen){delete state.selections[String(i)];save();}
     return {section:leg,chosen,departDate,options:opts};
   }
-  function renderSummary(rows,total){
-    const legs=Math.max(0,state.route.length-1);const picked=rows.length;
-    el.summary.innerHTML=`<div class="summary-top"><div><div class="eyebrow">Trip summary</div><h3 style="margin:4px 0">${picked} of ${legs} flight leg${legs===1?'':'s'} selected</h3></div><div class="total">${picked?`$${total}`:'$0'} <span class="small">sample total</span></div></div>${picked?rows.map(r=>`<div class="selectedline">${r}</div>`).join(''):'<div class="muted">Choose a flight tile when you are ready. Your route and stay choices are already saved.</div>'}<div class="btnrow" style="margin-top:12px"><a class="btn secondary" href="${window.NTA.buildUrl('index.html',state)}">Edit route on map</a><button id="summaryPrint" class="btn tertiary" type="button">Print itinerary</button></div>`;
+  function renderTravelChart(timeline){
+    if(!timeline.length)return '';
+    const maxFlight=Math.max(...timeline.map(x=>x.flightMin),1);
+    const groundRows=timeline.filter(x=>x.groundMin>0);
+    const maxGround=Math.max(...groundRows.map(x=>x.groundMin),1);
+    const totalFlight=timeline.reduce((sum,x)=>sum+x.flightMin,0);
+    const totalGround=timeline.reduce((sum,x)=>sum+x.groundMin,0);
+    const totalElapsed=timeline[timeline.length-1].elapsedMin;
+    const stopoverGround=timeline.reduce((sum,x)=>sum+(x.groundKind==='Stopover'?x.groundMin:0),0);
+    const connectionGround=Math.max(0,totalGround-stopoverGround);
+    return `
+      <div class="travel-chart">
+        <div class="travel-chart-head">
+          <div>
+            <div class="eyebrow">Travel-time breakdown</div>
+            <h3>How the journey adds up</h3>
+            <p class="small">Running elapsed time starts at your first departure and includes flights, connections, layovers, and planned stopovers.</p>
+          </div>
+          <div class="travel-kpis" aria-label="Travel time totals">
+            <div class="travel-kpi"><span>Air time</span><strong>${fmtDuration(totalFlight)}</strong></div>
+            <div class="travel-kpi"><span>Connections</span><strong>${fmtDuration(connectionGround)}</strong></div>
+            ${stopoverGround? `<div class="travel-kpi"><span>Stopovers</span><strong>${fmtDuration(stopoverGround)}</strong></div>`:''}
+            <div class="travel-kpi total-kpi"><span>Total elapsed</span><strong>${fmtDuration(totalElapsed)}</strong></div>
+          </div>
+        </div>
+        <div class="travel-table" role="table" aria-label="Flight, layover, and running travel times">
+          <div class="travel-row travel-header" role="row">
+            <div role="columnheader">Leg</div>
+            <div role="columnheader">Flight time</div>
+            <div role="columnheader">Ground time before</div>
+            <div role="columnheader">Running elapsed</div>
+          </div>
+          ${timeline.map(x=>`
+            <div class="travel-row" role="row">
+              <div class="travel-leg" role="cell"><strong>${x.from} → ${x.to}</strong><span>${x.flightNo}</span></div>
+              <div class="travel-metric" role="cell">
+                <div class="metric-top"><strong>${fmtDuration(x.flightMin)}</strong><span>Flight</span></div>
+                <div class="metric-track" aria-hidden="true"><span class="metric-fill flight-fill" style="width:${Math.max(8,Math.round(x.flightMin/maxFlight*100))}%"></span></div>
+              </div>
+              <div class="travel-metric" role="cell">
+                <div class="metric-top"><strong>${x.groundMin?fmtDuration(x.groundMin):'—'}</strong><span>${x.groundKind}</span></div>
+                <div class="metric-track" aria-hidden="true"><span class="metric-fill ground-fill ${x.groundKind==='Stopover'?'stopover-fill':''}" style="width:${x.groundMin?Math.max(8,Math.round(x.groundMin/maxGround*100)):0}%"></span></div>
+              </div>
+              <div class="travel-running" role="cell"><strong>${fmtDuration(x.elapsedMin)}</strong><span>from first departure</span></div>
+            </div>
+          `).join('')}
+        </div>
+      </div>`;
+  }
+  function renderSummary(rows,total,timeline){
+    const legs=Math.max(0,state.route.length-1);const picked=rows.length;const complete=legs>0&&picked===legs;
+    el.summary.innerHTML=`<div class="summary-top"><div><div class="eyebrow">Trip summary</div><h3 style="margin:4px 0">${picked} of ${legs} flight leg${legs===1?'':'s'} selected</h3></div><div class="total">${picked?`${total}`:'$0'} <span class="small">sample total</span></div></div>${complete?'<div class="trip-complete">✓ Itinerary complete — your full travel-time breakdown is ready.</div>':''}${picked?rows.map(r=>`<div class="selectedline">${r}</div>`).join(''):'<div class="muted">Choose a flight tile when you are ready. Your route and stay choices are already saved.</div>'}${complete?renderTravelChart(timeline):''}<div class="btnrow" style="margin-top:12px"><a class="btn secondary" href="${window.NTA.buildUrl('index.html',state)}">Edit route on map</a><button id="summaryPrint" class="btn tertiary" type="button">Print itinerary</button></div>`;
     document.getElementById('summaryPrint').addEventListener('click',()=>window.print());
   }
   function renderEmpty(){
@@ -152,10 +218,14 @@
     let previousChosen=null;
     let previousArrivalDate=state.startDate;
     let previousArrivalMin=null;
-    const rows=[];let total=0;
+    let firstDepartureDate=null;
+    let firstDepartureMin=null;
+    const rows=[];const timeline=[];let total=0;
 
     for(let i=0;i<state.route.length-1;i++){
       let plan=null;
+      const inboundArrivalDate=previousArrivalDate;
+      const inboundArrivalMin=previousArrivalMin;
       if(i>0){
         const stayRendered=renderStay(i,by(state.route[i]),previousArrivalDate,previousArrivalMin,Boolean(previousChosen));
         el.content.appendChild(stayRendered.section);plan=stayRendered.plan;departDate=plan.date;
@@ -165,11 +235,20 @@
       previousChosen=legRendered.chosen;
       departDate=legRendered.departDate;
       if(previousChosen){
-        const arr=F.arrival(previousChosen,departDate);previousArrivalDate=arr.date;previousArrivalMin=arr.min;
-        rows.push(`Leg ${i+1} · ${state.route[i]} → ${state.route[i+1]} · ${window.NTA.fmtDate(departDate)} · ${F.timeFrom(previousChosen.departMin)} → ${arr.time} · ${previousChosen.flightNo} · Sample $${previousChosen.price}`);total+=previousChosen.price;
+        const arr=F.arrival(previousChosen,departDate);
+        if(firstDepartureDate===null){firstDepartureDate=departDate;firstDepartureMin=previousChosen.departMin;}
+        const groundMin=i>0&&inboundArrivalMin!=null?minutesBetween(inboundArrivalDate,inboundArrivalMin,departDate,previousChosen.departMin):0;
+        const elapsedMin=minutesBetween(firstDepartureDate,firstDepartureMin,arr.date,arr.min);
+        timeline.push({
+          from:state.route[i],to:state.route[i+1],flightNo:previousChosen.flightNo,
+          flightMin:previousChosen.duration,groundMin,
+          groundKind:groundLabel(i,groundMin),elapsedMin
+        });
+        previousArrivalDate=arr.date;previousArrivalMin=arr.min;
+        rows.push(`Leg ${i+1} · ${state.route[i]} → ${state.route[i+1]} · ${window.NTA.fmtDate(departDate)} · ${F.timeFrom(previousChosen.departMin)} → ${arr.time} · ${previousChosen.flightNo} · Sample ${previousChosen.price}`);total+=previousChosen.price;
       } else {previousArrivalDate=departDate;previousArrivalMin=null;}
     }
-    renderSummary(rows,total);
+    renderSummary(rows,total,timeline);
   }
 
   el.startDate.min=window.NTA.todayLocal();
