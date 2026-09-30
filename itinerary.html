@@ -1,7 +1,51 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Your NexTownAir Adventure</title><style>
-*{box-sizing:border-box}body{margin:0;background:#07111f;color:#e8f1f7;font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}main{max-width:900px;margin:auto;padding:28px}.top{display:flex;justify-content:space-between;align-items:center}.brand{font-weight:800;font-size:20px}.muted{color:#91a8b9}.hero{margin:35px 0}.hero h1{font-size:40px;margin:4px 0}.card{background:#0d1c2c;border:1px solid #20364b;border-radius:16px;padding:18px;margin:12px 0}.flight{border-left:4px solid #67d4ff}.stay{border-left:4px solid #7ee2a8}.eyebrow{text-transform:uppercase;color:#67d4ff;font-size:11px;font-weight:800;letter-spacing:.12em}.row{display:flex;justify-content:space-between;gap:15px}.btn{display:inline-block;text-decoration:none;padding:10px 14px;border-radius:10px;background:#67d4ff;color:#06121d;font-weight:800}.btn2{background:transparent;border:1px solid #31516a;color:#dce9f1}.status{padding:12px;border-radius:12px;background:#081522;color:#9db1bf}.small{font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}</style></head><body><main><div class="top"><div class="brand">NexTownAir</div><a href="index.html" class="muted">← Explore map</a></div><section class="hero"><div class="eyebrow">Air-RV itinerary</div><h1>Your interesting way there.</h1><p class="muted" id="summary"></p></section><div id="status" class="status">Building your route. Live offers will be checked where available; discovery still works without them.</div><div id="cards"></div></main><script src="data.js"></script><script>
-const API='https://transcendent-selkie-15860a.netlify.app/.netlify/functions/flight-proxy';const P=new URLSearchParams(location.search), D=NTA_DATA, by=c=>D.airports.find(a=>a.code===c);const stops=(P.get('stops')||'ESC,CMX').split(',').filter(Boolean), origin=P.get('from')||'DTW', destination=P.get('to')||'MSP', date=P.get('startDate')||new Date().toISOString().slice(0,10);document.getElementById('summary').textContent=`${origin} → ${stops.join(' → ')} → ${destination} · with room to stay awhile.`;
-async function offer(a,b,d){try{let r=await fetch(`${API}?origin=${a}&destination=${b}&date=${d}`);if(!r.ok)return null;let x=await r.json();return Array.isArray(x)?x.find(f=>f.origin===a&&f.destination===b)||x[0]:null}catch(e){return null}}
-function day(n){let d=new Date(date+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
-async function build(){const c=document.getElementById('cards');let seq=[origin,...stops,destination],offset=0;for(let i=0;i<seq.length-1;i++){let a=seq[i],b=seq[i+1],dt=day(offset),f=await offer(a,b,dt),A=by(a),B=by(b);let div=document.createElement('div');div.className='card flight';div.innerHTML=`<div class="eyebrow">Day ${offset+1} · flight</div><div class="row"><div><h2>${a} → ${b}</h2><div class="muted">${A?.city||a} to ${B?.city||b} · ${dt}</div></div><div>${f&&f.priceFrom?`<b>$${Math.round(f.priceFrom)}</b><div class="small muted">live/test offer</div>`:'<span class="muted">schedule / fare not live</span>'}</div></div><div class="actions">${f?.bookUrl?`<a class="btn" target="_blank" rel="noopener" href="${f.bookUrl}">View flight options</a>`:''}</div>`;c.appendChild(div);if(i<stops.length){let S=by(b);let stay=document.createElement('div');stay.className='card stay';stay.innerHTML=`<div class="eyebrow">Stay 1–2 nights</div><h2>Get off the plane in ${S?.city||b}</h2><p>${S?.note||'Explore the town before the next hop.'}</p>${S?.stay?`<p class="muted">${S.stay.join(' · ')}</p>`:''}<div class="actions"><a class="btn btn2" href="index.html">Explore another airport</a></div>`;c.appendChild(stay);offset+=2}else offset+=1} }document.getElementById('status').innerHTML='<b>Prototype data mode:</b> map and route discovery come from the local NexTownAir dataset; live/test fares are layered in through the existing Amadeus proxy when available.'}build();
-</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="NexTownAir itinerary prototype for choosing small-airport flights and stopover durations.">
+  <title>NexTownAir — Itinerary</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="sitehead">
+  <a id="brandHome" class="brand" href="index.html" aria-label="NexTownAir home">Nex<span>Town</span>Air</a>
+  <nav class="nav" aria-label="Primary navigation">
+    <a id="mapNav" href="index.html">Explore map</a>
+    <a class="active" href="itinerary.html" aria-current="page">Itinerary</a>
+  </nav>
+</header>
+<main class="wrap narrow">
+  <div class="stepbar" aria-label="Trip planning steps">
+    <span class="step">1. Choose places</span><span class="step active">2. Choose flights & stays</span>
+  </div>
+  <div class="eyebrow">Itinerary mode</div>
+  <h1>Choose when to move—and when to linger.</h1>
+  <p class="lead">Each hop is one flight leg. Pick up to one flight for each leg. Between legs, decide whether to continue soon, leave later that day, or stay a night—or several.</p>
+
+  <div id="routebar" class="routebar" aria-label="Trip route"></div>
+
+  <section id="toolbar" class="toolbar">
+    <div class="field">
+      <label for="startDate">Trip starts</label>
+      <input id="startDate" type="date">
+    </div>
+    <div class="data-badge" title="Prototype schedules and prices are simulated"><span class="data-dot"></span>Sample schedules & fares</div>
+    <div class="btnrow">
+      <a id="editRoute" class="btn secondary" href="index.html">Edit route on map</a>
+      <button id="printTrip" class="btn tertiary" type="button">Print itinerary</button>
+    </div>
+  </section>
+
+  <div class="notice"><strong>Prototype mode:</strong> the times and prices marked <strong>Sample</strong> are simulated so the whole trip planner works even when no live flight API is available. Later, live results can replace these tiles without changing how you build the trip.</div>
+
+  <div id="content" aria-live="polite"></div>
+  <section id="summary" class="summary" aria-label="Trip summary"></section>
+</main>
+<footer class="footer">Need to change the places or their order? <a id="footerMap" href="index.html">Go back to the map</a>. Your trip is kept while you move between the two views.</footer>
+<script src="data.js"></script>
+<script src="trip-state.js"></script>
+<script src="flight-provider.js"></script>
+<script src="itinerary.js"></script>
+</body>
+</html>
