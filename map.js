@@ -4,6 +4,8 @@
   let state=window.NTA.load();
   let map=null;
   let tripLayers=[];
+  let networkLines=[];
+  let activeFilter='all';
   const markers=new Map();
 
   const el={
@@ -21,10 +23,25 @@
     options:document.getElementById('airportOptions'),
     finderStatus:document.getElementById('finderStatus'),
     map:document.getElementById('map'),
-    mapTools:[...document.querySelectorAll('[data-region]')]
+    mapTools:[...document.querySelectorAll('[data-region]')],
+    filterTools:[...document.querySelectorAll('[data-filter]')],
+    filterCounts:[...document.querySelectorAll('[data-filter-count]')],
+    regionStatus:document.getElementById('regionStatus')
   };
 
   function by(code){return window.NTA.byCode(code);}
+  function airportRegion(a){
+    if(!a)return 'lower48';
+    if(a.state==='AK'||a.region==='alaska')return 'alaska';
+    if(a.state==='HI')return 'hawaii';
+    if(a.state==='PR')return 'puerto-rico';
+    return 'lower48';
+  }
+  function regionName(region){
+    return ({all:'All regions',lower48:'Lower 48',alaska:'Alaska',hawaii:'Hawaii','puerto-rico':'Puerto Rico'})[region]||'Lower 48';
+  }
+  function airportRegionName(a){return regionName(airportRegion(a));}
+  function matchesFilter(a){return activeFilter==='all'||airportRegion(a)===activeFilter;}
   function hasKnownRoute(a,b){
     return window.NTA.hasFlightLink?window.NTA.hasFlightLink(a,b):(D.routes||[]).some(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a));
   }
@@ -52,6 +69,7 @@
     el.finderStatus.textContent=inserted.length?`Added ${a.city}, ${a.state} (${a.code}) via ${inserted.join(' → ')}.`:`Added ${a.city}, ${a.state} (${a.code}).`;
     el.search.value='';
     if(map&&markers.has(code)){
+      if(activeFilter!=='all'&&!matchesFilter(a))setRegionFilter(airportRegion(a),false);
       const m=markers.get(code);map.panTo(m.getLatLng());m.openTooltip();
     }
   }
@@ -96,7 +114,7 @@
         const num=document.createElement('div');num.className='stopnum';num.textContent=String(i+1);
         const body=document.createElement('div');body.className='stopbody';
         const title=document.createElement('strong');title.textContent=`${a.city}, ${a.state} · ${a.code}`;
-        const label=document.createElement('div');label.className='stoplabel';label.textContent=`${routeLabel(i)} · ${a.type==='eas'?'EAS stop':'Hub / connector'}`;
+        const label=document.createElement('div');label.className='stoplabel';label.textContent=`${routeLabel(i)} · ${a.type==='eas'?'EAS stop':'Hub / connector'} · ${airportRegionName(a)}`;
         const controls=document.createElement('div');controls.className='stopcontrols';
         const up=document.createElement('button');up.type='button';up.className='smallbtn';up.textContent='Move up';up.disabled=i===0;up.setAttribute('aria-label',`Move ${a.city} earlier in trip`);up.addEventListener('click',()=>move(i,-1));
         const down=document.createElement('button');down.type='button';down.className='smallbtn';down.textContent='Move down';down.disabled=i===n-1;down.setAttribute('aria-label',`Move ${a.city} later in trip`);down.addEventListener('click',()=>move(i,1));
@@ -129,12 +147,18 @@
     try{
       map=window.L.map('map',{scrollWheelZoom:false,minZoom:2}).setView([39.5,-97.5],4);
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:12,attribution:'© OpenStreetMap'}).addTo(map);
-      (D.routes||[]).forEach(r=>{const A=by(r[0]),B=by(r[1]);if(A&&B)window.L.polyline([[A.lat,A.lon],[B.lat,B.lon]],{color:'#3b566b',weight:2,opacity:.48,dashArray:'2 7',interactive:false}).addTo(map);});
+      (D.routes||[]).forEach(r=>{
+        const A=by(r[0]),B=by(r[1]);if(!A||!B)return;
+        const layer=window.L.polyline([[A.lat,A.lon],[B.lat,B.lon]],{color:'#3b566b',weight:2,opacity:.48,dashArray:'2 7',interactive:false}).addTo(map);
+        networkLines.push({layer,a:A,b:B});
+      });
       D.airports.forEach(a=>{
-        const m=window.L.marker([a.lat,a.lon],{icon:makeIcon(a),keyboard:true,title:`${a.city}, ${a.state} (${a.code})`}).addTo(map);
-        m.bindTooltip(`${a.city}, ${a.state} · ${a.code}${a.dotCode&&a.dotCode!==a.code?` · DOT ${a.dotCode}`:''}${a.type==='eas'&&Array.isArray(a.hubs)&&a.hubs.length?` · via ${a.hubs.join(' / ')}`:''}`,{direction:'top',offset:[0,-10]});
+        const m=window.L.marker([a.lat,a.lon],{icon:makeIcon(a),keyboard:true,title:`${a.city}, ${a.state} (${a.code}) — ${airportRegionName(a)}`}).addTo(map);
+        m.bindTooltip(`${a.city}, ${a.state} · ${airportRegionName(a)} · ${a.code}${a.dotCode&&a.dotCode!==a.code?` · DOT ${a.dotCode}`:''}${a.type==='eas'&&Array.isArray(a.hubs)&&a.hubs.length?` · via ${a.hubs.join(' / ')}`:''}`,{direction:'top',offset:[0,-10]});
         m.on('click',()=>addAirport(a.code));markers.set(a.code,m);
       });
+      updateRegionCounts();
+      applyRegionFilter();
       return true;
     }catch(err){console.error('Map initialization failed',err);map=null;return false;}
   }
@@ -158,6 +182,42 @@
   function initMapTools(){
     el.mapTools.forEach(btn=>btn.addEventListener('click',()=>jumpRegion(btn.dataset.region)));
   }
+  function regionEasCount(region){
+    return D.airports.filter(a=>a.type==='eas'&&(region==='all'||airportRegion(a)===region)).length;
+  }
+  function updateRegionCounts(){
+    el.filterCounts.forEach(node=>{node.textContent=String(regionEasCount(node.dataset.filterCount));});
+  }
+  function applyRegionFilter(){
+    if(!map)return;
+    markers.forEach((marker,code)=>{
+      const a=by(code),shouldShow=matchesFilter(a)||state.route.includes(code);
+      const shown=map.hasLayer(marker);
+      if(shouldShow&&!shown)marker.addTo(map);
+      if(!shouldShow&&shown)map.removeLayer(marker);
+    });
+    networkLines.forEach(item=>{
+      const shouldShow=activeFilter==='all'||airportRegion(item.a)===activeFilter||airportRegion(item.b)===activeFilter;
+      const shown=map.hasLayer(item.layer);
+      if(shouldShow&&!shown)item.layer.addTo(map);
+      if(!shouldShow&&shown)map.removeLayer(item.layer);
+    });
+    const count=regionEasCount(activeFilter);
+    el.regionStatus.textContent=`Showing ${regionName(activeFilter)} · ${count} EAS communit${count===1?'y':'ies'}`;
+    el.filterTools.forEach(btn=>{
+      const on=btn.dataset.filter===activeFilter;
+      btn.classList.toggle('active',on);btn.setAttribute('aria-pressed',String(on));
+    });
+  }
+  function setRegionFilter(region,jump=true){
+    activeFilter=region;
+    applyRegionFilter();
+    if(jump)jumpRegion(region);
+  }
+  function initRegionFilters(){
+    updateRegionCounts();
+    el.filterTools.forEach(btn=>btn.addEventListener('click',()=>setRegionFilter(btn.dataset.filter,true)));
+  }
 
   function initFallback(){
     el.map.innerHTML='';
@@ -165,13 +225,13 @@
     shell.innerHTML='<h3>Map unavailable — you can still build your trip</h3><p class="muted">Use these airport buttons or the search box. Your trip will work normally.</p>';
     const grid=document.createElement('div');grid.className='fallback-grid';
     D.airports.slice().sort((a,b)=>((a.type==='eas'?0:1)-(b.type==='eas'?0:1))||a.city.localeCompare(b.city)).forEach(a=>{
-      const b=document.createElement('button');b.type='button';b.className='fallback-airport';b.innerHTML=`<strong>${a.city}, ${a.state} · ${a.code}</strong><br><span class="small">${a.type==='eas'?'EAS spotlight':'Connector / regional'}</span>`;b.addEventListener('click',()=>addAirport(a.code));grid.appendChild(b);
+      const b=document.createElement('button');b.type='button';b.className='fallback-airport';b.innerHTML=`<strong>${a.city}, ${a.state} · ${a.code}</strong><br><span class="small">${airportRegionName(a)} · ${a.type==='eas'?'EAS spotlight':'Connector / regional'}</span>`;b.addEventListener('click',()=>addAirport(a.code));grid.appendChild(b);
     });
     shell.appendChild(grid);el.map.appendChild(shell);
   }
   function initFinder(){
     D.airports.slice().sort((a,b)=>a.city.localeCompare(b.city)).forEach(a=>{
-      const op=document.createElement('option');op.value=`${a.city}, ${a.state} (${a.code})`;el.options.appendChild(op);
+      const op=document.createElement('option');op.value=`${a.city}, ${a.state} — ${airportRegionName(a)} (${a.code})`;el.options.appendChild(op);
     });
     el.finder.addEventListener('submit',ev=>{
       ev.preventDefault();
@@ -179,7 +239,7 @@
       const codeMatch=raw.toUpperCase().match(/\(([A-Z0-9]{3})\)$/)||raw.toUpperCase().match(/^([A-Z0-9]{3})$/);
       let matches=[];
       if(codeMatch){const key=codeMatch[1];const a=by(key)||D.airports.find(x=>x.dotCode===key||(x.aliases||[]).includes(key));if(a)matches=[a];}
-      if(!matches.length){const t=raw.toLowerCase();matches=D.airports.filter(a=>`${a.city} ${a.state} ${a.code} ${a.name} ${a.dotCode||''} ${(a.aliases||[]).join(' ')}`.toLowerCase().includes(t));}
+      if(!matches.length){const t=raw.toLowerCase();matches=D.airports.filter(a=>`${a.city} ${a.state} ${a.code} ${a.name} ${airportRegionName(a)} ${a.dotCode||''} ${(a.aliases||[]).join(' ')}`.toLowerCase().includes(t));}
       if(matches.length===1){addAirport(matches[0].code);return;}
       if(matches.length>1){el.finderStatus.textContent='More than one airport matches. Choose a suggestion from the list.';return;}
       el.finderStatus.textContent='No airport in the current NexTownAir network matches that search.';
@@ -195,6 +255,7 @@
 
   initFinder();
   initMapTools();
+  initRegionFilters();
   if(!initLeaflet())initFallback();
   render();
 })();
