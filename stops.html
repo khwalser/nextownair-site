@@ -165,6 +165,7 @@
   </div>
 </div>
 
+<script src="data.js"></script>
 <!-- Leaflet JS -->
 <script
   src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -181,49 +182,9 @@
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  // Prototype airport data (we'll replace with airports.json later)
-  const AIRPORTS = [
-    {
-      code: "DTW",
-      name: "Detroit Metro (DTW)",
-      lat: 42.2162,
-      lon: -83.3554,
-      tags: ["hub", "origin"],
-      note: "Major hub, starting point"
-    },
-    {
-      code: "ESC",
-      name: "Escanaba (ESC)",
-      lat: 45.7228,
-      lon: -87.0937,
-      tags: ["EAS", "lakes"],
-      note: "Upper Michigan lakes & lighthouses"
-    },
-    {
-      code: "CMX",
-      name: "Hancock / Houghton (CMX)",
-      lat: 47.1684,
-      lon: -88.4897,
-      tags: ["EAS", "scenic"],
-      note: "Keweenaw Peninsula & mining history"
-    },
-    {
-      code: "BRD",
-      name: "Brainerd (BRD)",
-      lat: 46.4006,
-      lon: -94.1280,
-      tags: ["EAS", "lakes"],
-      note: "Minnesota lakes & cabin country"
-    },
-    {
-      code: "MSP",
-      name: "Minneapolis (MSP)",
-      lat: 44.8848,
-      lon: -93.2223,
-      tags: ["hub", "connector"],
-      note: "Connector hub for the Upper Midwest"
-    }
-  ];
+  // Shared airport dataset used by the home map and itinerary builder.
+  const params = new URLSearchParams(window.location.search);
+  const AIRPORTS = NTA_DATA.airports.map(a => ({code:a.code,name:`${a.city} (${a.code})`,lat:a.lat,lon:a.lon,tags:[a.type],note:a.note}));
 
   const selectedCodes = [];
   const markerByCode = {};
@@ -308,7 +269,8 @@
   });
 
   // Initial selected stops for the demo
-  selectedCodes.push("ESC", "CMX", "BRD");
+  const suggested = params.get("from") === "ROC" ? ["ESC", "CMX"] : ["ESC", "CMX", "BRD"];
+  selectedCodes.push(...suggested);
   renderSelectedStops();
 
   // When user clicks "Generate Itinerary", send selected stops + a start date
@@ -316,6 +278,10 @@
     const baseDate = todayISO();
     const params = new URLSearchParams();
     params.set("startDate", baseDate);
+    const from = new URLSearchParams(window.location.search).get("from");
+    const to = new URLSearchParams(window.location.search).get("to");
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
     if (selectedCodes.length) {
       params.set("stops", selectedCodes.join(","));
     }

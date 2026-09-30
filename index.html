@@ -1,47 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>NextTownAir – EAS Rail Pass of the Sky</title>
-  <style>
-    body { font-family: sans-serif; margin: 40px; }
-    .map-placeholder { 
-      width: 100%; 
-      height: 300px; 
-      background:#eee; 
-      border:1px solid #ccc; 
-      margin-bottom:20px; 
-      display:flex; 
-      align-items:center; 
-      justify-content:center; 
-      color:#555;
-      font-size:20px;
-    }
-    .button { 
-      display:inline-block; 
-      padding:12px 20px; 
-      background:#007bff; 
-      color:white; 
-      border-radius:6px; 
-      text-decoration:none; 
-      margin-top:20px; 
-      font-size:18px; 
-    }
-    h1 { margin-bottom:5px; }
-    h3 { margin-top:5px; color:#555; }
-  </style>
-</head>
-<body>
-
-<h1>NextTownAir</h1>
-<h3>The EAS Rail Pass of the Sky</h3>
-<p>Not the fastest way to travel — the best way.</p>
-
-<div class="map-placeholder">
-  [ Map of EAS Airports Placeholder ]
-</div>
-
-<a href="route-builder.html" class="button">Plan an Air-RV Journey</a>
-
-</body>
-</html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NexTownAir — Find the small-airport way</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><style>
+*{box-sizing:border-box}body{margin:0;background:#07111f;color:#eaf2f8;font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}header{padding:18px 24px;border-bottom:1px solid #1b2c40;display:flex;justify-content:space-between;align-items:center}.brand{font-weight:800;font-size:22px}.brand span{color:#67d4ff}.tag{color:#93a9bb;font-size:13px}.hero{padding:24px;max-width:1500px;margin:auto}.hero h1{font-size:clamp(30px,4vw,58px);line-height:1.02;max-width:850px;margin:8px 0}.hero p{color:#a8bdcc;max-width:760px;font-size:17px}.search{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;background:#0d1c2c;padding:12px;border:1px solid #20364b;border-radius:16px;margin:20px 0}.field{background:#081522;border:1px solid #29435a;border-radius:12px;padding:9px 12px}.field label{display:block;color:#7892a6;font-size:11px;text-transform:uppercase}.field input{width:100%;border:0;outline:0;background:transparent;color:white;font-size:18px;text-transform:uppercase}.btn{border:0;border-radius:12px;padding:0 22px;background:#66d2ff;color:#04111c;font-weight:800;cursor:pointer}.grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px}.mapwrap{position:relative}#map{height:570px;border-radius:18px;border:1px solid #20364b}.legend{position:absolute;z-index:500;left:12px;bottom:12px;background:#081522e8;padding:9px 12px;border-radius:10px;font-size:12px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.eas{background:#67d4ff}.other{background:#8b9bad}.panel{background:#0d1c2c;border:1px solid #20364b;border-radius:18px;padding:18px;min-height:570px}.eyebrow{color:#67d4ff;text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800}.panel h2{margin:6px 0 4px}.muted{color:#8ea5b6}.chips{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.chip{border:1px solid #31516a;border-radius:999px;padding:4px 8px;font-size:12px}.route{border-top:1px solid #20364b;padding:12px 0}.route strong{display:block}.action{display:block;text-align:center;text-decoration:none;margin-top:12px;padding:12px;border-radius:12px;background:#67d4ff;color:#06121d;font-weight:800}.secondary{background:transparent;color:#d7e5ef;border:1px solid #31516a}.idea{margin-top:16px;padding:14px;background:#081522;border-radius:14px;color:#a9bdca}.idea b{color:white}.marker-eas{background:#67d4ff;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px #67d4ff44}.marker-other{background:#8092a3;border:2px solid #fff;border-radius:50%}@media(max-width:850px){.grid{grid-template-columns:1fr}.search{grid-template-columns:1fr}.btn{padding:14px}#map{height:480px}.panel{min-height:0}}
+</style></head><body><header><div><div class="brand">Nex<span>Town</span>Air</div><div class="tag">The interesting way to get there.</div></div><div class="tag">EAS discovery prototype</div></header><main class="hero"><div class="eyebrow">Map-first flight discovery</div><h1>Don’t just fly over the good parts.</h1><p>Explore America’s small-airport network, spot Essential Air Service hops conventional searches bury, and turn an overlooked connection into a one- or two-night adventure.</p>
+<div class="search"><div class="field"><label>Starting from</label><input id="from" value="ROC" maxlength="3"></div><div class="field"><label>Eventually going to</label><input id="to" value="EGE" maxlength="3"></div><button class="btn" id="explore">Explore the way there →</button></div>
+<div class="grid"><div class="mapwrap"><div id="map"></div><div class="legend"><span class="dot eas"></span>EAS spotlight &nbsp; <span class="dot other"></span>connector / regional</div></div><aside class="panel" id="panel"></aside></div></main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="data.js"></script><script>
+const D=NTA_DATA, by=c=>D.airports.find(a=>a.code===c); const map=L.map('map',{zoomControl:true}).setView([42.8,-92],4);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:12,attribution:'© OpenStreetMap'}).addTo(map);
+function icon(a){return L.divIcon({className:'',html:`<div class="marker-${a.type==='eas'?'eas':'other'}" style="width:${a.type==='eas'?18:12}px;height:${a.type==='eas'?18:12}px"></div>`,iconSize:[18,18],iconAnchor:[9,9]})}
+D.routes.forEach(r=>{let a=by(r[0]),b=by(r[1]);if(a&&b)L.polyline([[a.lat,a.lon],[b.lat,b.lon]],{color:'#506b80',weight:1,opacity:.35,dashArray:'4 7'}).addTo(map)});
+D.airports.forEach(a=>L.marker([a.lat,a.lon],{icon:icon(a)}).addTo(map).bindTooltip(`${a.code} · ${a.city}`).on('click',()=>show(a.code)));
+function show(code){const a=by(code);const links=D.routes.filter(r=>r.includes(code)).map(r=>r[0]===code?r[1]:r[0]);document.getElementById('panel').innerHTML=`<div class="eyebrow">${a.type==='eas'?'Essential Air Service spotlight':a.type==='hub'?'Connector airport':'Regional airport'}</div><h2>${a.city} <span class="muted">${a.code}</span></h2><div class="muted">${a.name} · ${a.state}</div><div class="chips">${(a.hubs||[]).map(h=>`<span class="chip">Connects via ${h}</span>`).join('')}<span class="chip">${a.type.toUpperCase()}</span></div><p>${a.note}</p>${a.stay?`<div class="idea"><b>Worth getting off the plane for:</b><br>${a.stay.join(' · ')}</div>`:''}<h3>Known connections</h3>${links.map(x=>`<div class="route"><strong>${a.code} ↔ ${x}</strong><span class="muted">Explore this hop</span></div>`).join('')||'<p class="muted">No prototype routes loaded yet.</p>'}<a class="action" href="itinerary.html?startDate=${new Date().toISOString().slice(0,10)}&stops=${code}">Add ${code} as a stop</a><a class="action secondary" href="stops.html">Open stop builder</a>`}
+function explore(){let f=document.getElementById('from').value.toUpperCase(),t=document.getElementById('to').value.toUpperCase();let a=by(f),b=by(t);document.getElementById('panel').innerHTML=`<div class="eyebrow">Puddle-jumper mode</div><h2>${f} → ${t}</h2><p class="muted">Instead of hiding small-airport detours, NexTownAir puts them on the map.</p><div class="idea"><b>Try an Upper Peninsula stopover:</b><br>From ${f}, connect through DTW and peel off to ESC, APN or PLN for a night or two before continuing west.</div><a class="action" href="stops.html?from=${f}&to=${t}">Build this adventure →</a>`;if(a&&b)map.fitBounds([[a.lat,a.lon],[b.lat,b.lon]],{padding:[45,45]})}
+document.getElementById('explore').onclick=explore;show('ESC');
+</script></body></html>
