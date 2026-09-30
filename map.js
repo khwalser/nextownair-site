@@ -116,7 +116,7 @@
   function initLeaflet(){
     if(!window.L)return false;
     try{
-      map=window.L.map('map',{scrollWheelZoom:true}).setView([42.8,-92],4);
+      map=window.L.map('map',{scrollWheelZoom:false}).setView([42.8,-92],4);
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:12,attribution:'© OpenStreetMap'}).addTo(map);
       (D.routes||[]).forEach(r=>{const A=by(r[0]),B=by(r[1]);if(A&&B)window.L.polyline([[A.lat,A.lon],[B.lat,B.lon]],{color:'#3b566b',weight:2,opacity:.48,dashArray:'2 7',interactive:false}).addTo(map);});
       D.airports.forEach(a=>{
