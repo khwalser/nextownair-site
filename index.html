@@ -26,23 +26,34 @@
 
   <div class="layout">
     <section class="mapcolumn" aria-label="Airport map">
-      <div class="map-tools" aria-label="Map shortcuts">
-        <span class="small"><strong>Jump to:</strong></span>
-        <button type="button" class="map-tool active" data-region="lower48">Lower 48</button>
-        <button type="button" class="map-tool" data-region="michigan">Michigan & U.P.</button>
-        <button type="button" class="map-tool" data-region="alaska">Alaska</button>
-        <button type="button" class="map-tool" data-region="hawaii">Hawaii</button>
-        <button type="button" class="map-tool" data-region="puerto-rico">Puerto Rico</button>
-        <button type="button" class="map-tool" data-region="all">All</button>
+      <div class="map-controls" aria-label="Map region controls">
+        <div class="map-tools" aria-label="Map shortcuts">
+          <span class="map-control-label">Jump to</span>
+          <button type="button" class="map-tool active" data-region="lower48">Lower 48</button>
+          <button type="button" class="map-tool" data-region="michigan">Michigan & U.P.</button>
+          <button type="button" class="map-tool" data-region="alaska">Alaska</button>
+          <button type="button" class="map-tool" data-region="hawaii">Hawaii</button>
+          <button type="button" class="map-tool" data-region="puerto-rico">Puerto Rico</button>
+          <button type="button" class="map-tool" data-region="all">All</button>
+        </div>
+        <div class="map-tools map-filters" aria-label="Filter airports by region">
+          <span class="map-control-label">Show</span>
+          <button type="button" class="map-filter active" data-filter="all" aria-pressed="true">All <span class="map-count" data-filter-count="all"></span></button>
+          <button type="button" class="map-filter" data-filter="lower48" aria-pressed="false">Lower 48 <span class="map-count" data-filter-count="lower48"></span></button>
+          <button type="button" class="map-filter" data-filter="alaska" aria-pressed="false">Alaska <span class="map-count" data-filter-count="alaska"></span></button>
+          <button type="button" class="map-filter" data-filter="hawaii" aria-pressed="false">Hawaii <span class="map-count" data-filter-count="hawaii"></span></button>
+          <button type="button" class="map-filter" data-filter="puerto-rico" aria-pressed="false">Puerto Rico <span class="map-count" data-filter-count="puerto-rico"></span></button>
+          <span id="regionStatus" class="region-status" aria-live="polite"></span>
+        </div>
       </div>
       <div id="map" aria-label="Interactive airport map"></div>
       <div class="legend">
         <span class="legend-item"><span class="dot eas"></span>EAS / small-airport spotlight</span>
         <span class="legend-item"><span class="dot other"></span>Hub / connector / non-EAS airport</span>
         <span class="legend-item"><span class="dot warning"></span>Selected leg needs a connector</span>
-        <span class="legend-item">Hover or tap a pin: city, state, airport code</span>
+        <span class="legend-item">Hover or tap a pin: city, region, airport code</span>
       </div>
-      <p class="prototype-note"><strong>Network coverage:</strong> 183 subsidized EAS communities using the U.S. DOT May 2026 reports: 112 in the contiguous U.S., Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities. Alaska local identifiers are normalized to traveler-facing airport codes where available while retaining the DOT code as a searchable alias. <a href="https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports" target="_blank" rel="noopener">View the DOT source reports</a>.</p>
+      <p class="prototype-note"><strong>Network coverage:</strong> 183 subsidized EAS communities using the U.S. DOT May 2026 reports: 107 in the Lower 48, 71 in Alaska, 4 in Hawaii, and 1 in Puerto Rico. Alaska local identifiers are normalized to traveler-facing airport codes where available while retaining the DOT code as a searchable alias. <a href="https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports" target="_blank" rel="noopener">View the DOT source reports</a>.</p>
     </section>
 
     <aside class="side" aria-label="Your trip">
