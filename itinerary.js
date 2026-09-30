@@ -149,7 +149,7 @@
         const stayRendered=renderStay(i,by(state.route[i]),previousArrivalDate,previousArrivalMin,Boolean(previousChosen));
         el.content.appendChild(stayRendered.section);plan=stayRendered.plan;departDate=plan.date;
       }
-      const legRendered=renderLeg(i,state.route[i],state.route[i+1],departDate,plan&previousChosen);
+      const legRendered=renderLeg(i,state.route[i],state.route[i+1],departDate,plan&&previousChosen);
       el.content.appendChild(legRendered.section);
       previousChosen=legRendered.chosen;
       departDate=legRendered.departDate;
@@ -161,6 +161,7 @@
     renderSummary(rows,total);
   }
 
+  el.startDate.min=window.NTA.todayLocal();
   el.startDate.addEventListener('change',ev=>{
     if(!window.NTA.validDate(ev.target.value))return;
     state.startDate=ev.target.value;state.selections={};save();render();
