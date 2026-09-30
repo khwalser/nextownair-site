@@ -20,7 +20,8 @@
     search:document.getElementById('airportSearch'),
     options:document.getElementById('airportOptions'),
     finderStatus:document.getElementById('finderStatus'),
-    map:document.getElementById('map')
+    map:document.getElementById('map'),
+    mapTools:[...document.querySelectorAll('[data-region]')]
   };
 
   function by(code){return window.NTA.byCode(code);}
@@ -116,17 +117,37 @@
   function initLeaflet(){
     if(!window.L)return false;
     try{
-      map=window.L.map('map',{scrollWheelZoom:false}).setView([42.8,-92],4);
+      map=window.L.map('map',{scrollWheelZoom:false,minZoom:2}).setView([39.5,-97.5],4);
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:12,attribution:'© OpenStreetMap'}).addTo(map);
       (D.routes||[]).forEach(r=>{const A=by(r[0]),B=by(r[1]);if(A&&B)window.L.polyline([[A.lat,A.lon],[B.lat,B.lon]],{color:'#3b566b',weight:2,opacity:.48,dashArray:'2 7',interactive:false}).addTo(map);});
       D.airports.forEach(a=>{
         const m=window.L.marker([a.lat,a.lon],{icon:makeIcon(a),keyboard:true,title:`${a.city}, ${a.state} (${a.code})`}).addTo(map);
-        m.bindTooltip(`${a.city}, ${a.state} · ${a.code}`,{direction:'top',offset:[0,-10]});
+        m.bindTooltip(`${a.city}, ${a.state} · ${a.code}${a.type==='eas'&&Array.isArray(a.hubs)&&a.hubs.length?` · via ${a.hubs.join(' / ')}`:''}`,{direction:'top',offset:[0,-10]});
         m.on('click',()=>addAirport(a.code));markers.set(a.code,m);
       });
       return true;
     }catch(err){console.error('Map initialization failed',err);map=null;return false;}
   }
+  function regionBounds(region){
+    const boxes={
+      lower48:[[24.4,-125.0],[49.5,-66.5]],
+      michigan:[[41.6,-90.8],[48.6,-82.0]],
+      hawaii:[[18.7,-161.0],[22.5,-154.5]],
+      'puerto-rico':[[17.7,-67.5],[18.6,-65.1]],
+      all:[[17.0,-161.0],[50.0,-65.0]]
+    };
+    return boxes[region]||boxes.lower48;
+  }
+  function jumpRegion(region){
+    if(!map)return;
+    const b=regionBounds(region);
+    try{map.fitBounds(b,{padding:[24,24]});}catch(_){/* noop */}
+    el.mapTools.forEach(btn=>btn.classList.toggle('active',btn.dataset.region===region));
+  }
+  function initMapTools(){
+    el.mapTools.forEach(btn=>btn.addEventListener('click',()=>jumpRegion(btn.dataset.region)));
+  }
+
   function initFallback(){
     el.map.innerHTML='';
     const shell=document.createElement('div');shell.className='map-fallback';
@@ -162,6 +183,7 @@
   el.plan.addEventListener('click',ev=>{if(state.route.length<2)ev.preventDefault();});
 
   initFinder();
+  initMapTools();
   if(!initLeaflet())initFallback();
   render();
 })();
