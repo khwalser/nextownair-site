@@ -132,7 +132,7 @@
       (D.routes||[]).forEach(r=>{const A=by(r[0]),B=by(r[1]);if(A&&B)window.L.polyline([[A.lat,A.lon],[B.lat,B.lon]],{color:'#3b566b',weight:2,opacity:.48,dashArray:'2 7',interactive:false}).addTo(map);});
       D.airports.forEach(a=>{
         const m=window.L.marker([a.lat,a.lon],{icon:makeIcon(a),keyboard:true,title:`${a.city}, ${a.state} (${a.code})`}).addTo(map);
-        m.bindTooltip(`${a.city}, ${a.state} · ${a.code}${a.type==='eas'&&Array.isArray(a.hubs)&&a.hubs.length?` · via ${a.hubs.join(' / ')}`:''}`,{direction:'top',offset:[0,-10]});
+        m.bindTooltip(`${a.city}, ${a.state} · ${a.code}${a.dotCode&&a.dotCode!==a.code?` · DOT ${a.dotCode}`:''}${a.type==='eas'&&Array.isArray(a.hubs)&&a.hubs.length?` · via ${a.hubs.join(' / ')}`:''}`,{direction:'top',offset:[0,-10]});
         m.on('click',()=>addAirport(a.code));markers.set(a.code,m);
       });
       return true;
@@ -142,9 +142,10 @@
     const boxes={
       lower48:[[24.4,-125.0],[49.5,-66.5]],
       michigan:[[41.6,-90.8],[48.6,-82.0]],
+      alaska:[[51.0,-179.5],[72.0,-129.0]],
       hawaii:[[18.7,-161.0],[22.5,-154.5]],
       'puerto-rico':[[17.7,-67.5],[18.6,-65.1]],
-      all:[[17.0,-161.0],[50.0,-65.0]]
+      all:[[17.0,-179.5],[72.0,-65.0]]
     };
     return boxes[region]||boxes.lower48;
   }
@@ -175,13 +176,13 @@
     el.finder.addEventListener('submit',ev=>{
       ev.preventDefault();
       const raw=el.search.value.trim();if(!raw){el.finderStatus.textContent='Type a city or three-letter airport code.';el.search.focus();return;}
-      const codeMatch=raw.toUpperCase().match(/\(([A-Z]{3})\)$/)||raw.toUpperCase().match(/^([A-Z]{3})$/);
+      const codeMatch=raw.toUpperCase().match(/\(([A-Z0-9]{3})\)$/)||raw.toUpperCase().match(/^([A-Z0-9]{3})$/);
       let matches=[];
-      if(codeMatch){const a=by(codeMatch[1]);if(a)matches=[a];}
-      if(!matches.length){const t=raw.toLowerCase();matches=D.airports.filter(a=>`${a.city} ${a.state} ${a.code} ${a.name}`.toLowerCase().includes(t));}
+      if(codeMatch){const key=codeMatch[1];const a=by(key)||D.airports.find(x=>x.dotCode===key||(x.aliases||[]).includes(key));if(a)matches=[a];}
+      if(!matches.length){const t=raw.toLowerCase();matches=D.airports.filter(a=>`${a.city} ${a.state} ${a.code} ${a.name} ${a.dotCode||''} ${(a.aliases||[]).join(' ')}`.toLowerCase().includes(t));}
       if(matches.length===1){addAirport(matches[0].code);return;}
       if(matches.length>1){el.finderStatus.textContent='More than one airport matches. Choose a suggestion from the list.';return;}
-      el.finderStatus.textContent='No airport in this prototype matches that search yet.';
+      el.finderStatus.textContent='No airport in the current NexTownAir network matches that search.';
     });
   }
 
