@@ -60,32 +60,24 @@
     state.route.forEach((code,i)=>{
       const a=by(code);if(!a)return;
       if(i){const arrow=document.createElement('span');arrow.className='arrow';arrow.textContent='→';el.routebar.appendChild(arrow);}
-      const chip=document.createElement('span');chip.className=`routechip ${a.type==='eas'?'eas':'connector'}`;chip.textContent=`${a.city} · ${a.code}${a.type==='eas'?'':' · connect'}`;el.routebar.appendChild(chip);
+      const hubStay=state.stays[String(i)];
+      const lingering=a.type!=='eas'&&hubStay&&hubStay.mode!=='asap';
+      const chip=document.createElement('span');chip.className=`routechip ${a.type==='eas'?'eas':'connector'}`;chip.textContent=`${a.city} · ${a.code}${a.type==='eas'?'':lingering?' · stay':' · connect'}`;el.routebar.appendChild(chip);
     });
   }
   function renderStay(i,airport,arrivalDate,arrivalMin,hasExactArrival){
-    if(airport.type!=='eas'){
-      const plan={date:arrivalDate,notBefore:hasExactArrival?arrivalMin+75:null,mode:'connector',summary:hasExactArrival?'Connect onward · allow at least 75 minutes':'Connection timing updates after you pick the previous flight'};
-      const section=document.createElement('section');section.className='stay connector';
-      const arriveText=hasExactArrival?`${window.NTA.fmtDate(arrivalDate)} · ${F.timeFrom(arrivalMin)}`:`${window.NTA.fmtDate(arrivalDate)} · time depends on the previous leg`;
-      section.innerHTML=`
-        <div class="eyebrow">Connect at ${airport.city}, ${airport.state} · ${airport.code}</div>
-        <h3>Keep moving through this hub</h3>
-        <div class="small">Arrival: ${arriveText}</div>
-        <div class="stay-summary">${plan.summary}</div>`;
-      return {section,plan};
-    }
     const s=defaultStay(i),plan=stayPlan(i,arrivalDate,arrivalMin,hasExactArrival);
-    const section=document.createElement('section');section.className='stay';
+    const isHub=airport.type!=='eas';
+    const section=document.createElement('section');section.className=`stay${isHub?' connector':''}`;
     const arriveText=hasExactArrival?`${window.NTA.fmtDate(arrivalDate)} · ${F.timeFrom(arrivalMin)}`:`${window.NTA.fmtDate(arrivalDate)} · time depends on the previous leg`;
     section.innerHTML=`
-      <div class="eyebrow">At ${airport.city}, ${airport.state} · ${airport.code}</div>
-      <h3>Stay a while, or keep going?</h3>
+      <div class="eyebrow">At ${airport.city}, ${airport.state} · ${airport.code}${isHub?' · Hub / connector':''}</div>
+      <h3>${isHub?'Connect onward, or stay a while?':'Stay a while, or keep going?'}</h3>
       <div class="small">Arrival: ${arriveText}</div>
       <div class="stay-grid">
         <div>
           <div class="choices" role="group" aria-label="Stay duration at ${airport.city}">
-            <button type="button" class="choice ${s.mode==='asap'?'active':''}" data-mode="asap" ${hasExactArrival?'':'title="Pick the previous flight to calculate an exact connection"'}>ASAP</button>
+            <button type="button" class="choice ${s.mode==='asap'?'active':''}" data-mode="asap" ${hasExactArrival?'':'title="Pick the previous flight to calculate an exact connection"'}>${isHub?'Connect ASAP':'ASAP'}</button>
             <button type="button" class="choice ${s.mode==='later'?'active':''}" data-mode="later" ${hasExactArrival?'':'title="Pick the previous flight to calculate an exact connection"'}>Later today</button>
             ${[1,2,3].map(n=>`<button type="button" class="choice ${s.mode==='nights'&&s.nights===n?'active':''}" data-nights="${n}">${n} night${n===1?'':'s'}</button>`).join('')}
           </div>
@@ -96,7 +88,7 @@
           <input id="departDate-${i}" class="dateinput" type="date" min="${arrivalDate}" value="${plan.date}">
         </div>
       </div>
-      ${airport.note?`<div class="small" style="margin-top:8px">Why stop here? ${airport.note}.</div>`:''}
+      ${isHub?`<div class="small" style="margin-top:8px"><strong>Hub stopover:</strong> this airport was inserted as a connector, but you can turn it into a real stop by choosing Later today, a number of nights, or a departure date.</div>`:airport.note?`<div class="small" style="margin-top:8px">Why stop here? ${airport.note}.</div>`:''}
       ${Array.isArray(airport.stay)&&airport.stay.length?`<div class="small" style="margin-top:5px"><strong>Ideas:</strong> ${airport.stay.join(' · ')}</div>`:''}`;
     section.querySelector('[data-mode="asap"]').addEventListener('click',()=>setStay(i,{mode:'asap',nights:0,date:null}));
     section.querySelector('[data-mode="later"]').addEventListener('click',()=>setStay(i,{mode:'later',nights:0,date:null}));
