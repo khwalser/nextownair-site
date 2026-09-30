@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="NexTownAir map-first prototype for discovering small-airport and EAS trips.">
+  <meta name="description" content="NexTownAir map-first trip planner for discovering small-airport and Essential Air Service trips.">
   <title>NexTownAir — Explore the map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="styles.css">
@@ -22,7 +22,7 @@
   </div>
   <div class="eyebrow">Map mode</div>
   <h1>Where would you like to wander?</h1>
-  <p class="lead">Explore 112 subsidized Essential Air Service communities from the U.S. DOT May 2026 report, plus the hub airports that connect them. Click a pin—or search by city or airport code—to build a trip in any order.</p>
+  <p class="lead">Explore 112 subsidized Essential Air Service communities from the U.S. DOT May 2026 report, plus the hub airports that connect them. Pick places in any order; when a nonstop link is not in the EAS network, NexTownAir inserts a connector path automatically.</p>
 
   <div class="layout">
     <section class="mapcolumn" aria-label="Airport map">
@@ -41,7 +41,7 @@
         <span class="legend-item"><span class="dot warning"></span>Selected leg needs a connector</span>
         <span class="legend-item">Hover or tap a pin: city, state, airport code</span>
       </div>
-      <p class="prototype-note"><strong>Current EAS map:</strong> 112 subsidized EAS communities in the contiguous U.S., Hawaii, and Puerto Rico, using the U.S. DOT May 2026 status report. Hover an EAS pin to preview its listed hub connection(s). Alaska will be added as a separate map layer because many Alaska EAS points use local rather than three-letter IATA codes. <a href="https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports" target="_blank" rel="noopener">View the DOT source report</a>.</p>
+      <p class="prototype-note"><strong>Network coverage:</strong> 112 subsidized EAS communities in the contiguous U.S., Hawaii, and Puerto Rico, using the U.S. DOT May 2026 status report. Hover an EAS pin to preview its listed hub connection(s). Alaska uses a separate DOT table and a mix of IATA, FAA, and local identifiers; that layer is being normalized separately so the map does not publish bad airport matches. <a href="https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports" target="_blank" rel="noopener">View the DOT source report</a>.</p>
     </section>
 
     <aside class="side" aria-label="Your trip">
@@ -61,7 +61,7 @@
         <div id="finderStatus" class="small finder-status" aria-live="polite"></div>
       </form>
 
-      <div class="hint"><strong>Tip:</strong> want a round trip? Build your stops first, then use <strong>Return to start</strong>. You can still add more stops afterward.</div>
+      <div class="hint"><strong>Tip:</strong> choose the places you care about. Hub connections are inserted automatically between them when needed. For a round trip, use <strong>Return to start</strong>.</div>
 
       <div id="trip" class="trip" aria-live="polite"></div>
       <div id="legSummary" class="route-legs" hidden></div>
@@ -75,7 +75,7 @@
     </aside>
   </div>
 </main>
-<footer class="footer">NexTownAir prototype · EAS network source: U.S. DOT May 2026 status report. <a href="index.html">Back to the map</a>.</footer>
+<footer class="footer">NexTownAir · EAS network source: U.S. DOT May 2026 status report. <a href="index.html">Back to the map</a>.</footer>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="data.js"></script>
 <script src="trip-state.js"></script>
