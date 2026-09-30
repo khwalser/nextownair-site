@@ -60,10 +60,21 @@
     state.route.forEach((code,i)=>{
       const a=by(code);if(!a)return;
       if(i){const arrow=document.createElement('span');arrow.className='arrow';arrow.textContent='→';el.routebar.appendChild(arrow);}
-      const chip=document.createElement('span');chip.className=`routechip ${a.type==='eas'?'eas':''}`;chip.textContent=`${a.city} · ${a.code}`;el.routebar.appendChild(chip);
+      const chip=document.createElement('span');chip.className=`routechip ${a.type==='eas'?'eas':'connector'}`;chip.textContent=`${a.city} · ${a.code}${a.type==='eas'?'':' · connect'}`;el.routebar.appendChild(chip);
     });
   }
   function renderStay(i,airport,arrivalDate,arrivalMin,hasExactArrival){
+    if(airport.type!=='eas'){
+      const plan={date:arrivalDate,notBefore:hasExactArrival?arrivalMin+75:null,mode:'connector',summary:hasExactArrival?'Connect onward · allow at least 75 minutes':'Connection timing updates after you pick the previous flight'};
+      const section=document.createElement('section');section.className='stay connector';
+      const arriveText=hasExactArrival?`${window.NTA.fmtDate(arrivalDate)} · ${F.timeFrom(arrivalMin)}`:`${window.NTA.fmtDate(arrivalDate)} · time depends on the previous leg`;
+      section.innerHTML=`
+        <div class="eyebrow">Connect at ${airport.city}, ${airport.state} · ${airport.code}</div>
+        <h3>Keep moving through this hub</h3>
+        <div class="small">Arrival: ${arriveText}</div>
+        <div class="stay-summary">${plan.summary}</div>`;
+      return {section,plan};
+    }
     const s=defaultStay(i),plan=stayPlan(i,arrivalDate,arrivalMin,hasExactArrival);
     const section=document.createElement('section');section.className='stay';
     const arriveText=hasExactArrival?`${window.NTA.fmtDate(arrivalDate)} · ${F.timeFrom(arrivalMin)}`:`${window.NTA.fmtDate(arrivalDate)} · time depends on the previous leg`;
@@ -96,7 +107,7 @@
   function renderLeg(i,a,b,departDate,plan,priorSelected){
     const knownRoute=F.hasKnownRoute(a,b);
     let opts=F.getOptions(a,b,departDate,i);
-    let note=knownRoute?'Choose zero or one flight.':'This prototype does not know a direct flight for this pair yet.';
+    let note=knownRoute?'Choose zero or one planning flight.':'No routable planning link is available for this pair yet.';
     if(i>0&&plan&&plan.notBefore!=null){
       opts=opts.filter(o=>o.departMin>=plan.notBefore);
       if(plan.mode==='asap'&&opts.length===0){
@@ -108,7 +119,7 @@
     leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${a} → ${b}</h2><div class="muted">${A.city}, ${A.state} → ${B.city}, ${B.state}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div><p class="small">${note}</p><div class="options"></div>`;
     const box=leg.querySelector('.options');
     if(!knownRoute){
-      box.outerHTML=`<div class="no-flights"><strong>No direct sample route for ${a} → ${b}.</strong><br>Add a connector airport on the map (for example a hub shown by the faint network lines), then return here. <a href="${window.NTA.buildUrl('index.html',state)}">Edit this route on the map</a>.</div>`;
+      box.outerHTML=`<div class="no-flights"><strong>No planning route for ${a} → ${b}.</strong><br>Return to the map and re-add the destination so NexTownAir can insert a connector path. <a href="${window.NTA.buildUrl('index.html',state)}">Edit this route on the map</a>.</div>`;
       if(state.selections[String(i)]){delete state.selections[String(i)];save();}
       return {section:leg,chosen:null,departDate,options:[]};
     }
