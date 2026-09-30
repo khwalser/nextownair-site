@@ -34,10 +34,10 @@
     if(hours)return `${hours}h${mins?` ${mins}m`:''}`;
     return `${mins}m`;
   }
-  function groundLabel(i,minutes){
+  function groundLabel(i,minutes,arrivalDate,departureDate){
     if(i===0||minutes<=0)return '—';
     const s=defaultStay(i);
-    if(s.mode==='nights'||(s.mode==='date'&&s.date&&window.NTA.diffDays(state.startDate,s.date)>0))return 'Stopover';
+    if(s.mode==='nights'||(s.mode==='date'&&window.NTA.diffDays(arrivalDate,departureDate)>0))return 'Stopover';
     if(s.mode==='later'||minutes>=240)return 'Long layover';
     return 'Connection';
   }
@@ -242,7 +242,7 @@
         timeline.push({
           from:state.route[i],to:state.route[i+1],flightNo:previousChosen.flightNo,
           flightMin:previousChosen.duration,groundMin,
-          groundKind:groundLabel(i,groundMin),elapsedMin
+          groundKind:groundLabel(i,groundMin,inboundArrivalDate,departDate),elapsedMin
         });
         previousArrivalDate=arr.date;previousArrivalMin=arr.min;
         rows.push(`Leg ${i+1} · ${state.route[i]} → ${state.route[i+1]} · ${window.NTA.fmtDate(departDate)} · ${F.timeFrom(previousChosen.departMin)} → ${arr.time} · ${previousChosen.flightNo} · Sample ${previousChosen.price}`);total+=previousChosen.price;
