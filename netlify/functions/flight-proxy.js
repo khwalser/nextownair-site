@@ -1,230 +1,90 @@
-// netlify/functions/flight-proxy.js
-
 const https = require('https');
 
-// Small helper to do POST/GET with JSON on HTTPS
 function httpsRequestJson(options, body = null) {
   return new Promise((resolve, reject) => {
     const req = https.request(options, res => {
       let data = '';
-
-      res.on('data', chunk => {
-        data += chunk;
-      });
-
+      res.on('data', chunk => { data += chunk; });
       res.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          if (parsed.error || parsed.errors) {
-            console.error('API error:', parsed.error || parsed.errors);
-            reject(parsed.error || parsed.errors);
-          } else {
-            resolve(parsed);
-          }
-        } catch (e) {
-          reject(e);
+        let parsed;
+        try { parsed = data ? JSON.parse(data) : {}; }
+        catch (err) { return reject(new Error(`Invalid JSON from upstream (${res.statusCode})`)); }
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          const detail = parsed.error_description || parsed.error || JSON.stringify(parsed.errors || parsed);
+          return reject(new Error(`Upstream HTTP ${res.statusCode}: ${detail}`));
         }
+        resolve(parsed);
       });
     });
-
+    req.setTimeout(12000, () => req.destroy(new Error('Upstream request timed out')));
     req.on('error', reject);
-
-    if (body) {
-      req.write(body);
-    }
-
+    if (body) req.write(body);
     req.end();
   });
 }
 
-// Get Amadeus OAuth token (client_credentials)
 async function getAmadeusToken() {
   const key = process.env.AMADEUS_API_KEY;
   const secret = process.env.AMADEUS_API_SECRET;
-
-  if (!key || !secret) {
-    throw new Error('Missing Amadeus API credentials');
-  }
-
-  const authBody = new URLSearchParams({
-    grant_type: 'client_credentials',
-    client_id: key,
-    client_secret: secret
-  }).toString();
-
-  const options = {
-    hostname: 'test.api.amadeus.com', // use 'api.amadeus.com' when you go live
-    path: '/v1/security/oauth2/token',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': Buffer.byteLength(authBody)
-    }
-  };
-
-  const response = await httpsRequestJson(options, authBody);
+  if (!key || !secret) throw new Error('Missing Amadeus API credentials');
+  const authBody = new URLSearchParams({grant_type:'client_credentials',client_id:key,client_secret:secret}).toString();
+  const response = await httpsRequestJson({
+    hostname:'test.api.amadeus.com',path:'/v1/security/oauth2/token',method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded','Content-Length':Buffer.byteLength(authBody)}
+  }, authBody);
+  if (!response.access_token) throw new Error('Amadeus token response did not include an access token');
   return response.access_token;
 }
 
-// Search for flight offers APN <-> DTW on a given date, using Amadeus
-async function searchAmadeusOffers(token, origin, destination, departureDate) {
-  const query = new URLSearchParams({
-    originLocationCode: origin,
-    destinationLocationCode: destination,
-    departureDate: departureDate,
-    adults: '1',
-    currencyCode: 'USD',
-    max: '10'
-  }).toString();
-
-  const options = {
-    hostname: 'test.api.amadeus.com',
-    path: `/v2/shopping/flight-offers?${query}`,
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
-
-  const response = await httpsRequestJson(options);
-  return response;
+async function searchOffers(token, origin, destination, departureDate) {
+  const query = new URLSearchParams({originLocationCode:origin,destinationLocationCode:destination,departureDate,adults:'1',currencyCode:'USD',max:'8'}).toString();
+  return httpsRequestJson({
+    hostname:'test.api.amadeus.com',path:`/v2/shopping/flight-offers?${query}`,method:'GET',
+    headers:{Authorization:`Bearer ${token}`}
+  });
 }
 
-// Build a simple meta-search/deep link for this route+date
-function buildSearchLink(origin, destination, date) {
-  if (!origin || !destination || !date) return '';
-  // YYYY-MM-DD
-  return `https://www.kayak.com/flights/${origin}-${destination}/${date}?sort=bestflight_a`;
-}
+function validCode(v){return /^[A-Z]{3}$/.test(v);}
+function validDate(v){return /^\d{4}-\d{2}-\d{2}$/.test(v);}
+function buildSearchLink(origin,destination,date){return `https://www.kayak.com/flights/${origin}-${destination}/${date}?sort=bestflight_a`;}
 
-exports.handler = async (event, context) => {
-  // Handle CORS preflight
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      },
-      body: ''
-    };
-  }
+exports.handler = async event => {
+  const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET, OPTIONS','Access-Control-Allow-Headers':'Content-Type','Content-Type':'application/json'};
+  if (event.httpMethod === 'OPTIONS') return {statusCode:204,headers:cors,body:''};
+  if (event.httpMethod !== 'GET') return {statusCode:405,headers:cors,body:JSON.stringify({error:'Method not allowed'})};
 
   try {
-    const key = process.env.AMADEUS_API_KEY;
-    const secret = process.env.AMADEUS_API_SECRET;
-    if (!key || !secret) {
-      throw new Error('Missing Amadeus API credentials');
+    const p=event.queryStringParameters||{};
+    const origin=String(p.origin||'APN').toUpperCase();
+    const destination=String(p.destination||'DTW').toUpperCase();
+    const departureDate=String(p.date||new Date().toISOString().slice(0,10));
+    if(!validCode(origin)||!validCode(destination)||!validDate(departureDate)){
+      return {statusCode:400,headers:cors,body:JSON.stringify({error:'Use three-letter origin/destination codes and date=YYYY-MM-DD'})};
     }
 
-    // For now: default origin/dest and date if not passed in
-    const params = event.queryStringParameters || {};
-    const origin = (params.origin || 'APN').toUpperCase();
-    const destination = (params.destination || 'DTW').toUpperCase();
-
-    // Date: either ?date=YYYY-MM-DD or "today" in UTC
-    let departureDate = params.date;
-    if (!departureDate) {
-      const today = new Date();
-      const yyyy = today.getUTCFullYear();
-      const mm = String(today.getUTCMonth() + 1).padStart(2, '0');
-      const dd = String(today.getUTCDate()).padStart(2, '0');
-      departureDate = `${yyyy}-${mm}-${dd}`;
-    }
-
-    const token = await getAmadeusToken();
-
-    // We want both directions: origin->destination and destination->origin
-    const directions = [
-      { from: origin, to: destination },
-      { from: destination, to: origin }
-    ];
-
-    const allOptions = [];
-
-    for (const dir of directions) {
-      const offersResponse = await searchAmadeusOffers(
-        token,
-        dir.from,
-        dir.to,
-        departureDate
-      );
-
-      const offers = offersResponse.data || [];
-
-      offers.forEach(offer => {
-        const itineraries = offer.itineraries || [];
-        if (!itineraries.length) return;
-
-        const firstItin = itineraries[0];
-        const segments = firstItin.segments || [];
-        if (!segments.length) return;
-
-        const firstSeg = segments[0];
-        const lastSeg = segments[segments.length - 1];
-
-        const departureTime = firstSeg.departure && firstSeg.departure.at;
-        const arrivalTime = lastSeg.arrival && lastSeg.arrival.at;
-
-        const originCode = firstSeg.departure && firstSeg.departure.iataCode;
-        const destCode = lastSeg.arrival && lastSeg.arrival.iataCode;
-
-        const carrierCode = firstSeg.carrierCode || '';
-        const flightNumber = firstSeg.number
-          ? `${carrierCode}${firstSeg.number}`
-          : carrierCode;
-
-        const priceInfo = offer.price || {};
-        const totalPrice = priceInfo.total ? parseFloat(priceInfo.total) : null;
-        const currency = priceInfo.currency || 'USD';
-
-        const bookUrl = buildSearchLink(
-          originCode || dir.from,
-          destCode || dir.to,
-          departureDate
-        );
-
-        allOptions.push({
-          flightNumber,
-          origin: originCode || dir.from,
-          destination: destCode || dir.to,
-          departureTime,
-          arrivalTime,
-          priceFrom: totalPrice,
-          currency,
-          bookUrl
-        });
+    const token=await getAmadeusToken();
+    const response=await searchOffers(token,origin,destination,departureDate);
+    const flights=[];
+    for(const offer of response.data||[]){
+      const itin=(offer.itineraries||[])[0];const segs=(itin&&itin.segments)||[];if(!segs.length)continue;
+      const first=segs[0],last=segs[segs.length-1];const price=offer.price||{};
+      flights.push({
+        provider:'amadeus-test',sample:false,
+        flightNumber:first.number?`${first.carrierCode||''}${first.number}`:(first.carrierCode||''),
+        origin:(first.departure&&first.departure.iataCode)||origin,
+        destination:(last.arrival&&last.arrival.iataCode)||destination,
+        departureTime:first.departure&&first.departure.at,
+        arrivalTime:last.arrival&&last.arrival.at,
+        stops:Math.max(0,segs.length-1),
+        priceFrom:price.total?Number(price.total):null,
+        currency:price.currency||'USD',
+        bookUrl:buildSearchLink(origin,destination,departureDate)
       });
     }
-
-    // Sort by departure time
-    allOptions.sort((a, b) => {
-      if (!a.departureTime || !b.departureTime) return 0;
-      return new Date(a.departureTime) - new Date(b.departureTime);
-    });
-
-    return {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(allOptions)
-    };
+    flights.sort((a,b)=>String(a.departureTime||'').localeCompare(String(b.departureTime||'')));
+    return {statusCode:200,headers:{...cors,'Cache-Control':'public, max-age=300'},body:JSON.stringify(flights)};
   } catch (err) {
-    console.error('flight-proxy error:', err);
-
-    return {
-      statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        error: 'Failed to fetch live offers',
-        details: String(err)
-      })
-    };
+    console.error('flight-proxy error',err);
+    return {statusCode:502,headers:cors,body:JSON.stringify({error:'Live flight lookup is unavailable',details:String(err.message||err)})};
   }
 };
