@@ -32,5 +32,5 @@
     const arrDate=option.arrivalDayOffset?window.NTA.addDays(departDate,option.arrivalDayOffset):departDate;
     return {date:arrDate,min:option.arrivalMin,time:timeFrom(option.arrivalMin)};
   }
-  window.NTA_FLIGHTS={mode:'sample',timeFrom,getOptions,arrival,hasKnownRoute};
+  window.NTA_FLIGHTS={mode:'verified-route-sample-schedule',timeFrom,getOptions,arrival,hasKnownRoute};
 })();
