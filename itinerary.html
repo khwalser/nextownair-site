@@ -30,14 +30,14 @@
       <label for="startDate">Trip starts</label>
       <input id="startDate" type="date">
     </div>
-    <div class="data-badge" title="Planning schedules and prices are simulated"><span class="data-dot"></span>Sample schedules & fares</div>
+    <div class="data-badge" title="Schedules are simulated; fare panels use connected pricing data when available"><span class="data-dot"></span>Sample schedules · live fares</div>
     <div class="btnrow">
       <a id="editRoute" class="btn secondary" href="index.html">Edit route on map</a>
       <button id="printTrip" class="btn tertiary" type="button">Print itinerary</button>
     </div>
   </section>
 
-  <div class="notice"><strong>Planning data:</strong> times and prices marked <strong>Sample</strong> are simulated, not live inventory. Use them to shape the route and connection timing; live flight results can replace these tiles without changing the trip-building flow.</div>
+  <div class="notice"><strong>Planning data:</strong> flight times marked <strong>Sample</strong> are simulated for itinerary-building. Fare panels are requested separately for the actual route and departure date; genuinely live quotes are labeled <strong>Live fare</strong>, timestamped, and may expire or change before booking.</div>
 
   <div id="content" aria-live="polite"></div>
   <section id="summary" class="summary" aria-label="Trip summary"></section>
