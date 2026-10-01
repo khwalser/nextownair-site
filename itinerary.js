@@ -154,21 +154,59 @@
   }
   function renderTravelChart(timeline){
     if(!timeline.length)return '';
-    const maxFlight=Math.max(...timeline.map(x=>x.flightMin),1);
-    const groundRows=timeline.filter(x=>x.groundMin>0);
-    const maxGround=Math.max(...groundRows.map(x=>x.groundMin),1);
+    const maxSegment=Math.max(...timeline.flatMap(x=>[x.flightMin,x.groundMin||0]),1);
     const totalFlight=timeline.reduce((sum,x)=>sum+x.flightMin,0);
     const totalGround=timeline.reduce((sum,x)=>sum+x.groundMin,0);
     const totalElapsed=timeline[timeline.length-1].elapsedMin;
     const stopoverGround=timeline.reduce((sum,x)=>sum+(x.groundKind==='Stopover'?x.groundMin:0),0);
     const connectionGround=Math.max(0,totalGround-stopoverGround);
+    const rows=[];
+    timeline.forEach((x,i)=>{
+      if(i>0&&x.groundMin>0){
+        const prev=timeline[i-1];
+        rows.push(`
+          <div class="travel-row ground-row ${x.groundKind==='Stopover'?'stopover-row':''}" role="row">
+            <div class="travel-leg" role="cell">
+              <strong>${x.fromCity}</strong>
+              <span>${x.groundKind}</span>
+            </div>
+            <div class="travel-time" role="cell">
+              <strong>${prev.arrivalTime}</strong>
+              <span>${window.NTA.fmtDate(prev.arrivalDate,{weekday:'short',month:'short',day:'numeric'})}</span>
+            </div>
+            <div class="travel-time" role="cell">
+              <strong>${x.departTime}</strong>
+              <span>${window.NTA.fmtDate(x.departDate,{weekday:'short',month:'short',day:'numeric'})}</span>
+            </div>
+            <div class="travel-metric" role="cell">
+              <div class="metric-top"><strong>${fmtDuration(x.groundMin)}</strong><span>${x.groundKind}</span></div>
+              <div class="metric-track" aria-hidden="true"><span class="metric-fill ground-fill ${x.groundKind==='Stopover'?'stopover-fill':''}" style="width:${Math.max(8,Math.round(x.groundMin/maxSegment*100))}%"></span></div>
+            </div>
+            <div class="travel-running" role="cell">
+              <strong>${fmtDuration(Math.max(0,x.elapsedMin-x.flightMin))}</strong>
+              <span>at next departure</span>
+            </div>
+          </div>`);
+      }
+      rows.push(`
+        <div class="travel-row flight-row" role="row">
+          <div class="travel-leg" role="cell"><strong>${x.fromCity} → ${x.toCity}</strong><span>${x.flightNo}</span></div>
+          <div class="travel-time" role="cell"><strong>${x.departTime}</strong><span>${window.NTA.fmtDate(x.departDate,{weekday:'short',month:'short',day:'numeric'})}</span></div>
+          <div class="travel-time" role="cell"><strong>${x.arrivalTime}</strong><span>${window.NTA.fmtDate(x.arrivalDate,{weekday:'short',month:'short',day:'numeric'})}</span></div>
+          <div class="travel-metric" role="cell">
+            <div class="metric-top"><strong>${fmtDuration(x.flightMin)}</strong><span>Flight</span></div>
+            <div class="metric-track" aria-hidden="true"><span class="metric-fill flight-fill" style="width:${Math.max(8,Math.round(x.flightMin/maxSegment*100))}%"></span></div>
+          </div>
+          <div class="travel-running" role="cell"><strong>${fmtDuration(x.elapsedMin)}</strong><span>from first departure</span></div>
+        </div>`);
+    });
     return `
       <div class="travel-chart">
         <div class="travel-chart-head">
           <div>
             <div class="eyebrow">Travel-time breakdown</div>
-            <h3>How the journey adds up</h3>
-            <p class="small">Running elapsed time starts at your first departure and includes flights, connections, layovers, and planned stopovers.</p>
+            <h3>Your trip as a timeline</h3>
+            <p class="small">Flights and time on the ground are shown as separate chronological segments, so each connection or stopover sits between the flights it connects.</p>
           </div>
           <div class="travel-kpis" aria-label="Travel time totals">
             <div class="travel-kpi"><span>Air time</span><strong>${fmtDuration(totalFlight)}</strong></div>
@@ -177,31 +215,15 @@
             <div class="travel-kpi total-kpi"><span>Total elapsed</span><strong>${fmtDuration(totalElapsed)}</strong></div>
           </div>
         </div>
-        <div class="travel-table" role="table" aria-label="Flight, layover, and running travel times">
+        <div class="travel-table" role="table" aria-label="Chronological flight and ground-time timeline">
           <div class="travel-row travel-header" role="row">
-            <div role="columnheader">Leg</div>
-            <div role="columnheader">Departs</div>
-            <div role="columnheader">Arrives</div>
-            <div role="columnheader">Flight time</div>
-            <div role="columnheader">Ground time before</div>
+            <div role="columnheader">Segment</div>
+            <div role="columnheader">Starts</div>
+            <div role="columnheader">Ends</div>
+            <div role="columnheader">Duration</div>
             <div role="columnheader">Running elapsed</div>
           </div>
-          ${timeline.map(x=>`
-            <div class="travel-row" role="row">
-              <div class="travel-leg" role="cell"><strong>${x.fromCity} → ${x.toCity}</strong><span>${x.flightNo}</span></div>
-              <div class="travel-time" role="cell"><strong>${x.departTime}</strong><span>${window.NTA.fmtDate(x.departDate,{weekday:'short',month:'short',day:'numeric'})}</span></div>
-              <div class="travel-time" role="cell"><strong>${x.arrivalTime}</strong><span>${window.NTA.fmtDate(x.arrivalDate,{weekday:'short',month:'short',day:'numeric'})}</span></div>
-              <div class="travel-metric" role="cell">
-                <div class="metric-top"><strong>${fmtDuration(x.flightMin)}</strong><span>Flight</span></div>
-                <div class="metric-track" aria-hidden="true"><span class="metric-fill flight-fill" style="width:${Math.max(8,Math.round(x.flightMin/maxFlight*100))}%"></span></div>
-              </div>
-              <div class="travel-metric" role="cell">
-                <div class="metric-top"><strong>${x.groundMin?fmtDuration(x.groundMin):'—'}</strong><span>${x.groundKind}</span></div>
-                <div class="metric-track" aria-hidden="true"><span class="metric-fill ground-fill ${x.groundKind==='Stopover'?'stopover-fill':''}" style="width:${x.groundMin?Math.max(8,Math.round(x.groundMin/maxGround*100)):0}%"></span></div>
-              </div>
-              <div class="travel-running" role="cell"><strong>${fmtDuration(x.elapsedMin)}</strong><span>from first departure</span></div>
-            </div>
-          `).join('')}
+          ${rows.join('')}
         </div>
       </div>`;
   }
