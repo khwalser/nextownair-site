@@ -50,7 +50,7 @@
   }
   function clearSelectionsFrom(legIndex){Object.keys(state.selections).forEach(k=>{if(Number(k)>=legIndex)delete state.selections[k];});}
   function chooseFlight(i,id){
-    if(state.selections[String(i)]===id)delete state.selections[String(i)];else state.selections[String(i)]=id;
+    state.selections[String(i)]=id;
     clearSelectionsFrom(i+1);save();render();
   }
   function setStay(i,next){state.stays[String(i)]=next;clearSelectionsFrom(i);save();render();}
@@ -116,7 +116,7 @@
   function renderLeg(i,a,b,departDate,plan,priorSelected){
     const knownRoute=F.hasKnownRoute(a,b);
     let opts=F.getOptions(a,b,departDate,i);
-    let note=knownRoute?'Choose zero or one planning flight.':'No routable planning link is available for this pair yet.';
+    let note=knownRoute?'Choose one flight to continue.':'No routable planning link is available for this pair yet.';
     const locked=i>0&&!priorSelected;
     if(!locked&&i>0&&plan&&plan.notBefore!=null){
       opts=opts.filter(o=>o.departMin>=plan.notBefore);
@@ -128,7 +128,7 @@
     }
 
     const A=by(a),B=by(b),leg=document.createElement('section');leg.className=`leg${locked?' leg-locked':''}`;
-    leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${a} → ${b}</h2><div class="muted">${A.city}, ${A.state} → ${B.city}, ${B.state}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div><p class="small">${note}</p><div class="options"></div>`;
+    leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${A.city} → ${B.city}</h2><div class="muted">${a} → ${b}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div><p class="small">${note}</p><div class="options"></div>`;
     const box=leg.querySelector('.options');
     if(locked){
       if(state.selections[String(i)]){delete state.selections[String(i)];save();}
@@ -145,7 +145,7 @@
       const selected=state.selections[String(i)]===o.id;
       const arr=F.arrival(o,departDate);
       const bt=document.createElement('button');bt.type='button';bt.className=`flight${selected?' selected':''}`;bt.setAttribute('aria-pressed',String(selected));
-      bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${o.duration} min · nonstop</div><div class="price">$${o.price}</div><span class="flight-badge">Sample fare</span><div class="selectlabel">${selected?'✓ Selected — click to remove':'Select this flight'}</div>`;
+      bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${o.duration} min · nonstop</div><div class="price">$${o.price}</div><span class="flight-badge">Sample fare</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
       bt.addEventListener('click',()=>chooseFlight(i,o.id));box.appendChild(bt);
     });
     const chosen=selectedOption(i,a,b,departDate,opts);
