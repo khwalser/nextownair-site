@@ -18,6 +18,75 @@
 
   function by(code){return window.NTA.byCode(code);}
   const F=window.NTA_FLIGHTS;
+  const liveFareCache=new Map();
+  const liveFareByLeg=new Map();
+  let renderVersion=0;
+  function fareKey(a,b,date){return `${a}|${b}|${date}`;}
+  function formatMoney(amount,currency){
+    try{return new Intl.NumberFormat(undefined,{style:'currency',currency:currency||'USD',maximumFractionDigits:0}).format(amount);}
+    catch(_){return `${currency||'USD'} ${Number(amount).toFixed(0)}`;}
+  }
+  function checkedTime(iso){
+    const d=new Date(iso);if(Number.isNaN(d.getTime()))return '';
+    return d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+  }
+  function fetchFare(a,b,date){
+    const key=fareKey(a,b,date);
+    if(liveFareCache.has(key))return liveFareCache.get(key);
+    const p=fetch(`/.netlify/functions/flight-proxy?origin=${encodeURIComponent(a)}&destination=${encodeURIComponent(b)}&date=${encodeURIComponent(date)}`,{headers:{Accept:'application/json'}})
+      .then(async res=>{
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok){const err=new Error(data.message||data.error||'Pricing lookup failed');err.status=res.status;throw err;}
+        return data;
+      });
+    liveFareCache.set(key,p);return p;
+  }
+  function updateLiveTripFare(){
+    const node=document.getElementById('liveTripFare');if(!node)return;
+    const legs=Math.max(0,state.route.length-1);
+    const rows=[...liveFareByLeg.values()];
+    const live=rows.filter(x=>x&&x.liveMode&&x.offers&&x.offers.length);
+    const test=rows.filter(x=>x&&!x.liveMode&&x.offers&&x.offers.length);
+    if(!rows.length){node.innerHTML='<span class="small">Checking live fares…</span>';return;}
+    if(!live.length){
+      node.innerHTML=test.length?'<strong>Pricing test mode</strong><span>Provider connected, but quotes are not live yet.</span>':'<strong>Live fares unavailable</strong><span>Pricing provider access is not connected yet.</span>';
+      return;
+    }
+    const currency=live[0].offers[0].currency||'USD';
+    const same=live.every(x=>(x.offers[0].currency||'USD')===currency);
+    const total=same?formatMoney(live.reduce((sum,x)=>sum+Number(x.offers[0].amount||0),0),currency):'Multiple currencies';
+    node.innerHTML=`<strong>From ${total}</strong><span>${live.length===legs?'live fare estimate':`live quotes for ${live.length} of ${legs} legs`} · sum of lowest nonstop one-way fares</span>`;
+  }
+  async function hydrateLivePricing(version){
+    const nodes=[...document.querySelectorAll('.live-fare[data-leg-index]')];
+    await Promise.all(nodes.map(async node=>{
+      const leg=Number(node.dataset.legIndex),a=node.dataset.origin,b=node.dataset.destination,date=node.dataset.date;
+      try{
+        const data=await fetchFare(a,b,date);
+        if(version!==renderVersion||!node.isConnected)return;
+        liveFareByLeg.set(leg,data);
+        const offers=data.offers||[];
+        if(!offers.length){
+          node.className='live-fare unavailable';
+          node.innerHTML='<div class="live-fare-label">Live pricing</div><div class="live-fare-value">No nonstop fare returned for this date</div><div class="small">The route remains verified; this provider may not sell this flight.</div>';
+        }else{
+          const best=offers[0],isLive=Boolean(data.liveMode&&best.liveMode);
+          node.className=`live-fare ${isLive?'live':'test'}`;
+          const carrier=best.operatingCarrier||best.operatingCarrierCode||'Carrier';
+          node.innerHTML=`<div class="live-fare-label">${isLive?'Live fare':'Test fare'} · lowest nonstop economy</div><div class="live-fare-value">From ${formatMoney(best.amount,best.currency)}</div><div class="small">${carrier}${best.flightNumber?` · ${best.flightNumber}`:''} · checked ${checkedTime(data.checkedAt)}${isLive&&best.expiresAt?' · quote expires soon':''}</div>`;
+        }
+      }catch(err){
+        if(version!==renderVersion||!node.isConnected)return;
+        liveFareByLeg.set(leg,{error:true,status:err.status||0});
+        node.className='live-fare unavailable';
+        node.innerHTML=err.status===503?
+          '<div class="live-fare-label">Live pricing</div><div class="live-fare-value">Provider access not connected yet</div><div class="small">Add the live pricing access token to enable real fares.</div>':
+          '<div class="live-fare-label">Live pricing</div><div class="live-fare-value">Fare lookup unavailable</div><div class="small">You can continue planning; try pricing again later.</div>';
+      }finally{
+        if(version===renderVersion)updateLiveTripFare();
+      }
+    }));
+  }
   function selectedOption(legIndex,a,b,date,visibleOptions){
     const id=state.selections[String(legIndex)];
     if(!id)return null;
@@ -128,7 +197,8 @@
     }
 
     const A=by(a),B=by(b),leg=document.createElement('section');leg.className=`leg${locked?' leg-locked':''}`;
-    leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${A.city} → ${B.city}</h2><div class="muted">${a} → ${b}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div><p class="small">${note}</p><div class="options"></div>`;
+    const fareMarkup=(!locked&&knownRoute)?`<div class="live-fare loading" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Live pricing</div><div class="live-fare-value">Checking current fare…</div></div>`:'';
+    leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${A.city} → ${B.city}</h2><div class="muted">${a} → ${b}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div><p class="small">${note}</p>${fareMarkup}<div class="options"></div>`;
     const box=leg.querySelector('.options');
     if(locked){
       if(state.selections[String(i)]){delete state.selections[String(i)];save();}
@@ -145,7 +215,7 @@
       const selected=state.selections[String(i)]===o.id;
       const arr=F.arrival(o,departDate);
       const bt=document.createElement('button');bt.type='button';bt.className=`flight${selected?' selected':''}`;bt.setAttribute('aria-pressed',String(selected));
-      bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${o.duration} min · nonstop</div><div class="price">$${o.price}</div><span class="flight-badge">Verified route · sample schedule & fare</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
+      bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${o.duration} min · nonstop</div><span class="flight-badge">Verified route · sample schedule</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
       bt.addEventListener('click',()=>chooseFlight(i,o.id));box.appendChild(bt);
     });
     const chosen=selectedOption(i,a,b,departDate,opts);
@@ -227,9 +297,9 @@
         </div>
       </div>`;
   }
-  function renderSummary(rows,total,timeline){
+  function renderSummary(rows,timeline){
     const legs=Math.max(0,state.route.length-1);const picked=rows.length;const complete=legs>0&&picked===legs;
-    el.summary.innerHTML=`<div class="summary-top"><div><div class="eyebrow">Trip summary</div><h3 style="margin:4px 0">${picked} of ${legs} flight leg${legs===1?'':'s'} selected</h3></div><div class="total">${picked?`${total}`:'$0'} <span class="small">sample total</span></div></div>${complete?'<div class="trip-complete">✓ Itinerary complete — your full travel-time breakdown is ready.</div>':''}${picked?rows.map(r=>`<div class="selectedline">${r}</div>`).join(''):'<div class="muted">Choose a flight tile when you are ready. Your route and stay choices are already saved.</div>'}${complete?renderTravelChart(timeline):''}<div class="btnrow" style="margin-top:12px"><a class="btn secondary" href="${window.NTA.buildUrl('index.html',state)}">Edit route on map</a><button id="summaryPrint" class="btn tertiary" type="button">Print itinerary</button></div>`;
+    el.summary.innerHTML=`<div class="summary-top"><div><div class="eyebrow">Trip summary</div><h3 style="margin:4px 0">${picked} of ${legs} flight leg${legs===1?'':'s'} selected</h3></div><div id="liveTripFare" class="live-trip-fare"><span class="small">Checking live fares…</span></div></div>${complete?'<div class="trip-complete">✓ Itinerary complete — your full travel-time breakdown is ready.</div>':''}${picked?rows.map(r=>`<div class="selectedline">${r}</div>`).join(''):'<div class="muted">Choose a flight tile when you are ready. Your route and stay choices are already saved.</div>'}${complete?renderTravelChart(timeline):''}<div class="btnrow" style="margin-top:12px"><a class="btn secondary" href="${window.NTA.buildUrl('index.html',state)}">Edit route on map</a><button id="summaryPrint" class="btn tertiary" type="button">Print itinerary</button></div>`;
     document.getElementById('summaryPrint').addEventListener('click',()=>window.print());
   }
   function renderEmpty(){
@@ -237,6 +307,8 @@
     el.content.innerHTML=`<div class="empty-card"><h2>No trip yet</h2><p class="muted">Choose at least two airports on the map. Then come back here to pick flight times and decide where to stay.</p><div class="btnrow"><a class="btn" href="index.html">Choose places on the map</a></div></div>`;
   }
   function render(){
+    const version=++renderVersion;
+    liveFareByLeg.clear();
     syncLinks();el.startDate.value=state.startDate;
     if(state.route.length<2){renderEmpty();return;}
     el.toolbar.hidden=false;renderRoutebar();el.content.innerHTML='';
@@ -246,7 +318,7 @@
     let previousArrivalMin=null;
     let firstDepartureDate=null;
     let firstDepartureMin=null;
-    const rows=[];const timeline=[];let total=0;
+    const rows=[];const timeline=[];
 
     for(let i=0;i<state.route.length-1;i++){
       let plan=null;
@@ -279,10 +351,11 @@
           groundKind:groundLabel(i,groundMin,inboundArrivalDate,departDate),elapsedMin
         });
         previousArrivalDate=arr.date;previousArrivalMin=arr.min;
-        rows.push(`Leg ${i+1} · ${state.route[i]} → ${state.route[i+1]} · ${window.NTA.fmtDate(departDate)} · ${F.timeFrom(previousChosen.departMin)} → ${arr.time} · ${previousChosen.flightNo} · Sample ${previousChosen.price}`);total+=previousChosen.price;
+        rows.push(`Leg ${i+1} · ${state.route[i]} → ${state.route[i+1]} · ${window.NTA.fmtDate(departDate)} · ${F.timeFrom(previousChosen.departMin)} → ${arr.time} · ${previousChosen.flightNo}`);
       } else {previousArrivalDate=departDate;previousArrivalMin=null;}
     }
-    renderSummary(rows,total,timeline);
+    renderSummary(rows,timeline);
+    hydrateLivePricing(version);
   }
 
   el.startDate.min=window.NTA.todayLocal();
