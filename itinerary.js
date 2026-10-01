@@ -6,6 +6,14 @@
   const el={
     routebar:document.getElementById('routebar'),
     startDate:document.getElementById('startDate'),
+    startDateButton:document.getElementById('startDateButton'),
+    startDateButtonText:document.getElementById('startDateButtonText'),
+    startDateCalendar:document.getElementById('startDateCalendar'),
+    calendarPrev:document.getElementById('calendarPrev'),
+    calendarNext:document.getElementById('calendarNext'),
+    calendarMonth:document.getElementById('calendarMonth'),
+    calendarGrid:document.getElementById('calendarGrid'),
+    calendarStatus:document.getElementById('calendarStatus'),
     content:document.getElementById('content'),
     summary:document.getElementById('summary'),
     mapNav:document.getElementById('mapNav'),
@@ -22,10 +30,146 @@
   const liveFareData=new Map();
   const liveFareByLeg=new Map();
   let renderVersion=0;
+  let calendarMonthDate=null;
+  let calendarLoadVersion=0;
   function isoDate(iso){return String(iso||'').slice(0,10);}
   function isoMinutes(iso){
     const m=String(iso||'').match(/T(\d{2}):(\d{2})/);
     return m?Number(m[1])*60+Number(m[2]):null;
+  }
+  function parseYmd(date){
+    const p=String(date||'').split('-').map(Number);
+    return p.length===3&&p.every(Number.isFinite)?{y:p[0],m:p[1],d:p[2]}:null;
+  }
+  function ymd(y,m,d){
+    return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+  function monthStart(date){
+    const p=parseYmd(date)||parseYmd(window.NTA.todayLocal());
+    return new Date(p.y,p.m-1,1,12,0,0,0);
+  }
+  function monthDateString(dateObj,day){
+    return ymd(dateObj.getFullYear(),dateObj.getMonth()+1,day);
+  }
+  function monthTitle(dateObj){
+    return dateObj.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  }
+  function formatStartDate(date){
+    const p=parseYmd(date);if(!p)return date;
+    return new Date(p.y,p.m-1,p.d,12,0,0,0).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  }
+  function firstLeg(){
+    return state.route.length>=2?{a:state.route[0],b:state.route[1]}:null;
+  }
+  function calendarAvailability(date){
+    const leg=firstLeg();if(!leg)return {status:'none',label:''};
+    const data=liveFareData.get(fareKey(leg.a,leg.b,date));
+    if(!data)return {status:'checking',label:'Checking'};
+    if(data.error)return {status:'unavailable',label:'Unavailable'};
+    const best=lowestOffer(data);
+    if(!best)return {status:'unavailable',label:'No nonstop'};
+    return {status:'available',label:formatMoney(best.amount,best.currency),best};
+  }
+  function updateCalendarCell(date){
+    const cell=el.calendarGrid.querySelector(`[data-calendar-date="${date}"]`);
+    if(!cell)return;
+    const av=calendarAvailability(date);
+    cell.classList.remove('checking','available','unavailable');
+    cell.classList.add(av.status);
+    cell.disabled=av.status!=='available';
+    const fare=cell.querySelector('.calendar-fare');
+    if(fare)fare.textContent=av.status==='available'?`from ${av.label}`:av.status==='unavailable'?'—':'…';
+    cell.title=av.status==='available'? `Live nonstop available from ${av.label}` : av.status==='unavailable'?'No live nonstop inventory returned for this date':'Checking live inventory';
+  }
+  function renderStartCalendar(){
+    if(!calendarMonthDate)calendarMonthDate=monthStart(state.startDate);
+    el.calendarMonth.textContent=monthTitle(calendarMonthDate);
+    el.calendarGrid.innerHTML='';
+    const y=calendarMonthDate.getFullYear(),m=calendarMonthDate.getMonth();
+    const firstDow=new Date(y,m,1,12).getDay();
+    const days=new Date(y,m+1,0,12).getDate();
+    const today=window.NTA.todayLocal();
+    for(let i=0;i<firstDow;i++){
+      const blank=document.createElement('span');blank.className='calendar-blank';el.calendarGrid.appendChild(blank);
+    }
+    for(let day=1;day<=days;day++){
+      const date=monthDateString(calendarMonthDate,day);
+      const btn=document.createElement('button');btn.type='button';btn.className='calendar-day';
+      btn.dataset.calendarDate=date;
+      if(date===state.startDate)btn.classList.add('selected');
+      if(date<today){
+        btn.classList.add('past');btn.disabled=true;
+      }else{
+        const av=calendarAvailability(date);
+        btn.classList.add(av.status);
+        btn.disabled=av.status!=='available';
+      }
+      const n=document.createElement('span');n.className='calendar-day-number';n.textContent=String(day);
+      const fare=document.createElement('span');fare.className='calendar-fare';
+      const av=calendarAvailability(date);
+      fare.textContent=date<today?'':av.status==='available'?`from ${av.label}`:av.status==='unavailable'?'—':'…';
+      btn.append(n,fare);
+      btn.addEventListener('click',()=>{
+        if(btn.disabled)return;
+        state.startDate=date;state.selections={};save();
+        el.startDateCalendar.hidden=true;el.startDateButton.setAttribute('aria-expanded','false');
+        calendarMonthDate=monthStart(date);
+        render();
+      });
+      el.calendarGrid.appendChild(btn);
+    }
+    const currentMonth=monthStart(window.NTA.todayLocal());
+    el.calendarPrev.disabled=calendarMonthDate.getFullYear()===currentMonth.getFullYear()&&calendarMonthDate.getMonth()===currentMonth.getMonth();
+  }
+  async function loadStartCalendarMonth(){
+    const leg=firstLeg();
+    if(!leg){el.calendarStatus.textContent='Choose a route first.';return;}
+    const token=++calendarLoadVersion;
+    const y=calendarMonthDate.getFullYear(),m=calendarMonthDate.getMonth();
+    const days=new Date(y,m+1,0,12).getDate();
+    const today=window.NTA.todayLocal();
+    const dates=[];
+    for(let day=1;day<=days;day++){
+      const date=monthDateString(calendarMonthDate,day);
+      if(date>=today&&!liveFareData.has(fareKey(leg.a,leg.b,date)))dates.push(date);
+    }
+    if(!dates.length){
+      el.calendarStatus.textContent='Green dates have live nonstop inventory for the first leg.';
+      renderStartCalendar();
+      return;
+    }
+    el.calendarStatus.textContent=`Checking ${dates.length} dates for ${leg.a} → ${leg.b}…`;
+    let cursor=0,completed=0;
+    const worker=async()=>{
+      while(cursor<dates.length){
+        const date=dates[cursor++];
+        try{
+          const data=await fetchFare(leg.a,leg.b,date);
+          if(token!==calendarLoadVersion)return;
+          liveFareData.set(fareKey(leg.a,leg.b,date),data);
+        }catch(err){
+          if(token!==calendarLoadVersion)return;
+          liveFareData.set(fareKey(leg.a,leg.b,date),{error:true,status:err.status||0,offers:[],message:String(err.message||err)});
+        }
+        completed++;
+        updateCalendarCell(date);
+        el.calendarStatus.textContent=`Checking first-leg availability… ${completed} of ${dates.length}`;
+      }
+    };
+    await Promise.all(Array.from({length:Math.min(4,dates.length)},worker));
+    if(token!==calendarLoadVersion)return;
+    el.calendarStatus.textContent='Green dates have live nonstop inventory for the first leg.';
+  }
+  function openStartCalendar(){
+    calendarMonthDate=calendarMonthDate||monthStart(state.startDate);
+    renderStartCalendar();
+    el.startDateCalendar.hidden=false;
+    el.startDateButton.setAttribute('aria-expanded','true');
+    loadStartCalendarMonth();
+  }
+  function closeStartCalendar(){
+    el.startDateCalendar.hidden=true;
+    el.startDateButton.setAttribute('aria-expanded','false');
   }
   function providerOptions(data,a,b,date){
     if(!data||!Array.isArray(data.offers))return null;
@@ -434,7 +578,7 @@
   function render(){
     const version=++renderVersion;
     liveFareByLeg.clear();
-    syncLinks();el.startDate.value=state.startDate;
+    syncLinks();el.startDate.value=state.startDate;el.startDateButtonText.textContent=formatStartDate(state.startDate);
     if(state.route.length<2){renderEmpty();return;}
     el.toolbar.hidden=false;renderRoutebar();el.content.innerHTML='';
     let departDate=state.startDate;
@@ -484,11 +628,22 @@
     hydrateLivePricing(version);
   }
 
-  el.startDate.min=window.NTA.todayLocal();
-  el.startDate.addEventListener('change',ev=>{
-    if(!window.NTA.validDate(ev.target.value))return;
-    state.startDate=ev.target.value;state.selections={};save();render();
+  el.startDateButton.addEventListener('click',()=>{
+    if(el.startDateCalendar.hidden)openStartCalendar();else closeStartCalendar();
   });
+  el.calendarPrev.addEventListener('click',()=>{
+    if(el.calendarPrev.disabled)return;
+    calendarMonthDate=new Date(calendarMonthDate.getFullYear(),calendarMonthDate.getMonth()-1,1,12);
+    renderStartCalendar();loadStartCalendarMonth();
+  });
+  el.calendarNext.addEventListener('click',()=>{
+    calendarMonthDate=new Date(calendarMonthDate.getFullYear(),calendarMonthDate.getMonth()+1,1,12);
+    renderStartCalendar();loadStartCalendarMonth();
+  });
+  document.addEventListener('click',ev=>{
+    if(!el.startDateCalendar.hidden&&!ev.target.closest('.start-date-field'))closeStartCalendar();
+  });
+  document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeStartCalendar();});
   el.printTrip.addEventListener('click',()=>window.print());
   render();
 })();
