@@ -88,7 +88,7 @@
     const currency=cheapest[0]&&cheapest[0].currency||'USD';
     const same=cheapest.every(x=>(x.currency||'USD')===currency);
     const total=same?formatMoney(cheapest.reduce((sum,x)=>sum+Number(x.amount||0),0),currency):'Multiple currencies';
-    node.innerHTML=`<strong>From ${total}</strong><span>${live.length===legs?'live fare estimate':`live quotes for ${live.length} of ${legs} legs`} · sum of lowest nonstop one-way fares</span>`;
+    node.innerHTML=`<strong>From ${total}</strong><span>${live.length===legs?'planned-date live fare estimate':`live quotes for ${live.length} of ${legs} legs`} · sum of lowest nonstop one-way fares · updates as trip timing changes</span>`;
   }
   async function hydrateLivePricing(version){
     const nodes=[...document.querySelectorAll('.live-fare[data-leg-index]')];
@@ -237,16 +237,17 @@
 
     const A=by(a),B=by(b),leg=document.createElement('section');leg.className=`leg${locked?' leg-locked':''}`;
     let fareMarkup='';
-    if(!locked&&knownRoute){
+    if(knownRoute){
+      const previewNote=locked?' · planned-date preview':'';
       if(!fareData){
-        fareMarkup=`<div class="live-fare loading" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers</div><div class="live-fare-value">Checking provider…</div></div>`;
+        fareMarkup=`<div class="live-fare loading" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value">Checking provider…</div></div>`;
       }else if(fareData.error){
-        fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers</div><div class="live-fare-value">Provider unavailable</div><div class="small">Showing sample schedule only.</div></div>`;
+        fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value">Provider unavailable</div><div class="small">Pricing can be retried without changing the itinerary.</div></div>`;
       }else if(!fareData.offers||!fareData.offers.length){
-        fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers</div><div class="live-fare-value">No nonstop offer returned</div><div class="small">Showing sample schedule only.</div></div>`;
+        fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value">No nonstop offer returned</div><div class="small">The route is verified, but Duffel returned no nonstop inventory for this date.</div></div>`;
       }else{
         const best=lowestOffer(fareData),isLive=Boolean(fareData.liveMode&&best&&best.liveMode);
-        fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?'Live flights':'Duffel test flights'} · nonstop economy</div><div class="live-fare-value">${best?formatMoney(best.amount,best.currency):'—'}+</div><div class="small">${fareData.offers.length} flight${fareData.offers.length===1?'':'s'} · duplicate fare brands collapsed · checked ${checkedTime(fareData.checkedAt)}</div></div>`;
+        fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?(locked?'Live fare preview':'Live flights'):'Duffel test flights'} · nonstop economy${previewNote}</div><div class="live-fare-value">${best?formatMoney(best.amount,best.currency):'—'}+</div><div class="small">${fareData.offers.length} flight${fareData.offers.length===1?'':'s'} · duplicate fare brands collapsed · checked ${checkedTime(fareData.checkedAt)}${locked?' · exact choices unlock after inbound flight selection':''}</div></div>`;
       }
     }
 
