@@ -186,7 +186,7 @@
           </div>
           ${timeline.map(x=>`
             <div class="travel-row" role="row">
-              <div class="travel-leg" role="cell"><strong>${x.from} → ${x.to}</strong><span>${x.flightNo}</span></div>
+              <div class="travel-leg" role="cell"><strong>${x.fromCity} → ${x.toCity}</strong><span>${x.flightNo}</span></div>
               <div class="travel-metric" role="cell">
                 <div class="metric-top"><strong>${fmtDuration(x.flightMin)}</strong><span>Flight</span></div>
                 <div class="metric-track" aria-hidden="true"><span class="metric-fill flight-fill" style="width:${Math.max(8,Math.round(x.flightMin/maxFlight*100))}%"></span></div>
@@ -239,8 +239,12 @@
         if(firstDepartureDate===null){firstDepartureDate=departDate;firstDepartureMin=previousChosen.departMin;}
         const groundMin=i>0&&inboundArrivalMin!=null?minutesBetween(inboundArrivalDate,inboundArrivalMin,departDate,previousChosen.departMin):0;
         const elapsedMin=minutesBetween(firstDepartureDate,firstDepartureMin,arr.date,arr.min);
+        const fromAirport=by(state.route[i]),toAirport=by(state.route[i+1]);
         timeline.push({
-          from:state.route[i],to:state.route[i+1],flightNo:previousChosen.flightNo,
+          from:state.route[i],to:state.route[i+1],
+          fromCity:fromAirport?fromAirport.city:state.route[i],
+          toCity:toAirport?toAirport.city:state.route[i+1],
+          flightNo:previousChosen.flightNo,
           flightMin:previousChosen.duration,groundMin,
           groundKind:groundLabel(i,groundMin,inboundArrivalDate,departDate),elapsedMin
         });
