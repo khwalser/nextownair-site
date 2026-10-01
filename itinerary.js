@@ -29,6 +29,11 @@
   const liveFareCache=new Map();
   const liveFareData=new Map();
   const liveFareByLeg=new Map();
+  const fareQueue=[];
+  const fareStarts=[];
+  const FARE_WINDOW_MS=60000;
+  const FARE_MAX_PER_WINDOW=8;
+  let farePumpTimer=null;
   let renderVersion=0;
   let calendarMonthDate=null;
   let calendarLoadVersion=0;
@@ -65,7 +70,7 @@
     const leg=firstLeg();if(!leg)return {status:'none',label:''};
     const data=liveFareData.get(fareKey(leg.a,leg.b,date));
     if(!data)return {status:'checking',label:'Checking'};
-    if(data.error)return {status:'unavailable',label:'Unavailable'};
+    if(data.error)return {status:'retry',label:'Retrying'};
     const best=lowestOffer(data);
     if(!best)return {status:'unavailable',label:'No nonstop'};
     return {status:'available',label:formatMoney(best.amount,best.currency),best};
@@ -74,12 +79,12 @@
     const cell=el.calendarGrid.querySelector(`[data-calendar-date="${date}"]`);
     if(!cell)return;
     const av=calendarAvailability(date);
-    cell.classList.remove('checking','available','unavailable');
+    cell.classList.remove('checking','available','unavailable','retry');
     cell.classList.add(av.status);
     cell.disabled=av.status!=='available';
     const fare=cell.querySelector('.calendar-fare');
-    if(fare)fare.textContent=av.status==='available'?`from ${av.label}`:av.status==='unavailable'?'—':'…';
-    cell.title=av.status==='available'? `Live nonstop available from ${av.label}` : av.status==='unavailable'?'No live nonstop inventory returned for this date':'Checking live inventory';
+    if(fare)fare.textContent=av.status==='available'?`from ${av.label}`:av.status==='unavailable'?'—':av.status==='retry'?'retry':'…';
+    cell.title=av.status==='available'? `Live nonstop available from ${av.label}` : av.status==='unavailable'?'No live nonstop inventory returned for this date':av.status==='retry'?'Search temporarily unavailable; this date has not been ruled out':'Checking live inventory';
   }
   function renderStartCalendar(){
     if(!calendarMonthDate)calendarMonthDate=monthStart(state.startDate);
@@ -107,7 +112,7 @@
       const n=document.createElement('span');n.className='calendar-day-number';n.textContent=String(day);
       const fare=document.createElement('span');fare.className='calendar-fare';
       const av=calendarAvailability(date);
-      fare.textContent=date<today?'':av.status==='available'?`from ${av.label}`:av.status==='unavailable'?'—':'…';
+      fare.textContent=date<today?'':av.status==='available'?`from ${av.label}`:av.status==='unavailable'?'—':av.status==='retry'?'retry':'…';
       btn.append(n,fare);
       btn.addEventListener('click',()=>{
         if(btn.disabled)return;
@@ -131,14 +136,15 @@
     const dates=[];
     for(let day=1;day<=days;day++){
       const date=monthDateString(calendarMonthDate,day);
-      if(date>=today&&!liveFareData.has(fareKey(leg.a,leg.b,date)))dates.push(date);
+      const cached=liveFareData.get(fareKey(leg.a,leg.b,date));
+      if(date>=today&&(!cached||cached.error))dates.push(date);
     }
     if(!dates.length){
-      el.calendarStatus.textContent='Green dates have live nonstop inventory for the first leg.';
+      el.calendarStatus.textContent='Green = confirmed live nonstop. Blue dates are still being checked; gray dates were checked and returned no nonstop inventory.';
       renderStartCalendar();
       return;
     }
-    el.calendarStatus.textContent=`Checking ${dates.length} dates for ${leg.a} → ${leg.b}…`;
+    el.calendarStatus.textContent=`Checking ${dates.length} dates for ${leg.a} → ${leg.b}. Searches are queued to stay inside Duffel’s live-search limit.`;
     let cursor=0,completed=0;
     const worker=async()=>{
       while(cursor<dates.length){
@@ -153,12 +159,12 @@
         }
         completed++;
         updateCalendarCell(date);
-        el.calendarStatus.textContent=`Checking first-leg availability… ${completed} of ${dates.length}`;
+        el.calendarStatus.textContent=`Checking first-leg availability… ${completed} of ${dates.length} completed. Blue dates are pending, not unavailable.`;
       }
     };
     await Promise.all(Array.from({length:Math.min(4,dates.length)},worker));
     if(token!==calendarLoadVersion)return;
-    el.calendarStatus.textContent='Green dates have live nonstop inventory for the first leg.';
+    el.calendarStatus.textContent='Scan complete: green dates have live nonstop inventory; gray dates were checked and returned none.';
   }
   function openStartCalendar(){
     calendarMonthDate=calendarMonthDate||monthStart(state.startDate);
@@ -218,16 +224,43 @@
       detail:data.offers.length+' flight'+(data.offers.length===1?'':'s')
     };
   }
+  function pruneFareStarts(){
+    const cutoff=Date.now()-FARE_WINDOW_MS;
+    while(fareStarts.length&&fareStarts[0]<=cutoff)fareStarts.shift();
+  }
+  function pumpFareQueue(){
+    pruneFareStarts();
+    while(fareQueue.length&&fareStarts.length<FARE_MAX_PER_WINDOW){
+      const task=fareQueue.shift();
+      fareStarts.push(Date.now());
+      fetch(`/.netlify/functions/flight-proxy?origin=${encodeURIComponent(task.a)}&destination=${encodeURIComponent(task.b)}&date=${encodeURIComponent(task.date)}`,{headers:{Accept:'application/json'}})
+        .then(async res=>{
+          const data=await res.json().catch(()=>({}));
+          if(!res.ok){const err=new Error(data.message||data.error||'Pricing lookup failed');err.status=res.status;throw err;}
+          task.resolve(data);
+        })
+        .catch(task.reject)
+        .finally(()=>{pumpFareQueue();});
+    }
+    if(fareQueue.length){
+      pruneFareStarts();
+      const wait=Math.max(500,(fareStarts[0]||Date.now())+FARE_WINDOW_MS-Date.now()+500);
+      clearTimeout(farePumpTimer);
+      farePumpTimer=setTimeout(()=>{farePumpTimer=null;pumpFareQueue();},wait);
+    }
+  }
   function fetchFare(a,b,date){
     const key=fareKey(a,b,date);
     if(liveFareCache.has(key))return liveFareCache.get(key);
-    const p=fetch(`/.netlify/functions/flight-proxy?origin=${encodeURIComponent(a)}&destination=${encodeURIComponent(b)}&date=${encodeURIComponent(date)}`,{headers:{Accept:'application/json'}})
-      .then(async res=>{
-        const data=await res.json().catch(()=>({}));
-        if(!res.ok){const err=new Error(data.message||data.error||'Pricing lookup failed');err.status=res.status;throw err;}
-        return data;
-      });
-    liveFareCache.set(key,p);return p;
+    const p=new Promise((resolve,reject)=>{
+      fareQueue.push({a,b,date,resolve,reject});
+      pumpFareQueue();
+    }).catch(err=>{
+      liveFareCache.delete(key);
+      throw err;
+    });
+    liveFareCache.set(key,p);
+    return p;
   }
   function updateLiveTripFare(){
     const node=document.getElementById('liveTripFare');if(!node)return;
