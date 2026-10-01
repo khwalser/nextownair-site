@@ -180,6 +180,8 @@
         <div class="travel-table" role="table" aria-label="Flight, layover, and running travel times">
           <div class="travel-row travel-header" role="row">
             <div role="columnheader">Leg</div>
+            <div role="columnheader">Departs</div>
+            <div role="columnheader">Arrives</div>
             <div role="columnheader">Flight time</div>
             <div role="columnheader">Ground time before</div>
             <div role="columnheader">Running elapsed</div>
@@ -187,6 +189,8 @@
           ${timeline.map(x=>`
             <div class="travel-row" role="row">
               <div class="travel-leg" role="cell"><strong>${x.fromCity} → ${x.toCity}</strong><span>${x.flightNo}</span></div>
+              <div class="travel-time" role="cell"><strong>${x.departTime}</strong><span>${window.NTA.fmtDate(x.departDate,{weekday:'short',month:'short',day:'numeric'})}</span></div>
+              <div class="travel-time" role="cell"><strong>${x.arrivalTime}</strong><span>${window.NTA.fmtDate(x.arrivalDate,{weekday:'short',month:'short',day:'numeric'})}</span></div>
               <div class="travel-metric" role="cell">
                 <div class="metric-top"><strong>${fmtDuration(x.flightMin)}</strong><span>Flight</span></div>
                 <div class="metric-track" aria-hidden="true"><span class="metric-fill flight-fill" style="width:${Math.max(8,Math.round(x.flightMin/maxFlight*100))}%"></span></div>
@@ -245,6 +249,10 @@
           fromCity:fromAirport?fromAirport.city:state.route[i],
           toCity:toAirport?toAirport.city:state.route[i+1],
           flightNo:previousChosen.flightNo,
+          departDate,
+          departTime:F.timeFrom(previousChosen.departMin),
+          arrivalDate:arr.date,
+          arrivalTime:arr.time,
           flightMin:previousChosen.duration,groundMin,
           groundKind:groundLabel(i,groundMin,inboundArrivalDate,departDate),elapsedMin
         });
