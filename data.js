@@ -7,6 +7,13 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
+  "routeVerification": {
+    "policy": "verified-explicit-edges-only",
+    "auditedAsOf": "2026-09-30",
+    "easRoutePairs": 225,
+    "connectorRoutePairs": 8,
+    "note": "The planner routes only over explicit airport pairs. EAS pairs are sourced from the U.S. DOT May 2026 status reports; connector pairs are separately checked against current nonstop schedule sources. Hub-to-hub routes are never inferred merely because both airports are hubs."
+  },
   "airports": [
     {
       "code": "ABR",
