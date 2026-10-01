@@ -62,6 +62,18 @@
     const d=new Date(iso);if(Number.isNaN(d.getTime()))return '';
     return d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
   }
+  function stayAvailabilityState(a,b,date){
+    const data=liveFareData.get(fareKey(a,b,date));
+    if(!data)return {status:'loading',label:'Checking…',detail:''};
+    if(data.error)return {status:'error',label:'Unavailable',detail:'pricing lookup failed'};
+    const best=lowestOffer(data);
+    if(!best)return {status:'none',label:'No nonstop',detail:'no live nonstop inventory returned'};
+    return {
+      status:'yes',
+      label:'From '+formatMoney(best.amount,best.currency),
+      detail:data.offers.length+' flight'+(data.offers.length===1?'':'s')
+    };
+  }
   function fetchFare(a,b,date){
     const key=fareKey(a,b,date);
     if(liveFareCache.has(key))return liveFareCache.get(key);
@@ -91,27 +103,35 @@
     node.innerHTML=`<strong>From ${total}</strong><span>${live.length===legs?'planned-date live fare estimate':`live quotes for ${live.length} of ${legs} legs`} · sum of lowest nonstop one-way fares · updates as trip timing changes</span>`;
   }
   async function hydrateLivePricing(version){
-    const nodes=[...document.querySelectorAll('.live-fare[data-leg-index]')];
-    let learnedSomething=false;
-    await Promise.all(nodes.map(async node=>{
-      const leg=Number(node.dataset.legIndex),a=node.dataset.origin,b=node.dataset.destination,date=node.dataset.date;
+    const legNodes=[...document.querySelectorAll('.live-fare[data-leg-index]')];
+    const stayNodes=[...document.querySelectorAll('.stay-av[data-origin][data-destination][data-date]')];
+    const requests=new Map();
+    legNodes.forEach(node=>{
+      const a=node.dataset.origin,b=node.dataset.destination,date=node.dataset.date;
+      requests.set(fareKey(a,b,date),{a,b,date,leg:Number(node.dataset.legIndex)});
+    });
+    stayNodes.forEach(node=>{
+      const a=node.dataset.origin,b=node.dataset.destination,date=node.dataset.date;
       const key=fareKey(a,b,date);
+      if(!requests.has(key))requests.set(key,{a,b,date,leg:null});
+    });
+    let learnedSomething=false;
+    await Promise.all([...requests.entries()].map(async([key,req])=>{
       if(liveFareData.has(key)){
-        const existing=liveFareData.get(key);
-        liveFareByLeg.set(leg,existing);
+        if(req.leg!=null)liveFareByLeg.set(req.leg,liveFareData.get(key));
         return;
       }
       try{
-        const data=await fetchFare(a,b,date);
+        const data=await fetchFare(req.a,req.b,req.date);
         if(version!==renderVersion)return;
         liveFareData.set(key,data);
-        liveFareByLeg.set(leg,data);
+        if(req.leg!=null)liveFareByLeg.set(req.leg,data);
         learnedSomething=true;
       }catch(err){
         if(version!==renderVersion)return;
         const data={error:true,status:err.status||0,offers:[],message:String(err.message||err)};
         liveFareData.set(key,data);
-        liveFareByLeg.set(leg,data);
+        if(req.leg!=null)liveFareByLeg.set(req.leg,data);
         learnedSomething=true;
       }
     }));
@@ -159,7 +179,7 @@
     if(!window.NTA.validDate(chosen))return;
     let diff=window.NTA.diffDays(arrivalDate,chosen);
     if(diff<0){chosen=arrivalDate;diff=0;}
-    if(diff>=1&&diff<=3)setStay(i,{mode:'nights',nights:diff,date:null});
+    if(diff>=1&&diff<=4)setStay(i,{mode:'nights',nights:diff,date:null});
     else setStay(i,{mode:'date',nights:Math.max(0,diff),date:chosen});
   }
   function stayPlan(i,arrivalDate,arrivalMin,hasExactArrival){
@@ -183,6 +203,44 @@
       const chip=document.createElement('span');chip.className=`routechip ${a.type==='eas'?'eas':'connector'}`;chip.textContent=`${a.city} · ${a.code}${a.type==='eas'?'':lingering?' · stay':' · connect'}`;el.routebar.appendChild(chip);
     });
   }
+  function appendStayAvailability(section,i,airport,arrivalDate,hasExactArrival,s){
+    const nextCode=state.route[i+1];
+    const wrap=document.createElement('div');
+    wrap.className='stay-availability';
+    if(!hasExactArrival||!nextCode){
+      wrap.classList.add('pending');
+      const strong=document.createElement('strong');strong.textContent='Live outbound availability';
+      const span=document.createElement('span');span.textContent='Select the inbound flight to compare 1–4 night stays.';
+      wrap.append(strong,span);
+      section.querySelector('.stay-grid').insertAdjacentElement('afterend',wrap);
+      return;
+    }
+    const head=document.createElement('div');head.className='stay-availability-head';
+    const title=document.createElement('strong');title.textContent='Live outbound availability';
+    const sub=document.createElement('span');sub.textContent='Compare 1–4 nights from your actual arrival date.';
+    head.append(title,sub);wrap.appendChild(head);
+    const grid=document.createElement('div');grid.className='stay-availability-grid';
+    [1,2,3,4].forEach(n=>{
+      const date=window.NTA.addDays(arrivalDate,n);
+      const av=stayAvailabilityState(airport.code,nextCode,date);
+      const active=(s.mode==='nights'&&s.nights===n)||(s.mode==='date'&&s.date===date);
+      const btn=document.createElement('button');btn.type='button';
+      btn.className='stay-av '+av.status+(active?' active':'');
+      btn.dataset.stayAv=String(n);btn.dataset.origin=airport.code;btn.dataset.destination=nextCode;btn.dataset.date=date;
+      const nights=document.createElement('span');nights.className='stay-av-nights';nights.textContent=n+' night'+(n===1?'':'s');
+      const value=document.createElement('strong');value.textContent=av.label;
+      const meta=document.createElement('span');
+      meta.textContent=window.NTA.fmtDate(date,{weekday:'short',month:'short',day:'numeric'})+(av.detail?' · '+av.detail:'');
+      btn.append(nights,value,meta);
+      btn.addEventListener('click',()=>setStay(i,{mode:'nights',nights:n,date:null}));
+      grid.appendChild(btn);
+    });
+    wrap.appendChild(grid);
+    const note=document.createElement('div');note.className='small';
+    note.textContent='“No nonstop” means Duffel returned no live nonstop inventory for that date; it does not necessarily mean the route never operates that day.';
+    wrap.appendChild(note);
+    section.querySelector('.stay-grid').insertAdjacentElement('afterend',wrap);
+  }
   function renderStay(i,airport,arrivalDate,arrivalMin,hasExactArrival){
     const s=defaultStay(i),plan=stayPlan(i,arrivalDate,arrivalMin,hasExactArrival);
     const isHub=airport.type!=='eas';
@@ -197,7 +255,7 @@
           <div class="choices" role="group" aria-label="Stay duration at ${airport.city}">
             <button type="button" class="choice ${s.mode==='asap'?'active':''}" data-mode="asap" ${hasExactArrival?'':'title="Pick the previous flight to calculate an exact connection"'}>${isHub?'Connect ASAP':'ASAP'}</button>
             <button type="button" class="choice ${s.mode==='later'?'active':''}" data-mode="later" ${hasExactArrival?'':'title="Pick the previous flight to calculate an exact connection"'}>Later today</button>
-            ${[1,2,3].map(n=>`<button type="button" class="choice ${s.mode==='nights'&&s.nights===n?'active':''}" data-nights="${n}">${n} night${n===1?'':'s'}</button>`).join('')}
+            ${[1,2,3,4].map(n=>`<button type="button" class="choice ${s.mode==='nights'&&s.nights===n?'active':''}" data-nights="${n}">${n} night${n===1?'':'s'}</button>`).join('')}
           </div>
           <div class="stay-summary">${plan.summary}</div>
         </div>
@@ -208,6 +266,7 @@
       </div>
       ${isHub?`<div class="small" style="margin-top:8px"><strong>Hub stopover:</strong> this airport was inserted as a connector, but you can turn it into a real stop by choosing Later today, a number of nights, or a departure date.</div>`:airport.note?`<div class="small" style="margin-top:8px">Why stop here? ${airport.note}.</div>`:''}
       ${Array.isArray(airport.stay)&&airport.stay.length?`<div class="small" style="margin-top:5px"><strong>Ideas:</strong> ${airport.stay.join(' · ')}</div>`:''}`;
+    appendStayAvailability(section,i,airport,arrivalDate,hasExactArrival,s);
     section.querySelector('[data-mode="asap"]').addEventListener('click',()=>setStay(i,{mode:'asap',nights:0,date:null}));
     section.querySelector('[data-mode="later"]').addEventListener('click',()=>setStay(i,{mode:'later',nights:0,date:null}));
     section.querySelectorAll('[data-nights]').forEach(btn=>btn.addEventListener('click',()=>setStay(i,{mode:'nights',nights:Number(btn.dataset.nights),date:null})));
