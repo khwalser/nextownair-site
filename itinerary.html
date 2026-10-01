@@ -44,19 +44,19 @@
         <div id="calendarGrid" class="calendar-grid"></div>
         <div id="calendarStatus" class="calendar-status" aria-live="polite"></div>
         <div class="calendar-key">
-          <span><i class="calendar-key-dot available"></i>Live nonstop available</span>
-          <span><i class="calendar-key-dot unavailable"></i>No nonstop inventory returned</span>
+          <span><i class="calendar-key-dot available"></i>Published nonstop service</span>
+          <span><i class="calendar-key-dot unavailable"></i>No scheduled nonstop found</span>
         </div>
       </div>
     </div>
-    <div class="data-badge" title="Schedules are simulated; fare panels use connected pricing data when available"><span class="data-dot"></span>Sample schedules · live fares</div>
+    <div class="data-badge" title="Published service dates come from the schedule provider; current offers and fares come from Duffel"><span class="data-dot"></span>Published schedules · live fares</div>
     <div class="btnrow">
       <a id="editRoute" class="btn secondary" href="index.html">Edit route on map</a>
       <button id="printTrip" class="btn tertiary" type="button">Print itinerary</button>
     </div>
   </section>
 
-  <div class="notice"><strong>Live pricing:</strong> NexTownAir requests fares for every planned leg and date. Downstream legs can show a planned-date fare preview before the inbound flight is selected; once timing is known, the selectable live flights are restricted to connections you can actually catch. Quotes are timestamped and may expire or change before booking.</div>
+  <div class="notice"><strong>Schedules + fares:</strong> published schedules determine which dates are expected to have nonstop service; Duffel is used separately for current flight offers and fares on the dates you choose. A published schedule is not a booking guarantee, and live offers can sell out or change.</div>
 
   <div id="content" aria-live="polite"></div>
   <section id="summary" class="summary" aria-label="Trip summary"></section>
