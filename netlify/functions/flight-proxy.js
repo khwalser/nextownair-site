@@ -8,83 +8,212 @@ function httpsRequestJson(options, body = null) {
       res.on('end', () => {
         let parsed;
         try { parsed = data ? JSON.parse(data) : {}; }
-        catch (err) { return reject(new Error(`Invalid JSON from upstream (${res.statusCode})`)); }
+        catch (_) { return reject(new Error(`Invalid JSON from upstream (${res.statusCode})`)); }
         if (res.statusCode < 200 || res.statusCode >= 300) {
           const detail = parsed.error_description || parsed.error || JSON.stringify(parsed.errors || parsed);
-          return reject(new Error(`Upstream HTTP ${res.statusCode}: ${detail}`));
+          const err = new Error(`Upstream HTTP ${res.statusCode}: ${detail}`);
+          err.statusCode = res.statusCode;
+          return reject(err);
         }
         resolve(parsed);
       });
     });
-    req.setTimeout(12000, () => req.destroy(new Error('Upstream request timed out')));
+    req.setTimeout(14000, () => req.destroy(new Error('Upstream request timed out')));
     req.on('error', reject);
     if (body) req.write(body);
     req.end();
   });
 }
 
-async function getAmadeusToken() {
-  const key = process.env.AMADEUS_API_KEY;
-  const secret = process.env.AMADEUS_API_SECRET;
-  if (!key || !secret) throw new Error('Missing Amadeus API credentials');
-  const authBody = new URLSearchParams({grant_type:'client_credentials',client_id:key,client_secret:secret}).toString();
-  const response = await httpsRequestJson({
-    hostname:'test.api.amadeus.com',path:'/v1/security/oauth2/token',method:'POST',
-    headers:{'Content-Type':'application/x-www-form-urlencoded','Content-Length':Buffer.byteLength(authBody)}
-  }, authBody);
-  if (!response.access_token) throw new Error('Amadeus token response did not include an access token');
-  return response.access_token;
-}
-
-async function searchOffers(token, origin, destination, departureDate) {
-  const query = new URLSearchParams({originLocationCode:origin,destinationLocationCode:destination,departureDate,adults:'1',currencyCode:'USD',max:'8'}).toString();
-  return httpsRequestJson({
-    hostname:'test.api.amadeus.com',path:`/v2/shopping/flight-offers?${query}`,method:'GET',
-    headers:{Authorization:`Bearer ${token}`}
-  });
-}
-
 function validCode(v){return /^[A-Z]{3}$/.test(v);}
 function validDate(v){return /^\d{4}-\d{2}-\d{2}$/.test(v);}
-function buildSearchLink(origin,destination,date){return `https://www.kayak.com/flights/${origin}-${destination}/${date}?sort=bestflight_a`;}
+function json(statusCode, body, extraHeaders={}){
+  return {
+    statusCode,
+    headers:{
+      'Access-Control-Allow-Origin':'*',
+      'Access-Control-Allow-Methods':'GET, OPTIONS',
+      'Access-Control-Allow-Headers':'Content-Type',
+      'Content-Type':'application/json',
+      'Cache-Control':'no-store',
+      ...extraHeaders
+    },
+    body:JSON.stringify(body)
+  };
+}
 
-exports.handler = async event => {
-  const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET, OPTIONS','Access-Control-Allow-Headers':'Content-Type','Content-Type':'application/json'};
-  if (event.httpMethod === 'OPTIONS') return {statusCode:204,headers:cors,body:''};
-  if (event.httpMethod !== 'GET') return {statusCode:405,headers:cors,body:JSON.stringify({error:'Method not allowed'})};
+async function searchDuffel(origin,destination,departureDate){
+  const token=process.env.DUFFEL_ACCESS_TOKEN;
+  if(!token)return null;
 
-  try {
-    const p=event.queryStringParameters||{};
-    const origin=String(p.origin||'APN').toUpperCase();
-    const destination=String(p.destination||'DTW').toUpperCase();
-    const departureDate=String(p.date||new Date().toISOString().slice(0,10));
-    if(!validCode(origin)||!validCode(destination)||!validDate(departureDate)){
-      return {statusCode:400,headers:cors,body:JSON.stringify({error:'Use three-letter origin/destination codes and date=YYYY-MM-DD'})};
+  const body=JSON.stringify({
+    data:{
+      cabin_class:'economy',
+      max_connections:0,
+      passengers:[{type:'adult'}],
+      slices:[{origin,destination,departure_date:departureDate}]
     }
+  });
 
-    const token=await getAmadeusToken();
-    const response=await searchOffers(token,origin,destination,departureDate);
-    const flights=[];
-    for(const offer of response.data||[]){
-      const itin=(offer.itineraries||[])[0];const segs=(itin&&itin.segments)||[];if(!segs.length)continue;
-      const first=segs[0],last=segs[segs.length-1];const price=offer.price||{};
-      flights.push({
-        provider:'amadeus-test',sample:false,
-        flightNumber:first.number?`${first.carrierCode||''}${first.number}`:(first.carrierCode||''),
-        origin:(first.departure&&first.departure.iataCode)||origin,
-        destination:(last.arrival&&last.arrival.iataCode)||destination,
-        departureTime:first.departure&&first.departure.at,
-        arrivalTime:last.arrival&&last.arrival.at,
-        stops:Math.max(0,segs.length-1),
-        priceFrom:price.total?Number(price.total):null,
-        currency:price.currency||'USD',
-        bookUrl:buildSearchLink(origin,destination,departureDate)
-      });
+  const response=await httpsRequestJson({
+    hostname:'api.duffel.com',
+    path:'/air/offer_requests?return_offers=true&supplier_timeout=9000',
+    method:'POST',
+    headers:{
+      'Authorization':`Bearer ${token}`,
+      'Duffel-Version':'v2',
+      'Accept':'application/json',
+      'Content-Type':'application/json',
+      'Content-Length':Buffer.byteLength(body)
     }
-    flights.sort((a,b)=>String(a.departureTime||'').localeCompare(String(b.departureTime||'')));
-    return {statusCode:200,headers:{...cors,'Cache-Control':'public, max-age=300'},body:JSON.stringify(flights)};
-  } catch (err) {
+  }, body);
+
+  const request=response.data||{};
+  const offers=(request.offers||[])
+    .map(offer=>{
+      const slice=(offer.slices||[])[0]||{};
+      const segments=slice.segments||[];
+      if(segments.length!==1)return null;
+      const seg=segments[0]||{};
+      const carrier=seg.operating_carrier||{};
+      const amount=Number(offer.total_amount);
+      if(!Number.isFinite(amount))return null;
+      return {
+        provider:'duffel',
+        liveMode:Boolean(offer.live_mode),
+        offerId:offer.id||null,
+        origin,
+        destination,
+        departureDate,
+        departureTime:seg.departing_at||null,
+        arrivalTime:seg.arriving_at||null,
+        operatingCarrier:carrier.name||null,
+        operatingCarrierCode:carrier.iata_code||null,
+        flightNumber:seg.operating_carrier_flight_number?
+          `${carrier.iata_code||''}${seg.operating_carrier_flight_number}`:null,
+        amount,
+        currency:offer.total_currency||'USD',
+        expiresAt:offer.expires_at||null
+      };
+    })
+    .filter(Boolean)
+    .sort((a,b)=>a.amount-b.amount);
+
+  return {
+    provider:'duffel',
+    liveMode:Boolean(request.live_mode),
+    checkedAt:new Date().toISOString(),
+    origin,
+    destination,
+    departureDate,
+    offers:offers.slice(0,8)
+  };
+}
+
+async function getAmadeusToken(){
+  const key=process.env.AMADEUS_API_KEY;
+  const secret=process.env.AMADEUS_API_SECRET;
+  if(!key||!secret)return null;
+  const authBody=new URLSearchParams({
+    grant_type:'client_credentials',
+    client_id:key,
+    client_secret:secret
+  }).toString();
+  const response=await httpsRequestJson({
+    hostname:'test.api.amadeus.com',
+    path:'/v1/security/oauth2/token',
+    method:'POST',
+    headers:{
+      'Content-Type':'application/x-www-form-urlencoded',
+      'Content-Length':Buffer.byteLength(authBody)
+    }
+  },authBody);
+  return response.access_token||null;
+}
+
+async function searchAmadeusTest(origin,destination,departureDate){
+  const token=await getAmadeusToken();
+  if(!token)return null;
+  const query=new URLSearchParams({
+    originLocationCode:origin,
+    destinationLocationCode:destination,
+    departureDate,
+    adults:'1',
+    currencyCode:'USD',
+    nonStop:'true',
+    max:'8'
+  }).toString();
+  const response=await httpsRequestJson({
+    hostname:'test.api.amadeus.com',
+    path:`/v2/shopping/flight-offers?${query}`,
+    method:'GET',
+    headers:{Authorization:`Bearer ${token}`}
+  });
+  const offers=(response.data||[]).map(offer=>{
+    const itin=(offer.itineraries||[])[0];
+    const segs=(itin&&itin.segments)||[];
+    if(segs.length!==1)return null;
+    const seg=segs[0]||{};
+    const amount=Number(offer.price&&offer.price.total);
+    if(!Number.isFinite(amount))return null;
+    return {
+      provider:'amadeus-test',
+      liveMode:false,
+      offerId:offer.id||null,
+      origin,
+      destination,
+      departureDate,
+      departureTime:seg.departure&&seg.departure.at,
+      arrivalTime:seg.arrival&&seg.arrival.at,
+      operatingCarrier:null,
+      operatingCarrierCode:seg.carrierCode||null,
+      flightNumber:seg.number?`${seg.carrierCode||''}${seg.number}`:null,
+      amount,
+      currency:(offer.price&&offer.price.currency)||'USD',
+      expiresAt:null
+    };
+  }).filter(Boolean).sort((a,b)=>a.amount-b.amount);
+  return {
+    provider:'amadeus-test',
+    liveMode:false,
+    checkedAt:new Date().toISOString(),
+    origin,
+    destination,
+    departureDate,
+    offers:offers.slice(0,8)
+  };
+}
+
+exports.handler=async event=>{
+  if(event.httpMethod==='OPTIONS')return json(204,{});
+  if(event.httpMethod!=='GET')return json(405,{error:'Method not allowed'});
+
+  const p=event.queryStringParameters||{};
+  const origin=String(p.origin||'').toUpperCase();
+  const destination=String(p.destination||'').toUpperCase();
+  const departureDate=String(p.date||'');
+
+  if(!validCode(origin)||!validCode(destination)||!validDate(departureDate)){
+    return json(400,{error:'Use three-letter origin/destination codes and date=YYYY-MM-DD'});
+  }
+
+  try{
+    const duffel=await searchDuffel(origin,destination,departureDate);
+    if(duffel)return json(200,duffel);
+
+    const amadeus=await searchAmadeusTest(origin,destination,departureDate);
+    if(amadeus)return json(200,amadeus);
+
+    return json(503,{
+      error:'pricing_not_configured',
+      message:'Live pricing provider credentials are not configured.'
+    });
+  }catch(err){
     console.error('flight-proxy error',err);
-    return {statusCode:502,headers:cors,body:JSON.stringify({error:'Live flight lookup is unavailable',details:String(err.message||err)})};
+    return json(502,{
+      error:'pricing_lookup_failed',
+      message:'Flight pricing lookup is unavailable.',
+      details:String(err.message||err)
+    });
   }
 };
