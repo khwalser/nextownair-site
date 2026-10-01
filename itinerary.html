@@ -26,9 +26,28 @@
   <div id="routebar" class="routebar" aria-label="Trip route"></div>
 
   <section id="toolbar" class="toolbar">
-    <div class="field">
-      <label for="startDate">Trip starts</label>
-      <input id="startDate" type="date">
+    <div class="field start-date-field">
+      <label for="startDateButton">Trip starts</label>
+      <input id="startDate" type="hidden">
+      <button id="startDateButton" class="date-picker-button" type="button" aria-haspopup="dialog" aria-expanded="false">
+        <span id="startDateButtonText">Choose a start date</span><span aria-hidden="true">▾</span>
+      </button>
+      <div id="startDateCalendar" class="start-calendar" role="dialog" aria-label="Choose trip start date" hidden>
+        <div class="start-calendar-head">
+          <button id="calendarPrev" class="calendar-nav" type="button" aria-label="Previous month">‹</button>
+          <strong id="calendarMonth"></strong>
+          <button id="calendarNext" class="calendar-nav" type="button" aria-label="Next month">›</button>
+        </div>
+        <div class="calendar-weekdays" aria-hidden="true">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div id="calendarGrid" class="calendar-grid"></div>
+        <div id="calendarStatus" class="calendar-status" aria-live="polite"></div>
+        <div class="calendar-key">
+          <span><i class="calendar-key-dot available"></i>Live nonstop available</span>
+          <span><i class="calendar-key-dot unavailable"></i>No nonstop inventory returned</span>
+        </div>
+      </div>
     </div>
     <div class="data-badge" title="Schedules are simulated; fare panels use connected pricing data when available"><span class="data-dot"></span>Sample schedules · live fares</div>
     <div class="btnrow">
