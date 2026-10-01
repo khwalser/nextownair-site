@@ -27,12 +27,10 @@
   function isNetworkHub(code){return hubCodes.has(code);}
   function hasFlightLink(a,b){
     if(!airportCodes.has(a)||!airportCodes.has(b)||a===b)return false;
-    return hasListedRoute(a,b)||(isNetworkHub(a)&&isNetworkHub(b));
+    return hasListedRoute(a,b);
   }
   function flightNeighbors(code){
-    const out=new Set(listedAdj.get(code)||[]);
-    if(isNetworkHub(code))hubCodes.forEach(h=>{if(h!==code&&airportCodes.has(h))out.add(h);});
-    return [...out].filter(c=>airportCodes.has(c));
+    return [...(listedAdj.get(code)||[])].filter(c=>airportCodes.has(c));
   }
   function findFlightPath(from,to){
     const a=String(from||'').toUpperCase(),b=String(to||'').toUpperCase();
