@@ -35,11 +35,14 @@
       const departDay=isoDate(o.departureTime)||date;
       const arrivalDay=isoDate(o.arrivalTime)||departDay;
       const dayOffset=Math.max(0,window.NTA.diffDays(departDay,arrivalDay));
-      const elapsed=Math.max(1,Math.round((new Date(o.arrivalTime)-new Date(o.departureTime))/60000));
+      const providerDuration=Number(o.durationMinutes);
+      const fallbackDuration=Math.max(1,Math.round((new Date(o.arrivalTime)-new Date(o.departureTime))/60000));
+      const elapsed=Number.isFinite(providerDuration)&&providerDuration>0?providerDuration:fallbackDuration;
       return {
         id:`provider|${o.offerId||idx}|${a}|${b}|${date}`,
         date,departMin,arrivalMin,arrivalDayOffset:dayOffset,duration:elapsed,
         price:Number(o.amount),currency:o.currency||'USD',
+        fareCount:Number(o.fareCount||1),fareChoices:Array.isArray(o.fareChoices)?o.fareChoices:[],
         carrier:o.operatingCarrier||o.operatingCarrierCode||'Carrier',
         flightNo:o.flightNumber||o.operatingCarrierCode||'Flight',
         sample:false,provider:data.provider||'provider',liveMode:Boolean(data.liveMode&&o.liveMode)
@@ -47,6 +50,10 @@
     }).filter(Boolean).sort((x,y)=>x.departMin-y.departMin);
   }
   function fareKey(a,b,date){return `${a}|${b}|${date}`;}
+  function lowestOffer(data){
+    const offers=(data&&Array.isArray(data.offers))?data.offers:[];
+    return offers.reduce((best,o)=>!best||Number(o.amount)<Number(best.amount)?o:best,null);
+  }
   function formatMoney(amount,currency){
     try{return new Intl.NumberFormat(undefined,{style:'currency',currency:currency||'USD',maximumFractionDigits:0}).format(amount);}
     catch(_){return `${currency||'USD'} ${Number(amount).toFixed(0)}`;}
@@ -77,9 +84,10 @@
       node.innerHTML=test.length?'<strong>Pricing test mode</strong><span>Provider connected, but quotes are not live yet.</span>':'<strong>Live fares unavailable</strong><span>Pricing provider access is not connected yet.</span>';
       return;
     }
-    const currency=live[0].offers[0].currency||'USD';
-    const same=live.every(x=>(x.offers[0].currency||'USD')===currency);
-    const total=same?formatMoney(live.reduce((sum,x)=>sum+Number(x.offers[0].amount||0),0),currency):'Multiple currencies';
+    const cheapest=live.map(lowestOffer).filter(Boolean);
+    const currency=cheapest[0]&&cheapest[0].currency||'USD';
+    const same=cheapest.every(x=>(x.currency||'USD')===currency);
+    const total=same?formatMoney(cheapest.reduce((sum,x)=>sum+Number(x.amount||0),0),currency):'Multiple currencies';
     node.innerHTML=`<strong>From ${total}</strong><span>${live.length===legs?'live fare estimate':`live quotes for ${live.length} of ${legs} legs`} · sum of lowest nonstop one-way fares</span>`;
   }
   async function hydrateLivePricing(version){
@@ -237,8 +245,8 @@
       }else if(!fareData.offers||!fareData.offers.length){
         fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers</div><div class="live-fare-value">No nonstop offer returned</div><div class="small">Showing sample schedule only.</div></div>`;
       }else{
-        const best=fareData.offers[0],isLive=Boolean(fareData.liveMode&&best.liveMode);
-        fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?'Live offers':'Duffel test offers'} · nonstop economy</div><div class="live-fare-value">${formatMoney(best.amount,best.currency)}+</div><div class="small">${fareData.offers.length} offer${fareData.offers.length===1?'':'s'} · checked ${checkedTime(fareData.checkedAt)}</div></div>`;
+        const best=lowestOffer(fareData),isLive=Boolean(fareData.liveMode&&best&&best.liveMode);
+        fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?'Live flights':'Duffel test flights'} · nonstop economy</div><div class="live-fare-value">${best?formatMoney(best.amount,best.currency):'—'}+</div><div class="small">${fareData.offers.length} flight${fareData.offers.length===1?'':'s'} · duplicate fare brands collapsed · checked ${checkedTime(fareData.checkedAt)}</div></div>`;
       }
     }
 
@@ -268,9 +276,10 @@
       const selected=state.selections[String(i)]===o.id;
       const arr=F.arrival(o,departDate);
       const bt=document.createElement('button');bt.type='button';bt.className=`flight${selected?' selected':''}`;bt.setAttribute('aria-pressed',String(selected));
-      const badge=usingProvider?(o.liveMode?'Live offer':'Duffel test offer'):'Verified route · sample schedule';
-      const price=usingProvider?`<div class="price">${formatMoney(o.price,o.currency)}</div>`:'';
-      bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${o.duration} min · nonstop</div>${price}<span class="flight-badge">${badge}</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
+      const badge=usingProvider?(o.liveMode?'Live flight':'Duffel test flight'):'Verified route · sample schedule';
+      const fareLabel=o.fareCount>1?`From ${formatMoney(o.price,o.currency)}`:formatMoney(o.price,o.currency);
+      const price=usingProvider?`<div class="price">${fareLabel}</div>${o.fareCount>1?`<div class="small">${o.fareCount} fare brands for this flight</div>`:''}`:'';
+      bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${fmtDuration(o.duration)} · nonstop</div>${price}<span class="flight-badge">${badge}</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
       bt.addEventListener('click',()=>chooseFlight(i,o.id));box.appendChild(bt);
     });
 
@@ -372,8 +381,7 @@
     let previousChosen=null;
     let previousArrivalDate=state.startDate;
     let previousArrivalMin=null;
-    let firstDepartureDate=null;
-    let firstDepartureMin=null;
+    let runningElapsed=0;
     const rows=[];const timeline=[];
 
     for(let i=0;i<state.route.length-1;i++){
@@ -392,9 +400,9 @@
       departDate=legRendered.departDate;
       if(previousChosen){
         const arr=F.arrival(previousChosen,departDate);
-        if(firstDepartureDate===null){firstDepartureDate=departDate;firstDepartureMin=previousChosen.departMin;}
         const groundMin=i>0&&inboundArrivalMin!=null?minutesBetween(inboundArrivalDate,inboundArrivalMin,departDate,previousChosen.departMin):0;
-        const elapsedMin=minutesBetween(firstDepartureDate,firstDepartureMin,arr.date,arr.min);
+        runningElapsed+=groundMin+previousChosen.duration;
+        const elapsedMin=runningElapsed;
         const fromAirport=by(state.route[i]),toAirport=by(state.route[i+1]);
         timeline.push({
           from:state.route[i],to:state.route[i+1],
