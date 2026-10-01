@@ -19,8 +19,33 @@
   function by(code){return window.NTA.byCode(code);}
   const F=window.NTA_FLIGHTS;
   const liveFareCache=new Map();
+  const liveFareData=new Map();
   const liveFareByLeg=new Map();
   let renderVersion=0;
+  function isoDate(iso){return String(iso||'').slice(0,10);}
+  function isoMinutes(iso){
+    const m=String(iso||'').match(/T(\d{2}):(\d{2})/);
+    return m?Number(m[1])*60+Number(m[2]):null;
+  }
+  function providerOptions(data,a,b,date){
+    if(!data||!Array.isArray(data.offers))return null;
+    return data.offers.map((o,idx)=>{
+      const departMin=isoMinutes(o.departureTime),arrivalMin=isoMinutes(o.arrivalTime);
+      if(departMin==null||arrivalMin==null)return null;
+      const departDay=isoDate(o.departureTime)||date;
+      const arrivalDay=isoDate(o.arrivalTime)||departDay;
+      const dayOffset=Math.max(0,window.NTA.diffDays(departDay,arrivalDay));
+      const elapsed=Math.max(1,Math.round((new Date(o.arrivalTime)-new Date(o.departureTime))/60000));
+      return {
+        id:`provider|${o.offerId||idx}|${a}|${b}|${date}`,
+        date,departMin,arrivalMin,arrivalDayOffset:dayOffset,duration:elapsed,
+        price:Number(o.amount),currency:o.currency||'USD',
+        carrier:o.operatingCarrier||o.operatingCarrierCode||'Carrier',
+        flightNo:o.flightNumber||o.operatingCarrierCode||'Flight',
+        sample:false,provider:data.provider||'provider',liveMode:Boolean(data.liveMode&&o.liveMode)
+      };
+    }).filter(Boolean).sort((x,y)=>x.departMin-y.departMin);
+  }
   function fareKey(a,b,date){return `${a}|${b}|${date}`;}
   function formatMoney(amount,currency){
     try{return new Intl.NumberFormat(undefined,{style:'currency',currency:currency||'USD',maximumFractionDigits:0}).format(amount);}
@@ -59,33 +84,32 @@
   }
   async function hydrateLivePricing(version){
     const nodes=[...document.querySelectorAll('.live-fare[data-leg-index]')];
+    let learnedSomething=false;
     await Promise.all(nodes.map(async node=>{
       const leg=Number(node.dataset.legIndex),a=node.dataset.origin,b=node.dataset.destination,date=node.dataset.date;
+      const key=fareKey(a,b,date);
+      if(liveFareData.has(key)){
+        const existing=liveFareData.get(key);
+        liveFareByLeg.set(leg,existing);
+        return;
+      }
       try{
         const data=await fetchFare(a,b,date);
-        if(version!==renderVersion||!node.isConnected)return;
+        if(version!==renderVersion)return;
+        liveFareData.set(key,data);
         liveFareByLeg.set(leg,data);
-        const offers=data.offers||[];
-        if(!offers.length){
-          node.className='live-fare unavailable';
-          node.innerHTML='<div class="live-fare-label">Live pricing</div><div class="live-fare-value">No nonstop fare returned for this date</div><div class="small">The route remains verified; this provider may not sell this flight.</div>';
-        }else{
-          const best=offers[0],isLive=Boolean(data.liveMode&&best.liveMode);
-          node.className=`live-fare ${isLive?'live':'test'}`;
-          const carrier=best.operatingCarrier||best.operatingCarrierCode||'Carrier';
-          node.innerHTML=`<div class="live-fare-label">${isLive?'Live fare':'Test fare'} · lowest nonstop economy</div><div class="live-fare-value">From ${formatMoney(best.amount,best.currency)}</div><div class="small">${carrier}${best.flightNumber?` · ${best.flightNumber}`:''} · checked ${checkedTime(data.checkedAt)}${isLive&&best.expiresAt?' · quote expires soon':''}</div>`;
-        }
+        learnedSomething=true;
       }catch(err){
-        if(version!==renderVersion||!node.isConnected)return;
-        liveFareByLeg.set(leg,{error:true,status:err.status||0});
-        node.className='live-fare unavailable';
-        node.innerHTML=err.status===503?
-          '<div class="live-fare-label">Live pricing</div><div class="live-fare-value">Provider access not connected yet</div><div class="small">Add the live pricing access token to enable real fares.</div>':
-          '<div class="live-fare-label">Live pricing</div><div class="live-fare-value">Fare lookup unavailable</div><div class="small">You can continue planning; try pricing again later.</div>';
-      }finally{
-        if(version===renderVersion)updateLiveTripFare();
+        if(version!==renderVersion)return;
+        const data={error:true,status:err.status||0,offers:[],message:String(err.message||err)};
+        liveFareData.set(key,data);
+        liveFareByLeg.set(leg,data);
+        learnedSomething=true;
       }
     }));
+    if(version!==renderVersion)return;
+    if(learnedSomething){render();return;}
+    updateLiveTripFare();
   }
   function selectedOption(legIndex,a,b,date,visibleOptions){
     const id=state.selections[String(legIndex)];
@@ -184,22 +208,43 @@
   }
   function renderLeg(i,a,b,departDate,plan,priorSelected){
     const knownRoute=F.hasKnownRoute(a,b);
-    let opts=F.getOptions(a,b,departDate,i);
-    let note=knownRoute?'Choose one flight to continue.':'No routable planning link is available for this pair yet.';
     const locked=i>0&&!priorSelected;
+    const key=fareKey(a,b,departDate);
+    const fareData=liveFareData.get(key);
+    let providerOpts=providerOptions(fareData,a,b,departDate);
+    let usingProvider=Array.isArray(providerOpts)&&providerOpts.length>0;
+    let opts=usingProvider?providerOpts:F.getOptions(a,b,departDate,i);
+    let note=knownRoute?'Choose one flight to continue.':'No routable planning link is available for this pair yet.';
+
     if(!locked&&i>0&&plan&&plan.notBefore!=null){
       opts=opts.filter(o=>o.departMin>=plan.notBefore);
-      if(plan.mode==='asap'&&opts.length===0){
-        departDate=window.NTA.addDays(departDate,1);opts=F.getOptions(a,b,departDate,i);note='No practical same-day connection in this sample schedule, so the next available choices are tomorrow.';
-      } else if(plan.mode==='later'&&opts.length===0){note='No later same-day sample flights fit this plan. Choose 1 night, another date, or ASAP.';}
-    } else if(locked){
+      if(opts.length===0){
+        note=usingProvider
+          ?'No provider offer fits this connection window. Change the stay above or choose another departure date.'
+          :'No sample flight fits this connection window. Change the stay above to see more choices.';
+      }
+    }else if(locked){
       note='Choose the inbound flight first. NexTownAir will then show only departures that leave after you arrive and clear the connection buffer.';
     }
 
     const A=by(a),B=by(b),leg=document.createElement('section');leg.className=`leg${locked?' leg-locked':''}`;
-    const fareMarkup=(!locked&&knownRoute)?`<div class="live-fare loading" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Live pricing</div><div class="live-fare-value">Checking current fare…</div></div>`:'';
+    let fareMarkup='';
+    if(!locked&&knownRoute){
+      if(!fareData){
+        fareMarkup=`<div class="live-fare loading" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers</div><div class="live-fare-value">Checking provider…</div></div>`;
+      }else if(fareData.error){
+        fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers</div><div class="live-fare-value">Provider unavailable</div><div class="small">Showing sample schedule only.</div></div>`;
+      }else if(!fareData.offers||!fareData.offers.length){
+        fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers</div><div class="live-fare-value">No nonstop offer returned</div><div class="small">Showing sample schedule only.</div></div>`;
+      }else{
+        const best=fareData.offers[0],isLive=Boolean(fareData.liveMode&&best.liveMode);
+        fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?'Live offers':'Duffel test offers'} · nonstop economy</div><div class="live-fare-value">${formatMoney(best.amount,best.currency)}+</div><div class="small">${fareData.offers.length} offer${fareData.offers.length===1?'':'s'} · checked ${checkedTime(fareData.checkedAt)}</div></div>`;
+      }
+    }
+
     leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${A.city} → ${B.city}</h2><div class="muted">${a} → ${b}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div><p class="small">${note}</p>${fareMarkup}<div class="options"></div>`;
     const box=leg.querySelector('.options');
+
     if(locked){
       if(state.selections[String(i)]){delete state.selections[String(i)];save();}
       box.outerHTML=`<div class="pending-flights"><strong>Waiting for your arrival at ${a}.</strong><br>Select Leg ${i} first. Once the inbound flight is chosen, departures from ${a} will be filtered to your actual arrival time and connection plan.</div>`;
@@ -210,14 +255,25 @@
       if(state.selections[String(i)]){delete state.selections[String(i)];save();}
       return {section:leg,chosen:null,departDate,options:[]};
     }
-    if(!opts.length){box.outerHTML='<div class="no-flights">No sample flights match this timing. Change the stay above to see more choices.</div>';return {section:leg,chosen:null,departDate,options:[]};}
+    if(!fareData){
+      box.innerHTML='<div class="pending-flights">Loading flight offers…</div>';
+      return {section:leg,chosen:null,departDate,options:[]};
+    }
+    if(!opts.length){
+      box.innerHTML='<div class="no-flights">No flight offers match this timing. Change the stay or departure date to see more choices.</div>';
+      return {section:leg,chosen:null,departDate,options:[]};
+    }
+
     opts.forEach(o=>{
       const selected=state.selections[String(i)]===o.id;
       const arr=F.arrival(o,departDate);
       const bt=document.createElement('button');bt.type='button';bt.className=`flight${selected?' selected':''}`;bt.setAttribute('aria-pressed',String(selected));
-      bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${o.duration} min · nonstop</div><span class="flight-badge">Verified route · sample schedule</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
+      const badge=usingProvider?(o.liveMode?'Live offer':'Duffel test offer'):'Verified route · sample schedule';
+      const price=usingProvider?`<div class="price">${formatMoney(o.price,o.currency)}</div>`:'';
+      bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${o.duration} min · nonstop</div>${price}<span class="flight-badge">${badge}</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
       bt.addEventListener('click',()=>chooseFlight(i,o.id));box.appendChild(bt);
     });
+
     const chosen=selectedOption(i,a,b,departDate,opts);
     if(state.selections[String(i)]&&!chosen){delete state.selections[String(i)];save();}
     return {section:leg,chosen,departDate,options:opts};
@@ -329,6 +385,8 @@
         el.content.appendChild(stayRendered.section);plan=stayRendered.plan;departDate=plan.date;
       }
       const legRendered=renderLeg(i,state.route[i],state.route[i+1],departDate,plan,previousChosen);
+      const currentFareData=liveFareData.get(fareKey(state.route[i],state.route[i+1],departDate));
+      if(currentFareData)liveFareByLeg.set(i,currentFareData);
       el.content.appendChild(legRendered.section);
       previousChosen=legRendered.chosen;
       departDate=legRendered.departDate;
