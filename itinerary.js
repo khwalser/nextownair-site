@@ -29,6 +29,8 @@
   const liveFareCache=new Map();
   const liveFareData=new Map();
   const liveFareByLeg=new Map();
+  const scheduleMonthCache=new Map();
+  const scheduleMonthData=new Map();
   const fareQueue=[];
   const fareStarts=[];
   const FARE_WINDOW_MS=60000;
@@ -63,28 +65,58 @@
     const p=parseYmd(date);if(!p)return date;
     return new Date(p.y,p.m-1,p.d,12,0,0,0).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
   }
+  function monthKeyFromDate(date){return String(date||'').slice(0,7);}
+  function scheduleMonthKey(a,b,month){return `${a}|${b}|${month}`;}
+  function fetchScheduleMonth(a,b,month){
+    const key=scheduleMonthKey(a,b,month);
+    if(scheduleMonthCache.has(key))return scheduleMonthCache.get(key);
+    const p=fetch(`/api/schedule-calendar?origin=${encodeURIComponent(a)}&destination=${encodeURIComponent(b)}&month=${encodeURIComponent(month)}`,{headers:{Accept:'application/json'}})
+      .then(async res=>{
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok){
+          const err=new Error(data.message||data.error||'Schedule lookup failed');
+          err.status=res.status;err.code=data.error||'';throw err;
+        }
+        return data;
+      })
+      .catch(err=>{scheduleMonthCache.delete(key);throw err;});
+    scheduleMonthCache.set(key,p);
+    return p;
+  }
+  function scheduleState(a,b,date){
+    const month=monthKeyFromDate(date);
+    const data=scheduleMonthData.get(scheduleMonthKey(a,b,month));
+    if(!data)return {status:'checking',label:'Checking…',detail:''};
+    if(data.error){
+      if(data.code==='schedule_provider_not_configured')return {status:'unconfigured',label:'Schedule source needed',detail:''};
+      return {status:'error',label:'Schedule unavailable',detail:''};
+    }
+    const day=data.days&&data.days[date];
+    if(day&&day.count>0)return {status:'yes',label:'Scheduled',detail:`${day.count} published flight${day.count===1?'':'s'}`};
+    return {status:'none',label:'No scheduled nonstop',detail:'no published nonstop service found'};
+  }
   function firstLeg(){
     return state.route.length>=2?{a:state.route[0],b:state.route[1]}:null;
   }
   function calendarAvailability(date){
     const leg=firstLeg();if(!leg)return {status:'none',label:''};
-    const data=liveFareData.get(fareKey(leg.a,leg.b,date));
-    if(!data)return {status:'checking',label:'Checking'};
-    if(data.error)return {status:'retry',label:'Retrying'};
-    const best=lowestOffer(data);
-    if(!best)return {status:'unavailable',label:'No nonstop'};
-    return {status:'available',label:formatMoney(best.amount,best.currency),best};
+    const stateForDate=scheduleState(leg.a,leg.b,date);
+    if(stateForDate.status==='yes')return {status:'available',label:'Scheduled'};
+    if(stateForDate.status==='none')return {status:'unavailable',label:'No nonstop'};
+    if(stateForDate.status==='unconfigured')return {status:'unconfigured',label:'Schedule source needed'};
+    if(stateForDate.status==='error')return {status:'retry',label:'Unavailable'};
+    return {status:'checking',label:'Checking'};
   }
   function updateCalendarCell(date){
     const cell=el.calendarGrid.querySelector(`[data-calendar-date="${date}"]`);
     if(!cell)return;
     const av=calendarAvailability(date);
-    cell.classList.remove('checking','available','unavailable','retry');
+    cell.classList.remove('checking','available','unavailable','retry','unconfigured');
     cell.classList.add(av.status);
-    cell.disabled=av.status!=='available';
+    cell.disabled=av.status!=='available'&&av.status!=='unconfigured';
     const fare=cell.querySelector('.calendar-fare');
-    if(fare)fare.textContent=av.status==='available'?`from ${av.label}`:av.status==='unavailable'?'—':av.status==='retry'?'retry':'…';
-    cell.title=av.status==='available'? `Live nonstop available from ${av.label}` : av.status==='unavailable'?'No live nonstop inventory returned for this date':av.status==='retry'?'Search temporarily unavailable; this date has not been ruled out':'Checking live inventory';
+    if(fare)fare.textContent=av.status==='available'?'scheduled':av.status==='unavailable'?'—':av.status==='unconfigured'?'choose':'…';
+    cell.title=av.status==='available'?'Published nonstop service is scheduled for this date':av.status==='unavailable'?'No published nonstop service found for this date':av.status==='unconfigured'?'Schedule source is not configured; you can still choose this date':'Checking published schedule';
   }
   function renderStartCalendar(){
     if(!calendarMonthDate)calendarMonthDate=monthStart(state.startDate);
@@ -107,12 +139,12 @@
       }else{
         const av=calendarAvailability(date);
         btn.classList.add(av.status);
-        btn.disabled=av.status!=='available';
+        btn.disabled=av.status!=='available'&&av.status!=='unconfigured';
       }
       const n=document.createElement('span');n.className='calendar-day-number';n.textContent=String(day);
       const fare=document.createElement('span');fare.className='calendar-fare';
       const av=calendarAvailability(date);
-      fare.textContent=date<today?'':av.status==='available'?`from ${av.label}`:av.status==='unavailable'?'—':av.status==='retry'?'retry':'…';
+      fare.textContent=date<today?'':av.status==='available'?'scheduled':av.status==='unavailable'?'—':av.status==='unconfigured'?'choose':'…';
       btn.append(n,fare);
       btn.addEventListener('click',()=>{
         if(btn.disabled)return;
@@ -130,41 +162,32 @@
     const leg=firstLeg();
     if(!leg){el.calendarStatus.textContent='Choose a route first.';return;}
     const token=++calendarLoadVersion;
-    const y=calendarMonthDate.getFullYear(),m=calendarMonthDate.getMonth();
-    const days=new Date(y,m+1,0,12).getDate();
-    const today=window.NTA.todayLocal();
-    const dates=[];
-    for(let day=1;day<=days;day++){
-      const date=monthDateString(calendarMonthDate,day);
-      const cached=liveFareData.get(fareKey(leg.a,leg.b,date));
-      if(date>=today&&(!cached||cached.error))dates.push(date);
-    }
-    if(!dates.length){
-      el.calendarStatus.textContent='Green = confirmed live nonstop. Blue dates are still being checked; gray dates were checked and returned no nonstop inventory.';
+    const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
+    const key=scheduleMonthKey(leg.a,leg.b,month);
+    const existing=scheduleMonthData.get(key);
+    if(existing&&!existing.error){
       renderStartCalendar();
+      el.calendarStatus.textContent='Green dates have published nonstop service for the first leg. Fares are checked with Duffel after you choose a date.';
       return;
     }
-    el.calendarStatus.textContent=`Checking ${dates.length} dates for ${leg.a} → ${leg.b}. Searches are queued to stay inside Duffel’s live-search limit.`;
-    let cursor=0,completed=0;
-    const worker=async()=>{
-      while(cursor<dates.length){
-        const date=dates[cursor++];
-        try{
-          const data=await fetchFare(leg.a,leg.b,date);
-          if(token!==calendarLoadVersion)return;
-          liveFareData.set(fareKey(leg.a,leg.b,date),data);
-        }catch(err){
-          if(token!==calendarLoadVersion)return;
-          liveFareData.set(fareKey(leg.a,leg.b,date),{error:true,status:err.status||0,offers:[],message:String(err.message||err)});
-        }
-        completed++;
-        updateCalendarCell(date);
-        el.calendarStatus.textContent=`Checking first-leg availability… ${completed} of ${dates.length} completed. Blue dates are pending, not unavailable.`;
-      }
-    };
-    await Promise.all(Array.from({length:Math.min(4,dates.length)},worker));
-    if(token!==calendarLoadVersion)return;
-    el.calendarStatus.textContent='Scan complete: green dates have live nonstop inventory; gray dates were checked and returned none.';
+    el.calendarStatus.textContent=`Loading published ${leg.a} → ${leg.b} schedule for ${monthTitle(calendarMonthDate)}…`;
+    try{
+      const data=await fetchScheduleMonth(leg.a,leg.b,month);
+      if(token!==calendarLoadVersion)return;
+      scheduleMonthData.set(key,data);
+      renderStartCalendar();
+      el.calendarStatus.textContent=data.partial
+        ?'Published schedule loaded, but the provider indicates more results may exist. Green dates are confirmed service dates.'
+        :'Green dates have published nonstop service for the first leg. Fares are checked with Duffel after you choose a date.';
+    }catch(err){
+      if(token!==calendarLoadVersion)return;
+      const data={error:true,status:err.status||0,code:err.code||'',message:String(err.message||err),days:{}};
+      scheduleMonthData.set(key,data);
+      renderStartCalendar();
+      el.calendarStatus.textContent=err.code==='schedule_provider_not_configured'
+        ?'Published-schedule calendar is ready but needs the FlightAware AeroAPI key. You can still choose a date manually.'
+        :'Published schedule lookup is temporarily unavailable. You can still choose a date manually.';
+    }
   }
   function openStartCalendar(){
     calendarMonthDate=calendarMonthDate||monthStart(state.startDate);
@@ -213,16 +236,12 @@
     return d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
   }
   function stayAvailabilityState(a,b,date){
-    const data=liveFareData.get(fareKey(a,b,date));
-    if(!data)return {status:'loading',label:'Checking…',detail:''};
-    if(data.error)return {status:'error',label:'Unavailable',detail:'pricing lookup failed'};
-    const best=lowestOffer(data);
-    if(!best)return {status:'none',label:'No nonstop',detail:'no live nonstop inventory returned'};
-    return {
-      status:'yes',
-      label:'From '+formatMoney(best.amount,best.currency),
-      detail:data.offers.length+' flight'+(data.offers.length===1?'':'s')
-    };
+    const av=scheduleState(a,b,date);
+    if(av.status==='yes')return {status:'yes',label:'Scheduled',detail:av.detail};
+    if(av.status==='none')return {status:'none',label:'No scheduled nonstop',detail:'published schedule'};
+    if(av.status==='unconfigured')return {status:'error',label:'Schedule source needed',detail:''};
+    if(av.status==='error')return {status:'error',label:'Schedule unavailable',detail:''};
+    return {status:'loading',label:'Checking schedule…',detail:''};
   }
   function pruneFareStarts(){
     const cutoff=Date.now()-FARE_WINDOW_MS;
@@ -281,16 +300,10 @@
   }
   async function hydrateLivePricing(version){
     const legNodes=[...document.querySelectorAll('.live-fare[data-leg-index]')];
-    const stayNodes=[...document.querySelectorAll('.stay-av[data-origin][data-destination][data-date]')];
     const requests=new Map();
     legNodes.forEach(node=>{
       const a=node.dataset.origin,b=node.dataset.destination,date=node.dataset.date;
       requests.set(fareKey(a,b,date),{a,b,date,leg:Number(node.dataset.legIndex)});
-    });
-    stayNodes.forEach(node=>{
-      const a=node.dataset.origin,b=node.dataset.destination,date=node.dataset.date;
-      const key=fareKey(a,b,date);
-      if(!requests.has(key))requests.set(key,{a,b,date,leg:null});
     });
     let learnedSomething=false;
     await Promise.all([...requests.entries()].map(async([key,req])=>{
@@ -315,6 +328,30 @@
     if(version!==renderVersion)return;
     if(learnedSomething){render();return;}
     updateLiveTripFare();
+  }
+  async function hydrateScheduleAvailability(version){
+    const nodes=[...document.querySelectorAll('.stay-av[data-origin][data-destination][data-date]')];
+    const requests=new Map();
+    nodes.forEach(node=>{
+      const a=node.dataset.origin,b=node.dataset.destination,date=node.dataset.date,month=monthKeyFromDate(date);
+      const key=scheduleMonthKey(a,b,month);
+      if(!requests.has(key))requests.set(key,{a,b,month});
+    });
+    let learnedSomething=false;
+    await Promise.all([...requests.entries()].map(async([key,req])=>{
+      if(scheduleMonthData.has(key))return;
+      try{
+        const data=await fetchScheduleMonth(req.a,req.b,req.month);
+        if(version!==renderVersion)return;
+        scheduleMonthData.set(key,data);learnedSomething=true;
+      }catch(err){
+        if(version!==renderVersion)return;
+        scheduleMonthData.set(key,{error:true,status:err.status||0,code:err.code||'',message:String(err.message||err),days:{}});
+        learnedSomething=true;
+      }
+    }));
+    if(version!==renderVersion)return;
+    if(learnedSomething)render();
   }
   function selectedOption(legIndex,a,b,date,visibleOptions){
     const id=state.selections[String(legIndex)];
@@ -386,15 +423,15 @@
     wrap.className='stay-availability';
     if(!hasExactArrival||!nextCode){
       wrap.classList.add('pending');
-      const strong=document.createElement('strong');strong.textContent='Live outbound availability';
+      const strong=document.createElement('strong');strong.textContent='Published outbound schedule';
       const span=document.createElement('span');span.textContent='Select the inbound flight to compare 1–4 night stays.';
       wrap.append(strong,span);
       section.querySelector('.stay-grid').insertAdjacentElement('afterend',wrap);
       return;
     }
     const head=document.createElement('div');head.className='stay-availability-head';
-    const title=document.createElement('strong');title.textContent='Live outbound availability';
-    const sub=document.createElement('span');sub.textContent='Compare 1–4 nights from your actual arrival date.';
+    const title=document.createElement('strong');title.textContent='Published outbound schedule';
+    const sub=document.createElement('span');sub.textContent='Compare 1–4 nights from your actual arrival date. Duffel fares load after you choose.';
     head.append(title,sub);wrap.appendChild(head);
     const grid=document.createElement('div');grid.className='stay-availability-grid';
     [1,2,3,4].forEach(n=>{
@@ -409,12 +446,13 @@
       const meta=document.createElement('span');
       meta.textContent=window.NTA.fmtDate(date,{weekday:'short',month:'short',day:'numeric'})+(av.detail?' · '+av.detail:'');
       btn.append(nights,value,meta);
-      btn.addEventListener('click',()=>setStay(i,{mode:'nights',nights:n,date:null}));
+      btn.disabled=av.status==='none'||av.status==='loading'||(av.status==='error'&&av.label!=='Schedule source needed');
+      btn.addEventListener('click',()=>{if(!btn.disabled)setStay(i,{mode:'nights',nights:n,date:null});});
       grid.appendChild(btn);
     });
     wrap.appendChild(grid);
     const note=document.createElement('div');note.className='small';
-    note.textContent='“No nonstop” means Duffel returned no live nonstop inventory for that date; it does not necessarily mean the route never operates that day.';
+    note.textContent='Green means published nonstop service is scheduled. “No scheduled nonstop” means the schedule source found none for that date; live fares are checked separately with Duffel after you choose.';
     wrap.appendChild(note);
     section.querySelector('.stay-grid').insertAdjacentElement('afterend',wrap);
   }
@@ -659,6 +697,7 @@
     }
     renderSummary(rows,timeline);
     hydrateLivePricing(version);
+    hydrateScheduleAvailability(version);
   }
 
   el.startDateButton.addEventListener('click',()=>{
