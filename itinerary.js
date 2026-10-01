@@ -145,7 +145,7 @@
       const selected=state.selections[String(i)]===o.id;
       const arr=F.arrival(o,departDate);
       const bt=document.createElement('button');bt.type='button';bt.className=`flight${selected?' selected':''}`;bt.setAttribute('aria-pressed',String(selected));
-      bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${o.duration} min · nonstop</div><div class="price">$${o.price}</div><span class="flight-badge">Sample fare</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
+      bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${o.duration} min · nonstop</div><div class="price">$${o.price}</div><span class="flight-badge">Verified route · sample schedule & fare</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
       bt.addEventListener('click',()=>chooseFlight(i,o.id));box.appendChild(bt);
     });
     const chosen=selectedOption(i,a,b,departDate,opts);
