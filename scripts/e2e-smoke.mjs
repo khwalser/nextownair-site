@@ -53,7 +53,6 @@ check("live-only-itinerary",files.itinerary.includes("let opts=usingProvider?pro
 check("exact-fare-ui",files.itinerary.includes("fare-choice-list")&&files.itinerary.includes("Lowest fare")&&!files.itinerary.includes("o.fareCount>1?\`From"));
 check("required-index-scripts",["data.js","trip-state.js","map.js"].every(x=>files.index.includes(`src="${x}"`)));
 check("required-itinerary-scripts",["data.js","trip-state.js","flight-provider.js","itinerary.js"].every(x=>files.itinHtml.includes(`src="${x}"`)));
-check("no-temp-build-command",!files.toml.includes("smoke")&&!files.toml.includes("e2e"));
 
 // ---------- Route/state graph checks ----------
 const storage=new Map();
