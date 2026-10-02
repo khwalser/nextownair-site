@@ -60,7 +60,7 @@
     }catch(_){/* session storage can be unavailable */}
   }
   function rememberFareData(key,data){
-    rememberFareData(key,data);
+    liveFareData.set(key,data);
     if(!data||data.error)return data;
     try{
       const now=Date.now(),store=JSON.parse(sessionStorage.getItem(FARE_SESSION_KEY)||'{}');
