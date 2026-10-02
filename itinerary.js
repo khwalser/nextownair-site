@@ -615,8 +615,15 @@
       requests.get(key).dates.push(date);
     });
     if(scheduleProviderUnavailableCode){
-      requests.forEach((req,key)=>scheduleMonthData.set(key,{error:true,status:503,code:scheduleProviderUnavailableCode,message:'Published schedule feed unavailable for this session.',days:{}}));
-      if(requests.size&&version===renderVersion)render();
+      let changed=false;
+      requests.forEach((req,key)=>{
+        const existing=scheduleMonthData.get(key);
+        if(!existing||existing.code!==scheduleProviderUnavailableCode){
+          scheduleMonthData.set(key,{error:true,status:503,code:scheduleProviderUnavailableCode,message:'Published schedule feed unavailable for this session.',days:{}});
+          changed=true;
+        }
+      });
+      if(changed&&version===renderVersion)render();
       return;
     }
     let learnedSomething=false;
