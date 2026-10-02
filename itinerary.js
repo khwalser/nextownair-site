@@ -67,10 +67,29 @@
   }
   function monthKeyFromDate(date){return String(date||'').slice(0,7);}
   function scheduleMonthKey(a,b,month){return `${a}|${b}|${month}`;}
-  function fetchScheduleMonth(a,b,month){
-    const key=scheduleMonthKey(a,b,month);
-    if(scheduleMonthCache.has(key))return scheduleMonthCache.get(key);
-    const p=fetch(`/api/schedule-calendar?origin=${encodeURIComponent(a)}&destination=${encodeURIComponent(b)}&month=${encodeURIComponent(month)}`,{headers:{Accept:'application/json'}})
+  function mergeScheduleData(base,next){
+    const merged={
+      provider:next.provider||base?.provider||'aerodatabox-apimarket',
+      sourceType:next.sourceType||base?.sourceType||'published-schedule',
+      origin:next.origin||base?.origin,
+      destination:next.destination||base?.destination,
+      month:next.month||base?.month,
+      checkedAt:next.checkedAt||base?.checkedAt,
+      days:{...(base?.days||{})},
+      checkedDates:[...new Set([...(base?.checkedDates||[]),...(next.checkedDates||[])])],
+      unknownDates:[...new Set(next.unknownDates||[])],
+      partial:Boolean(next.partial)
+    };
+    for(const [date,value] of Object.entries(next.days||{}))merged.days[date]=value;
+    return merged;
+  }
+  function fetchScheduleMonth(a,b,month,dates){
+    const normalizedDates=Array.isArray(dates)?[...new Set(dates)].sort():[];
+    const requestKey=scheduleMonthKey(a,b,month)+'|'+(normalizedDates.length?normalizedDates.join(','):'all');
+    if(scheduleMonthCache.has(requestKey))return scheduleMonthCache.get(requestKey);
+    const query=new URLSearchParams({origin:a,destination:b,month});
+    if(normalizedDates.length)query.set('dates',normalizedDates.join(','));
+    const p=fetch(`/api/schedule-calendar?${query}`,{headers:{Accept:'application/json'}})
       .then(async res=>{
         const data=await res.json().catch(()=>({}));
         if(!res.ok){
@@ -79,8 +98,8 @@
         }
         return data;
       })
-      .catch(err=>{scheduleMonthCache.delete(key);throw err;});
-    scheduleMonthCache.set(key,p);
+      .catch(err=>{scheduleMonthCache.delete(requestKey);throw err;});
+    scheduleMonthCache.set(requestKey,p);
     return p;
   }
   function scheduleState(a,b,date){
@@ -165,20 +184,28 @@
     const token=++calendarLoadVersion;
     const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
     const key=scheduleMonthKey(leg.a,leg.b,month);
-    const existing=scheduleMonthData.get(key);
-    if(existing&&!existing.error){
+    let current=scheduleMonthData.get(key);
+    if(current&&!current.error&&!current.partial){
       renderStartCalendar();
       el.calendarStatus.textContent='Green dates have published nonstop service for the first leg. Fares are checked with Duffel after you choose a date.';
       return;
     }
     el.calendarStatus.textContent=`Loading published ${leg.a} → ${leg.b} schedule for ${monthTitle(calendarMonthDate)}…`;
     try{
-      const data=await fetchScheduleMonth(leg.a,leg.b,month);
+      let remaining=current&&!current.error&&Array.isArray(current.unknownDates)&&current.unknownDates.length?current.unknownDates:null;
+      for(let pass=0;pass<3;pass++){
+        const data=await fetchScheduleMonth(leg.a,leg.b,month,remaining);
+        if(token!==calendarLoadVersion)return;
+        current=mergeScheduleData(current&&!current.error?current:null,data);
+        scheduleMonthData.set(key,current);
+        renderStartCalendar();
+        if(!current.partial||!current.unknownDates.length)break;
+        remaining=current.unknownDates;
+        el.calendarStatus.textContent=`Published schedule is partially loaded. Finishing ${remaining.length} unchecked date${remaining.length===1?'':'s'}…`;
+      }
       if(token!==calendarLoadVersion)return;
-      scheduleMonthData.set(key,data);
-      renderStartCalendar();
-      el.calendarStatus.textContent=data.partial
-        ?'Published schedule loaded, but the provider indicates more results may exist. Green dates are confirmed service dates.'
+      el.calendarStatus.textContent=current.partial
+        ?'Most published schedule dates are loaded. Amber dates were not confirmed and can be retried; they are not being treated as no-service dates.'
         :'Green dates have published nonstop service for the first leg. Fares are checked with Duffel after you choose a date.';
     }catch(err){
       if(token!==calendarLoadVersion)return;
@@ -186,8 +213,10 @@
       scheduleMonthData.set(key,data);
       renderStartCalendar();
       el.calendarStatus.textContent=err.code==='schedule_provider_not_configured'
-        ?'Published-schedule calendar is ready but needs the AeroDataBox API key. You can still choose a date manually.'
-        :'Published schedule lookup is temporarily unavailable. You can still choose a date manually.';
+        ?'Published-schedule calendar is ready but needs your AeroDataBox API.Market key. You can still choose a date manually.'
+        :err.code==='schedule_auth_failed'
+          ?'AeroDataBox API.Market rejected the key. Check the Netlify environment variable and subscription.'
+          :'Published schedule lookup is temporarily unavailable. You can still choose a date manually.';
     }
   }
   function openStartCalendar(){
@@ -336,18 +365,29 @@
     nodes.forEach(node=>{
       const a=node.dataset.origin,b=node.dataset.destination,date=node.dataset.date,month=monthKeyFromDate(date);
       const key=scheduleMonthKey(a,b,month);
-      if(!requests.has(key))requests.set(key,{a,b,month});
+      if(!requests.has(key))requests.set(key,{a,b,month,dates:[]});
+      requests.get(key).dates.push(date);
     });
     let learnedSomething=false;
     await Promise.all([...requests.entries()].map(async([key,req])=>{
-      if(scheduleMonthData.has(key))return;
+      const existing=scheduleMonthData.get(key);
+      const needed=[...new Set(req.dates)].filter(date=>{
+        if(!existing||existing.error)return true;
+        if(existing.days&&existing.days[date])return false;
+        if(Array.isArray(existing.checkedDates)&&existing.checkedDates.includes(date))return false;
+        return true;
+      });
+      if(!needed.length)return;
       try{
-        const data=await fetchScheduleMonth(req.a,req.b,req.month);
+        const data=await fetchScheduleMonth(req.a,req.b,req.month,needed);
         if(version!==renderVersion)return;
-        scheduleMonthData.set(key,data);learnedSomething=true;
+        scheduleMonthData.set(key,mergeScheduleData(existing&&!existing?.error?existing:null,data));
+        learnedSomething=true;
       }catch(err){
         if(version!==renderVersion)return;
-        scheduleMonthData.set(key,{error:true,status:err.status||0,code:err.code||'',message:String(err.message||err),days:{}});
+        if(!existing){
+          scheduleMonthData.set(key,{error:true,status:err.status||0,code:err.code||'',message:String(err.message||err),days:{}});
+        }
         learnedSomething=true;
       }
     }));
