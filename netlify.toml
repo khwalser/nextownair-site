@@ -1,3 +1,4 @@
 # NexTownAir Netlify configuration
 [build]
+  command = "node scripts/roc-schedule-smoke.mjs"
   functions = "netlify/functions"
