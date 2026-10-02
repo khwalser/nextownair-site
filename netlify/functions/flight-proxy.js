@@ -15,6 +15,7 @@ function httpsRequestJson(options, body = null) {
           const detail = parsed.error_description || parsed.error || JSON.stringify(parsed.errors || parsed);
           const err = new Error(`Upstream HTTP ${res.statusCode}: ${detail}`);
           err.statusCode = res.statusCode;
+          err.headers = res.headers || {};
           return reject(err);
         }
         resolve(parsed);
@@ -62,29 +63,18 @@ async function searchDuffel(origin,destination,departureDate){
     }
   });
 
-  let response=null,lastErr=null;
-  for(let attempt=0;attempt<3;attempt++){
-    try{
-      response=await httpsRequestJson({
-        hostname:'api.duffel.com',
-        path:'/air/offer_requests?return_offers=true&supplier_timeout=9000',
-        method:'POST',
-        headers:{
-          'Authorization':`Bearer ${token}`,
-          'Duffel-Version':'v2',
-          'Accept':'application/json',
-          'Content-Type':'application/json',
-          'Content-Length':Buffer.byteLength(body)
-        }
-      }, body);
-      break;
-    }catch(err){
-      lastErr=err;
-      if(err?.statusCode!==429||attempt===2)throw err;
-      await sleep(750*(attempt+1));
+  const response=await httpsRequestJson({
+    hostname:'api.duffel.com',
+    path:'/air/offer_requests?return_offers=true&supplier_timeout=9000',
+    method:'POST',
+    headers:{
+      'Authorization':`Bearer ${token}`,
+      'Duffel-Version':'v2',
+      'Accept':'application/json',
+      'Content-Type':'application/json',
+      'Content-Length':Buffer.byteLength(body)
     }
-  }
-  if(!response)throw lastErr||new Error('Duffel request failed');
+  }, body);
 
   const request=response.data||{};
   const rawOffers=(request.offers||[])
@@ -187,6 +177,17 @@ exports.handler=async event=>{
     });
   }catch(err){
     console.error('flight-proxy error',err);
+    if(err?.statusCode===429){
+      const resetHeader=String(err?.headers?.['ratelimit-reset']||'');
+      const resetAt=Date.parse(resetHeader);
+      const retryAfterMs=Number.isFinite(resetAt)?Math.max(1000,resetAt-Date.now()+500):60000;
+      return json(429,{
+        error:'pricing_rate_limited',
+        message:'Live fare provider rate limit reached.',
+        retryAfterMs,
+        resetAt:Number.isFinite(resetAt)?new Date(resetAt).toISOString():null
+      },{'Retry-After':String(Math.max(1,Math.ceil(retryAfterMs/1000)))});
+    }
     return json(502,{
       error:'pricing_lookup_failed',
       message:'Flight pricing lookup is unavailable.',
