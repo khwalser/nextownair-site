@@ -135,10 +135,14 @@ export default async(req)=>{
         if(days[date].flights.length<12)days[date].flights.push(flight);
       }
     }catch(err){
+      const message=String(err?.message||err);
       if(err?.status===401||err?.status===403){
-        return json({error:"schedule_auth_failed",message:String(err.message||err),upstreamStatus:err.status},502,false);
+        return json({error:"schedule_auth_failed",message,upstreamStatus:err.status},502,false);
       }
-      lastUpstreamError={status:Number(err?.status||0),message:String(err?.message||err).slice(0,300)};
+      if(err?.status===400&&/no active subscription/i.test(message)){
+        return json({error:"schedule_subscription_inactive",message:"AeroDataBox API.Market subscription is not active.",upstreamStatus:400},503,false);
+      }
+      lastUpstreamError={status:Number(err?.status||0),message:message.slice(0,300)};
       unknownDates.push(date);
     }
   }
