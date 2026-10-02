@@ -4,6 +4,15 @@ on:
   push:
     branches: [main]
     paths:
+      - "index.html"
+      - "itinerary.html"
+      - "map.js"
+      - "itinerary.js"
+      - "trip-state.js"
+      - "flight-provider.js"
+      - "data.js"
+      - "styles.css"
+      - "netlify/functions/**"
       - "e2e/live-itinerary.mjs"
       - ".github/workflows/live-e2e.yml"
   workflow_dispatch:
@@ -11,7 +20,7 @@ on:
       base_url:
         description: "Immutable Netlify deploy URL or production URL to test"
         required: false
-        default: "https://6ac0397f1e41fe00081da804--nextownair-site.netlify.app"
+        default: "https://6ac0400e9335f200084d0898--nextownair-site.netlify.app"
       route:
         description: "Comma-separated airport route"
         required: false
@@ -29,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     env:
-      E2E_BASE_URL: ${{ inputs.base_url || 'https://6ac0397f1e41fe00081da804--nextownair-site.netlify.app' }}
+      E2E_BASE_URL: ${{ inputs.base_url || 'https://6ac0400e9335f200084d0898--nextownair-site.netlify.app' }}
       E2E_ROUTE: ${{ inputs.route || 'DTW,ROC,DTW' }}
       E2E_DATE: ${{ inputs.date || '' }}
       E2E_OUT_DIR: artifacts
