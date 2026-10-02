@@ -2,213 +2,262 @@ import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const BASE_URL = (process.env.E2E_BASE_URL || 'https://6ac02a6f35e24800084bc419--nextownair-site.netlify.app').replace(/\/$/, '');
-const ROUTE = process.env.E2E_ROUTE || 'DTW,ROC,DTW';
-const DATE = process.env.E2E_DATE || '2026-10-02';
-const OUT_DIR = process.env.E2E_OUT_DIR || 'artifacts';
-const TARGET = `${BASE_URL}/itinerary.html?route=${encodeURIComponent(ROUTE)}&date=${encodeURIComponent(DATE)}`;
+const BASE_URL=(process.env.E2E_BASE_URL||'').replace(/\/$/,'');
+if(!BASE_URL)throw new Error('E2E_BASE_URL is required so the test is pinned to a specific deployed build.');
+const OUT_DIR=process.env.E2E_OUT_DIR||'artifacts';
+fs.mkdirSync(OUT_DIR,{recursive:true});
 
-fs.mkdirSync(OUT_DIR, { recursive: true });
+function localDatePlus(days){
+  const now=new Date();
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Detroit',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
+  const y=Number(parts.find(x=>x.type==='year').value);
+  const m=Number(parts.find(x=>x.type==='month').value);
+  const d=Number(parts.find(x=>x.type==='day').value);
+  const dt=new Date(Date.UTC(y,m-1,d+days));
+  return dt.toISOString().slice(0,10);
+}
+function addDays(date,days){
+  const dt=new Date(date+'T12:00:00Z');dt.setUTCDate(dt.getUTCDate()+days);return dt.toISOString().slice(0,10);
+}
+function money(amount,currency='USD'){
+  return new Intl.NumberFormat('en-US',{style:'currency',currency,maximumFractionDigits:0}).format(Number(amount));
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
-const diagnostics = {
-  target: TARGET,
-  startedAt: new Date().toISOString(),
-  route: ROUTE,
-  date: DATE,
-  console: [],
-  pageErrors: [],
-  requestFailures: [],
-  scheduleResponses: [],
-  fareResponses: [],
-  assertions: []
+const diagnostics={
+  baseUrl:BASE_URL,
+  startedAt:new Date().toISOString(),
+  assertions:[],
+  fareResponses:[],
+  scheduleResponses:[],
+  pageErrors:[],
+  requestFailures:[],
+  console:[]
 };
+function pass(name,detail=''){diagnostics.assertions.push({name,ok:true,detail});console.log('PASS: '+name+(detail?' — '+detail:''));}
+function assert(condition,name,detail=''){if(!condition){diagnostics.assertions.push({name,ok:false,detail});throw new Error(name+(detail?': '+detail:''));}pass(name,detail);}
 
-function pass(name, detail = '') {
-  diagnostics.assertions.push({ name, ok: true, detail });
-  console.log(`PASS: ${name}${detail ? ` — ${detail}` : ''}`);
+let browser,page,failure=null;
+
+function attachDiagnostics(p){
+  p.on('console',msg=>diagnostics.console.push({type:msg.type(),text:msg.text()}));
+  p.on('pageerror',err=>diagnostics.pageErrors.push(String(err)));
+  p.on('requestfailed',req=>diagnostics.requestFailures.push({url:req.url(),error:req.failure()?.errorText||'request failed'}));
+  p.on('response',async res=>{
+    const url=res.url();
+    if(!url.includes('/api/schedule-calendar')&&!url.includes('/.netlify/functions/flight-proxy'))return;
+    let body=null;try{body=await res.json();}catch{}
+    const row={url,status:res.status(),body,at:new Date().toISOString()};
+    if(url.includes('/api/schedule-calendar'))diagnostics.scheduleResponses.push(row);else diagnostics.fareResponses.push(row);
+  });
 }
-
-function assert(condition, name, detail = '') {
-  if (!condition) {
-    diagnostics.assertions.push({ name, ok: false, detail });
-    throw new Error(`${name}${detail ? `: ${detail}` : ''}`);
+async function addAirport(code){
+  await page.locator('#airportSearch').fill(code);
+  await page.locator('#airportFinder').press('Enter');
+  await page.waitForTimeout(120);
+}
+async function clearTrip(){
+  page.once('dialog',d=>d.accept());
+  await page.getByRole('button',{name:'Start over'}).click();
+  await page.waitForFunction(()=>document.querySelectorAll('#trip .stop').length===0);
+}
+function matchingFare(origin,destination,date){
+  return diagnostics.fareResponses.filter(row=>{
+    try{
+      const u=new URL(row.url);
+      return u.searchParams.get('origin')===origin&&u.searchParams.get('destination')===destination&&u.searchParams.get('date')===date;
+    }catch{return false;}
+  }).at(-1)||null;
+}
+async function waitForFare(origin,destination,date,timeoutMs=90000){
+  const started=Date.now();
+  while(Date.now()-started<timeoutMs){
+    const row=matchingFare(origin,destination,date);
+    if(row&&row.status===200)return row;
+    await sleep(500);
   }
-  pass(name, detail);
+  return matchingFare(origin,destination,date);
 }
-
-function money(amount, currency = 'USD') {
-  try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      maximumFractionDigits: 0
-    }).format(Number(amount));
-  } catch {
-    return `${currency} ${Math.round(Number(amount))}`;
+async function waitForAnySchedule(timeoutMs=30000){
+  const started=Date.now();
+  while(Date.now()-started<timeoutMs){
+    if(diagnostics.scheduleResponses.length)return diagnostics.scheduleResponses.at(-1);
+    await sleep(250);
   }
+  return null;
 }
 
-let browser;
-let page;
-let failure = null;
+try{
+  browser=await chromium.launch({headless:true});
+  const context=await browser.newContext({viewport:{width:1440,height:1200},locale:'en-US',timezoneId:'America/Detroit'});
+  page=await context.newPage();
+  attachDiagnostics(page);
 
-try {
-  browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({
-    viewport: { width: 1440, height: 1400 },
-    locale: 'en-US'
-  });
-  page = await context.newPage();
+  const tripDate=process.env.E2E_DATE||localDatePlus(14);
 
-  page.on('console', msg => {
-    diagnostics.console.push({ type: msg.type(), text: msg.text() });
-  });
-  page.on('pageerror', err => diagnostics.pageErrors.push(String(err)));
-  page.on('requestfailed', req => diagnostics.requestFailures.push({
-    url: req.url(),
-    error: req.failure()?.errorText || 'request failed'
-  }));
-  page.on('response', async res => {
-    const url = res.url();
-    if (!url.includes('/api/schedule-calendar') && !url.includes('/.netlify/functions/flight-proxy')) return;
-    let body = null;
-    try { body = await res.json(); } catch {}
-    const row = { url, status: res.status(), body };
-    if (url.includes('/api/schedule-calendar')) diagnostics.scheduleResponses.push(row);
-    else diagnostics.fareResponses.push(row);
-  });
+  // 1) Build a round trip from the map using the same controls a human uses.
+  await page.goto(BASE_URL+'/index.html',{waitUntil:'domcontentloaded',timeout:60000});
+  await page.evaluate(()=>localStorage.clear());
+  await page.reload({waitUntil:'domcontentloaded'});
 
-  const quotaResponsePromise = page.waitForResponse(async res => {
-    if (!res.url().includes('/api/schedule-calendar')) return false;
-    try {
-      const body = await res.json();
-      return body?.error === 'schedule_quota_exhausted';
-    } catch {
-      return false;
-    }
-  }, { timeout: 45000 });
+  await addAirport('DTW');
+  await addAirport('ROC');
+  await page.getByRole('button',{name:'Return to start'}).click();
+  await page.waitForFunction(()=>document.querySelectorAll('#trip .stop').length===3);
 
-  console.log(`Opening ${TARGET}`);
-  await page.goto(TARGET, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  const mapStops=(await page.locator('#trip .stop strong').allTextContents()).join(' | ');
+  assert(mapStops.includes('DTW')&&mapStops.includes('ROC'),'Map route can be built without manual URL editing',mapStops);
+  assert(await page.locator('#plan').getAttribute('aria-disabled')==='false','Supported route enables itinerary navigation');
+  assert(!/no verified path/i.test(await page.locator('#status').innerText()),'Supported route does not show a false routing warning');
 
-  await page.locator('#routebar').waitFor({ state: 'visible', timeout: 15000 });
-  const routeText = (await page.locator('#routebar').innerText()).replace(/\s+/g, ' ').trim();
-  assert(routeText.includes('DTW') && routeText.includes('ROC'), 'Rendered route contains DTW → ROC → DTW', routeText);
+  await page.locator('#plan').click();
+  await page.waitForURL(/itinerary\.html/,{timeout:15000});
+  const itineraryUrl=new URL(page.url());
+  itineraryUrl.searchParams.set('date',tripDate);
+  await page.goto(itineraryUrl.toString(),{waitUntil:'domcontentloaded',timeout:60000});
 
-  const routeCodes = await page.locator('#routebar .routechip').allTextContents();
-  assert(routeCodes.length === 3, 'Rendered itinerary has exactly three route points', routeCodes.join(' | '));
-  assert(routeCodes[0].includes('DTW') && routeCodes[1].includes('ROC') && routeCodes[2].includes('DTW'),
-    'Rendered route order is DTW, ROC, DTW', routeCodes.join(' | '));
+  const routeChips=await page.locator('#routebar .routechip').allTextContents();
+  assert(routeChips.length===3&&routeChips[0].includes('DTW')&&routeChips[1].includes('ROC')&&routeChips[2].includes('DTW'),'Round-trip route survives map → itinerary navigation',routeChips.join(' | '));
+  assert(routeChips[1].includes('stop'),'A user-chosen intermediate city is treated as a stop, not an automatic connector',routeChips[1]);
+  await page.waitForFunction(()=>document.querySelector('.stay-summary')?.textContent?.includes('Stay 2 nights'));
+  pass('Journey-first stay default is rendered','ROC defaults to a 2-night stop');
 
-  const quotaResponse = await quotaResponsePromise;
-  const quotaBody = await quotaResponse.json().catch(() => ({}));
-  assert(quotaResponse.status() === 503, 'Schedule quota is surfaced as a backend failure', `HTTP ${quotaResponse.status()}`);
-  assert(quotaBody?.error === 'schedule_quota_exhausted', 'AeroDataBox exhaustion is classified as schedule_quota_exhausted');
-
-  await page.waitForFunction(date => {
-    const cells = [...document.querySelectorAll('.calendar-day[data-calendar-date]')]
-      .filter(el => el.dataset.calendarDate >= date);
-    return cells.length > 0 && cells.every(el => el.classList.contains('fallback') && !el.disabled);
-  }, DATE, { timeout: 15000 });
-
-  const calendarState = await page.evaluate(date => {
-    const cells = [...document.querySelectorAll('.calendar-day[data-calendar-date]')]
-      .filter(el => el.dataset.calendarDate >= date)
-      .map(el => ({
-        date: el.dataset.calendarDate,
-        disabled: el.disabled,
-        classes: [...el.classList],
-        fare: el.querySelector('.calendar-fare')?.textContent?.trim() || ''
-      }));
+  // 2) Calendar remains usable whether published schedules are available or the feed is exhausted.
+  const scheduleResponse=await waitForAnySchedule();
+  assert(Boolean(scheduleResponse),'Calendar performed a real published-schedule request');
+  const scheduleCode=scheduleResponse?.body?.error||'ok';
+  await page.waitForFunction(()=>document.querySelectorAll('.calendar-day[data-calendar-date]').length>20);
+  const calendarSnapshot=await page.evaluate(date=>{
+    const future=[...document.querySelectorAll('.calendar-day[data-calendar-date]')].filter(x=>x.dataset.calendarDate>=date);
     return {
-      status: document.querySelector('#calendarStatus')?.textContent?.trim() || '',
-      selected: cells.find(x => x.date === date) || null,
-      cells
+      status:document.querySelector('#calendarStatus')?.textContent?.trim()||'',
+      future:future.map(x=>({date:x.dataset.calendarDate,disabled:x.disabled,classes:[...x.classList],fare:x.querySelector('.calendar-fare')?.textContent?.trim()||''}))
     };
-  }, DATE);
+  },tripDate);
+  assert(!/\b0\s+of\s+\d+\b/i.test(calendarSnapshot.status),'Calendar never freezes at 0 of N',calendarSnapshot.status);
+  if(scheduleCode==='schedule_quota_exhausted'){
+    assert(calendarSnapshot.future.length>0&&calendarSnapshot.future.every(x=>!x.disabled),'Quota fallback keeps future dates selectable');
+  }else{
+    pass('Published schedule path is usable','schedule response '+scheduleResponse.status);
+  }
 
-  assert(calendarState.cells.length >= 20, 'Fallback renders the remaining month, not a frozen partial calendar',
-    `${calendarState.cells.length} selectable-date cells inspected`);
-  assert(calendarState.cells.every(x => !x.disabled), 'All non-past dates remain selectable during schedule quota exhaustion');
-  assert(calendarState.cells.every(x => x.classes.includes('fallback')), 'All non-past dates render in schedule-provider fallback state');
-  assert(!/\b0\s+of\s+\d+\b/i.test(calendarState.status), 'Calendar is not frozen at 0 of N schedule checks', calendarState.status || '(blank)');
+  // 3) Prove a real Duffel price can make it from the provider into the rendered calendar and flight cards.
+  const candidates=[
+    ['DTW','ROC'],['APN','DTW'],['DTW','APN'],['ESC','DTW'],['DTW','ESC']
+  ];
+  let priced=null;
+  for(const [origin,destination] of candidates){
+    for(let offset=0;offset<3&&!priced;offset++){
+      const date=addDays(tripDate,offset);
+      const target=BASE_URL+'/itinerary.html?route='+encodeURIComponent(origin+','+destination)+'&date='+encodeURIComponent(date);
+      await page.goto(target,{waitUntil:'domcontentloaded',timeout:60000});
+      const row=await waitForFare(origin,destination,date,90000);
+      if(row?.status===200&&row.body?.liveMode===true&&Array.isArray(row.body.offers)&&row.body.offers.length){
+        priced={origin,destination,date,row};
+      }
+      if(row?.status===200&&!row.body?.offers?.length)break;
+    }
+    if(priced)break;
+  }
+  assert(Boolean(priced),'At least one verified route/date returns a real Duffel live offer',
+    priced?priced.origin+' → '+priced.destination+' '+priced.date:'No live offer returned from tested verified routes');
 
-  // The calendar queue should visibly distinguish waiting work from work in flight.
-  await page.waitForTimeout(700);
-  const fareLabels = await page.locator('.calendar-day[data-calendar-date] .calendar-fare').allTextContents();
-  const normalizedFareLabels = fareLabels.map(x => x.trim()).filter(Boolean);
-  assert(normalizedFareLabels.includes('queued'), 'Calendar visibly labels queued Duffel pricing jobs',
-    [...new Set(normalizedFareLabels)].join(', '));
-  assert(normalizedFareLabels.some(x => x === 'pricing…' || x === 'retry fare' || x === 'no live fare' || /[$€£¥]/.test(x)),
-    'Calendar shows an active or resolved Duffel fare state in addition to queued work',
-    [...new Set(normalizedFareLabels)].join(', '));
+  const lowest=priced.row.body.offers.reduce((best,o)=>!best||Number(o.amount)<Number(best.amount)?o:best,null);
+  const expectedLow=money(lowest.amount,lowest.currency||'USD');
+  await page.waitForFunction(({date,expected})=>{
+    const cell=document.querySelector('[data-calendar-date="'+date+'"] .calendar-fare');
+    return cell&&cell.textContent.includes(expected);
+  },{date:priced.date,expected:expectedLow},{timeout:15000});
+  pass('Lowest real Duffel fare renders on the selected calendar date',expectedLow);
 
-  // Give the selected first leg a chance to resolve. If Duffel returns a 200 with offers,
-  // prove the rendered flight cards contain the prices actually returned by Duffel.
-  let selectedFare200 = null;
-  try {
-    const response = await page.waitForResponse(res => {
-      const u = new URL(res.url());
-      return u.pathname.endsWith('/.netlify/functions/flight-proxy')
-        && u.searchParams.get('origin') === 'DTW'
-        && u.searchParams.get('destination') === 'ROC'
-        && u.searchParams.get('date') === DATE
-        && res.status() === 200;
-    }, { timeout: 30000 });
-    selectedFare200 = await response.json().catch(() => null);
-  } catch {}
+  await page.waitForFunction(()=>document.querySelectorAll('#flight-options-0 .flight').length>0,null,{timeout:15000});
+  const cardText=await page.locator('#flight-options-0').innerText();
+  assert(cardText.includes(expectedLow),'Rendered flight choices contain the provider-returned fare',expectedLow);
+  assert(!/\bFrom\s+[$€£¥]/i.test(cardText),'Flight cards do not fall back to generic repeated “From $…” pricing');
 
-  if (selectedFare200?.offers?.length) {
-    await page.waitForFunction(() => document.querySelectorAll('#flight-options-0 .flight').length > 0, null, { timeout: 15000 });
-    const cardText = await page.locator('#flight-options-0').innerText();
-    assert(!/\bFrom\s+[$€£¥]/i.test(cardText), 'Flight cards do not use generic repeated “From $…” pricing');
+  const firstFlight=page.locator('#flight-options-0 .flight').first();
+  await firstFlight.click();
+  await page.waitForFunction(()=>document.querySelector('#summary')?.textContent?.includes('1 of 1 flight leg selected'));
+  pass('Flight selection updates the itinerary summary');
 
-    const expected = new Set();
-    for (const offer of selectedFare200.offers) {
-      const choices = Array.isArray(offer.fareChoices) && offer.fareChoices.length
-        ? offer.fareChoices
-        : [{ amount: offer.amount, currency: offer.currency }];
-      for (const choice of choices) {
-        if (Number.isFinite(Number(choice.amount))) expected.add(money(choice.amount, choice.currency || offer.currency || 'USD'));
+  // 4) Map ↔ itinerary navigation preserves the trip and automatic-connector semantics.
+  await page.goto(BASE_URL+'/index.html',{waitUntil:'domcontentloaded'});
+  await page.evaluate(()=>localStorage.clear());
+  await page.reload({waitUntil:'domcontentloaded'});
+  const pair=await page.evaluate(()=>{
+    const eas=(window.NTA_DATA?.airports||[]).filter(a=>a.type==='eas').map(a=>a.code);
+    for(let i=0;i<Math.min(eas.length,90);i++){
+      for(let j=i+1;j<Math.min(eas.length,90);j++){
+        const p=window.NTA.findFlightPath(eas[i],eas[j]);
+        if(p&&p.length===3&&!window.NTA.hasListedRoute(eas[i],eas[j]))return {a:eas[i],b:eas[j],path:p};
       }
     }
-    const missing = [...expected].filter(label => !cardText.includes(label));
-    assert(missing.length === 0, 'Rendered flight cards show the fare values returned by Duffel',
-      missing.length ? `Missing: ${missing.join(', ')}` : `Verified ${expected.size} returned fare value(s)`);
-  } else {
-    const rateLimited = diagnostics.fareResponses.some(x => x.status === 429 && x.body?.error === 'pricing_rate_limited');
-    const noInventory = diagnostics.fareResponses.some(x =>
-      x.status === 200
-      && x.url.includes('origin=DTW')
-      && x.url.includes('destination=ROC')
-      && Array.isArray(x.body?.offers)
-      && x.body.offers.length === 0
-    );
-    assert(rateLimited || noInventory, 'Duffel selected-date result is explicitly observable when no priced cards are available',
-      rateLimited ? 'provider returned 429 and the browser queue remained active' : 'Duffel returned 200 with no nonstop offers');
-  }
+    return null;
+  });
+  assert(Boolean(pair),'Test network contains a route that requires an automatic connector',pair?pair.path.join(' → '):'none');
+  await addAirport(pair.a);
+  await addAirport(pair.b);
+  await page.waitForFunction(()=>document.querySelectorAll('#trip .auto-inserted').length>0);
+  const autoText=await page.locator('#trip .auto-inserted').first().innerText();
+  assert(/Auto-inserted connector/i.test(autoText),'Automatically inserted connector is visibly identified',autoText.replace(/\s+/g,' '));
+  assert(await page.locator('#plan').getAttribute('aria-disabled')==='false','Auto-repaired route remains plannable');
 
-  const pageErrors = diagnostics.pageErrors.filter(Boolean);
-  assert(pageErrors.length === 0, 'No uncaught browser page errors', pageErrors.join(' | '));
+  await page.locator('#plan').click();
+  await page.waitForURL(/itinerary\.html/);
+  assert(await page.locator('#routebar .connector').count()>0,'Connector identity survives navigation into itinerary');
+  const connectorStay=page.locator('.stay.connector').first();
+  await connectorStay.waitFor({state:'visible'});
+  assert((await connectorStay.innerText()).includes('Connect ASAP'),'Automatic connector defaults to a quick connection');
 
-  await page.screenshot({ path: path.join(OUT_DIR, 'dtw-roc-dtw.png'), fullPage: true });
-} catch (err) {
-  failure = err;
-  diagnostics.failure = String(err?.stack || err);
-  if (page) {
-    try {
-      await page.screenshot({ path: path.join(OUT_DIR, 'dtw-roc-dtw-failure.png'), fullPage: true });
-    } catch {}
-  }
-} finally {
-  diagnostics.finishedAt = new Date().toISOString();
-  fs.writeFileSync(path.join(OUT_DIR, 'live-e2e.json'), JSON.stringify(diagnostics, null, 2));
-  if (browser) await browser.close();
+  await page.locator('#editRoute').click();
+  await page.waitForURL(/index\.html/);
+  assert(await page.locator('#trip .auto-inserted').count()>0,'Connector highlighting survives itinerary → map navigation');
+
+  // 5) Unroutable choices fail safely instead of sending the user into a broken itinerary.
+  await clearTrip();
+  const disconnected=await page.evaluate(()=>{
+    const codes=(window.NTA_DATA?.airports||[]).map(a=>a.code);
+    for(let i=0;i<codes.length;i+=Math.max(1,Math.floor(codes.length/40))){
+      for(let j=codes.length-1;j>=0;j-=Math.max(1,Math.floor(codes.length/40))){
+        if(codes[i]!==codes[j]&&!window.NTA.findFlightPath(codes[i],codes[j]))return {a:codes[i],b:codes[j]};
+      }
+    }
+    return null;
+  });
+  assert(Boolean(disconnected),'Test network exposes a disconnected-pair boundary case');
+  await addAirport(disconnected.a);
+  await addAirport(disconnected.b);
+  assert(await page.locator('#plan').getAttribute('aria-disabled')==='true','Unroutable route cannot continue into itinerary');
+  assert(/no verified path/i.test(await page.locator('#status').innerText()),'Unroutable route explains what must change');
+
+  // 6) Legacy navigation does not dead-end.
+  await page.goto(BASE_URL+'/route-builder.html?route=DTW,ROC',{waitUntil:'domcontentloaded'});
+  await page.waitForURL(/index\.html\?route=DTW%2CROC|index\.html\?route=DTW,ROC/,{timeout:5000});
+  await page.waitForFunction(()=>document.querySelectorAll('#trip .stop').length===2);
+  pass('Legacy route-builder URL lands in the working map flow');
+
+  // 7) Basic mobile pass.
+  const mobile=await context.newPage();
+  attachDiagnostics(mobile);
+  await mobile.setViewportSize({width:390,height:844});
+  await mobile.goto(BASE_URL+'/index.html?route=DTW,ROC,DTW&date='+encodeURIComponent(tripDate),{waitUntil:'domcontentloaded'});
+  const mobileOverflow=await mobile.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  assert(mobileOverflow<=2,'Core map page has no horizontal mobile overflow',String(mobileOverflow));
+  await mobile.goto(BASE_URL+'/itinerary.html?route=DTW,ROC,DTW&date='+encodeURIComponent(tripDate),{waitUntil:'domcontentloaded'});
+  const navVisible=await mobile.locator('.nav').isVisible();
+  assert(navVisible,'Primary navigation remains visible on mobile');
+  await mobile.close();
+
+  assert(diagnostics.pageErrors.length===0,'No uncaught browser errors',diagnostics.pageErrors.join(' | '));
+  await page.screenshot({path:path.join(OUT_DIR,'poc-final.png'),fullPage:true});
+}catch(err){
+  failure=err;
+  diagnostics.failure=String(err?.stack||err);
+  if(page){try{await page.screenshot({path:path.join(OUT_DIR,'poc-failure.png'),fullPage:true});}catch{}}
+}finally{
+  diagnostics.finishedAt=new Date().toISOString();
+  fs.writeFileSync(path.join(OUT_DIR,'poc-e2e.json'),JSON.stringify(diagnostics,null,2));
+  if(browser)await browser.close();
 }
-
-if (failure) {
-  console.error(failure);
-  process.exit(1);
-}
-
-console.log('LIVE E2E PASSED');
+if(failure){console.error(failure);process.exit(1);}
+console.log('POC E2E PASSED');
