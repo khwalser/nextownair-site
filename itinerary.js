@@ -33,9 +33,10 @@
   const scheduleMonthData=new Map();
   const calendarFareJobs=new Set();
   const fareQueue=[];
-  const fareStarts=[];
-  const FARE_WINDOW_MS=60000;
-  const FARE_MAX_PER_WINDOW=8;
+  const FARE_MAX_CONCURRENT=3;
+  const FARE_START_GAP_MS=300;
+  let fareActive=0;
+  let lastFareStartAt=0;
   let farePumpTimer=null;
   let renderVersion=0;
   let calendarMonthDate=null;
@@ -182,10 +183,16 @@
     }
     el.calendarStatus.textContent=priced>=dates.length
       ?`Lowest live fares loaded for all ${dates.length} scheduled date${dates.length===1?'':'s'}. Select a date to see flight and fare choices.`
-      :`Published schedule loaded. Lowest live fares: ${priced} of ${dates.length} scheduled dates priced; the rest load progressively.`;
+      :`Published schedule loaded. Lowest live fares: ${priced} of ${dates.length} scheduled dates priced; selected and nearby dates load first.`;
   }
   function queueCalendarFarePricing(a,b,dates,token){
-    const ordered=[...new Set(dates)].sort((x,y)=>x===state.startDate?-1:y===state.startDate?1:x.localeCompare(y));
+    const selected=state.startDate;
+    const ordered=[...new Set(dates)].sort((x,y)=>{
+      if(x===selected)return -1;
+      if(y===selected)return 1;
+      const dx=Math.abs(window.NTA.diffDays(selected,x)),dy=Math.abs(window.NTA.diffDays(selected,y));
+      return dx-dy||x.localeCompare(y);
+    });
     ordered.forEach(date=>{
       if(scheduleState(a,b,date).status!=='yes')return;
       const key=fareKey(a,b,date);
@@ -408,15 +415,18 @@
     if(av.status==='error')return {status:'error',label:'Schedule unavailable',detail:''};
     return {status:'loading',label:'Checking schedule…',detail:''};
   }
-  function pruneFareStarts(){
-    const cutoff=Date.now()-FARE_WINDOW_MS;
-    while(fareStarts.length&&fareStarts[0]<=cutoff)fareStarts.shift();
-  }
   function pumpFareQueue(){
-    pruneFareStarts();
-    while(fareQueue.length&&fareStarts.length<FARE_MAX_PER_WINDOW){
+    clearTimeout(farePumpTimer);
+    farePumpTimer=null;
+    while(fareQueue.length&&fareActive<FARE_MAX_CONCURRENT){
+      const wait=Math.max(0,lastFareStartAt+FARE_START_GAP_MS-Date.now());
+      if(wait){
+        farePumpTimer=setTimeout(()=>{farePumpTimer=null;pumpFareQueue();},wait);
+        return;
+      }
       const task=fareQueue.shift();
-      fareStarts.push(Date.now());
+      fareActive+=1;
+      lastFareStartAt=Date.now();
       fetch(`/.netlify/functions/flight-proxy?origin=${encodeURIComponent(task.a)}&destination=${encodeURIComponent(task.b)}&date=${encodeURIComponent(task.date)}`,{headers:{Accept:'application/json'}})
         .then(async res=>{
           const data=await res.json().catch(()=>({}));
@@ -424,13 +434,10 @@
           task.resolve(data);
         })
         .catch(task.reject)
-        .finally(()=>{pumpFareQueue();});
-    }
-    if(fareQueue.length){
-      pruneFareStarts();
-      const wait=Math.max(500,(fareStarts[0]||Date.now())+FARE_WINDOW_MS-Date.now()+500);
-      clearTimeout(farePumpTimer);
-      farePumpTimer=setTimeout(()=>{farePumpTimer=null;pumpFareQueue();},wait);
+        .finally(()=>{
+          fareActive=Math.max(0,fareActive-1);
+          pumpFareQueue();
+        });
     }
   }
   function fetchFare(a,b,date,priority=false){
