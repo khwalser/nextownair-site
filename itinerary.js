@@ -498,7 +498,7 @@
             if(res.status===429&&Number(data.retryAfterMs)>0){
               fareBlockedUntil=Math.max(fareBlockedUntil,Date.now()+Number(data.retryAfterMs));
               fareActiveKeys.delete(task.key);
-              if(task.priority)fareQueue.unshift(task);else fareQueue.push(task);
+              if(task.priority||task.date===state.startDate)fareQueue.unshift(task);else fareQueue.push(task);
               updateCalendarCell(task.date);
               return;
             }
