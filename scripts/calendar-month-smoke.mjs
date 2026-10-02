@@ -6,6 +6,7 @@ const flightProxy=require("../netlify/functions/flight-proxy.js");
 function ymd(d){return d.toISOString().slice(0,10);}
 function addDays(d,n){const x=new Date(d);x.setUTCDate(x.getUTCDate()+n);return x;}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function slug(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,70);}
 
 let base=new Date();
 base.setUTCHours(12,0,0,0);
@@ -48,6 +49,6 @@ const priced=results.filter(r=>Number.isFinite(r.lowest));
 const noOffers=results.filter(r=>r.status===200&&!Number.isFinite(r.lowest));
 const result={dates:dates.length,priced:priced.length,noOffers:noOffers.length,hardFailures:hardFailures.length,failures:hardFailures.slice(0,10),sample:results.slice(0,6)};
 const ok=hardFailures.length===0&&priced.length>0;
-const name=ok?`calendar-month-pass-${priced.length}-of-${dates.length}.html`:`calendar-month-fail-${hardFailures.length}-status-${hardFailures[0]?.status||0}.html`;
+const name=ok?`calendar-month-pass-${priced.length}-of-${dates.length}.html`:`calendar-month-fail-${hardFailures.length}-status-${hardFailures[0]?.status||0}-${slug(hardFailures[0]?.error)}.html`;
 fs.writeFileSync(name,`<!doctype html><title>calendar month smoke</title><pre>${JSON.stringify(result,null,2)}</pre>`);
 console.log("CALENDAR_MONTH_SMOKE",JSON.stringify(result));
