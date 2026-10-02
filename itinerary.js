@@ -120,8 +120,9 @@
     const data=scheduleMonthData.get(scheduleMonthKey(a,b,month));
     if(!data)return {status:'checking',label:'Checking…',detail:''};
     if(data.error){
-      if(data.code==='schedule_provider_not_configured')return {status:'unconfigured',label:'Choose date',detail:'schedule source not configured'};
-      if(data.code==='schedule_subscription_inactive')return {status:'unconfigured',label:'Choose date',detail:'AeroDataBox subscription inactive'};
+      if(['schedule_provider_not_configured','schedule_subscription_inactive','schedule_auth_failed','schedule_quota_exhausted'].includes(data.code)){
+        return {status:'fallback',label:'Live fare check',detail:data.code};
+      }
       return {status:'error',label:'Schedule unavailable',detail:''};
     }
     const day=data.days&&data.days[date];
@@ -138,30 +139,38 @@
     const stateForDate=scheduleState(leg.a,leg.b,date);
     if(stateForDate.status==='yes')return {status:'available',label:'Scheduled'};
     if(stateForDate.status==='none')return {status:'unavailable',label:'No nonstop'};
-    if(stateForDate.status==='unconfigured')return {status:'unconfigured',label:'Schedule source needed'};
+    if(stateForDate.status==='fallback')return {status:'fallback',label:'Live fare check'};
     if(stateForDate.status==='error')return {status:'retry',label:'Unavailable'};
     return {status:'checking',label:'Checking'};
   }
   function calendarFareText(a,b,date,av){
-    if(av.status!=='available')return av.status==='unavailable'?'—':av.status==='unconfigured'?'choose':'…';
+    if(av.status==='unavailable')return '—';
+    if(av.status==='retry'||av.status==='checking')return '…';
     const key=fareKey(a,b,date),data=liveFareData.get(key);
     if(data){
-      if(data.error)return 'fare —';
+      if(data.error)return av.status==='fallback'?'retry fare':'fare —';
       const best=lowestOffer(data);
-      return best?formatMoney(best.amount,best.currency):'no fare';
+      return best?formatMoney(best.amount,best.currency):(av.status==='fallback'?'no live fare':'no fare');
     }
-    return fareActiveKeys.has(key)?'pricing…':liveFareCache.has(key)?'queued':'scheduled';
+    if(fareActiveKeys.has(key))return 'pricing…';
+    if(liveFareCache.has(key))return 'queued';
+    return av.status==='fallback'?'check fare':'scheduled';
   }
   function calendarFareTitle(a,b,date,av){
+    const data=liveFareData.get(fareKey(a,b,date)),best=lowestOffer(data);
     if(av.status==='available'){
-      const data=liveFareData.get(fareKey(a,b,date)),best=lowestOffer(data);
       if(best)return `Published nonstop service · lowest live fare ${formatMoney(best.amount,best.currency)}`;
       if(data&&!data.error)return 'Published nonstop service · Duffel returned no nonstop fare';
       if(data?.error)return 'Published nonstop service · live fare lookup unavailable';
       return 'Published nonstop service · live fare is loading';
     }
+    if(av.status==='fallback'){
+      if(best)return `Schedule provider unavailable · live Duffel fare ${formatMoney(best.amount,best.currency)}`;
+      if(data&&!data.error)return 'Schedule provider unavailable · no live Duffel nonstop offer returned';
+      if(data?.error)return 'Schedule provider unavailable · live fare lookup will retry when possible';
+      return 'Schedule provider unavailable · checking Duffel live fares';
+    }
     if(av.status==='unavailable')return 'No published nonstop service found for this date';
-    if(av.status==='unconfigured')return 'Schedule source is not configured; you can still choose this date';
     return 'Checking published schedule';
   }
   function scheduledCalendarDates(a,b,month){
@@ -196,7 +205,7 @@
       return dx-dy||x.localeCompare(y);
     });
     ordered.forEach(date=>{
-      if(scheduleState(a,b,date).status!=='yes')return;
+      if(!['yes','fallback'].includes(scheduleState(a,b,date).status))return;
       const key=fareKey(a,b,date);
       if(liveFareData.has(key)||calendarFareJobs.has(key))return;
       calendarFareJobs.add(key);
@@ -220,7 +229,7 @@
     const av=calendarAvailability(date);
     cell.classList.remove('checking','available','unavailable','retry','unconfigured');
     cell.classList.add(av.status);
-    cell.disabled=av.status!=='available'&&av.status!=='unconfigured';
+    cell.disabled=!['available','fallback'].includes(av.status);
     const fare=cell.querySelector('.calendar-fare');
     const leg=firstLeg();
     if(fare)fare.textContent=leg?calendarFareText(leg.a,leg.b,date,av):(av.status==='unavailable'?'—':'…');
@@ -247,7 +256,7 @@
       }else{
         const av=calendarAvailability(date);
         btn.classList.add(av.status);
-        btn.disabled=av.status!=='available'&&av.status!=='unconfigured';
+        btn.disabled=!['available','fallback'].includes(av.status);
       }
       const n=document.createElement('span');n.className='calendar-day-number';n.textContent=String(day);
       const fare=document.createElement('span');fare.className='calendar-fare';
@@ -339,14 +348,17 @@
       if(token!==calendarLoadVersion)return;
       const data={error:true,status:err.status||0,code:err.code||'',message:String(err.message||err),days:{}};
       scheduleMonthData.set(key,data);
+      const providerFallback=['schedule_provider_not_configured','schedule_subscription_inactive','schedule_auth_failed','schedule_quota_exhausted'].includes(err.code);
       renderStartCalendar();
-      el.calendarStatus.textContent=err.code==='schedule_provider_not_configured'
-        ?'Published schedules are not configured. You can still choose any date; Duffel will check live flights.'
-        :err.code==='schedule_subscription_inactive'
-          ?'AeroDataBox API.Market subscription is inactive. You can still choose any date; Duffel will check live flights.'
-          :err.code==='schedule_auth_failed'
-            ?'AeroDataBox API.Market rejected the configured key.'
-            :'Published schedule lookup failed before any batch could complete. Retry the calendar.';
+      if(providerFallback){
+        calendarScheduleCompleteKey=key;
+        queueCalendarFarePricing(leg.a,leg.b,monthDatesAll,token);
+        el.calendarStatus.textContent=err.code==='schedule_quota_exhausted'
+          ?'Published-schedule quota is exhausted. Falling back to Duffel live fares for this month; all dates remain selectable.'
+          :'Published schedules are unavailable. Falling back to Duffel live fares; all dates remain selectable.';
+      }else{
+        el.calendarStatus.textContent='Published schedule lookup failed. You can retry the calendar.';
+      }
     }
   }
   function openStartCalendar(){
@@ -413,7 +425,7 @@
     const av=scheduleState(a,b,date);
     if(av.status==='yes')return {status:'yes',label:'Scheduled',detail:av.detail};
     if(av.status==='none')return {status:'none',label:'No scheduled nonstop',detail:'published schedule'};
-    if(av.status==='unconfigured')return {status:'error',label:'Schedule source needed',detail:''};
+    if(av.status==='fallback')return {status:'loading',label:'Live fare check',detail:'published schedule unavailable'};
     if(av.status==='error')return {status:'error',label:'Schedule unavailable',detail:''};
     return {status:'loading',label:'Checking schedule…',detail:''};
   }
