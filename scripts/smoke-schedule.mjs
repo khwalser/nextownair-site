@@ -8,7 +8,7 @@ function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").repl
 let result={ok:false,status:0,checked:0,unknown:0,flightDays:0,elapsed:0,upstreamStatus:0,error:"not-run"};
 try{
   const base=addDays(new Date(),1);
-  const dates=[0,1,2,3].map(n=>ymd(addDays(base,n)));
+  const dates=[0,7,14,21].map(n=>ymd(addDays(base,n)));
   const month=dates[0].slice(0,7);
   const req=new Request(`https://smoke.local/api/schedule-calendar?origin=DTW&destination=ORD&month=${month}&dates=${dates.join(",")}`);
   const started=Date.now();
