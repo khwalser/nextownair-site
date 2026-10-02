@@ -115,7 +115,8 @@
     const data=scheduleMonthData.get(scheduleMonthKey(a,b,month));
     if(!data)return {status:'checking',label:'Checking…',detail:''};
     if(data.error){
-      if(data.code==='schedule_provider_not_configured')return {status:'unconfigured',label:'Schedule source needed',detail:''};
+      if(data.code==='schedule_provider_not_configured')return {status:'unconfigured',label:'Choose date',detail:'schedule source not configured'};
+      if(data.code==='schedule_subscription_inactive')return {status:'unconfigured',label:'Choose date',detail:'AeroDataBox subscription inactive'};
       return {status:'error',label:'Schedule unavailable',detail:''};
     }
     const day=data.days&&data.days[date];
@@ -253,10 +254,12 @@
       scheduleMonthData.set(key,data);
       renderStartCalendar();
       el.calendarStatus.textContent=err.code==='schedule_provider_not_configured'
-        ?'Published-schedule calendar needs the AeroDataBox API.Market key.'
-        :err.code==='schedule_auth_failed'
-          ?'AeroDataBox API.Market rejected the configured key or subscription.'
-          :'Published schedule lookup failed before any batch could complete. Retry the calendar.';
+        ?'Published schedules are not configured. You can still choose any date; Duffel will check live flights.'
+        :err.code==='schedule_subscription_inactive'
+          ?'AeroDataBox API.Market subscription is inactive. You can still choose any date; Duffel will check live flights.'
+          :err.code==='schedule_auth_failed'
+            ?'AeroDataBox API.Market rejected the configured key.'
+            :'Published schedule lookup failed before any batch could complete. Retry the calendar.';
     }
   }
   function openStartCalendar(){
