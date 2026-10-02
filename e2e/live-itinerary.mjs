@@ -184,8 +184,7 @@ try{
 
   // 4) Map ↔ itinerary navigation preserves the trip and automatic-connector semantics.
   await page.goto(BASE_URL+'/index.html',{waitUntil:'domcontentloaded'});
-  await page.evaluate(()=>localStorage.clear());
-  await page.reload({waitUntil:'domcontentloaded'});
+  await clearTrip();
   const pair=await page.evaluate(()=>{
     const eas=(window.NTA_DATA?.airports||[]).filter(a=>a.type==='eas').map(a=>a.code);
     for(let i=0;i<Math.min(eas.length,90);i++){
