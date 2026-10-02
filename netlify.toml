@@ -1,3 +1,4 @@
 # NexTownAir Netlify configuration
 [build]
+  command = "node scripts/browser-check.mjs"
   functions = "netlify/functions"
