@@ -33,6 +33,7 @@
   const scheduleMonthData=new Map();
   const calendarFareJobs=new Set();
   const fareQueue=[];
+  const fareActiveKeys=new Set();
   const FARE_MAX_CONCURRENT=2;
   const FARE_START_GAP_MS=1250;
   let fareActive=0;
@@ -149,7 +150,7 @@
       const best=lowestOffer(data);
       return best?formatMoney(best.amount,best.currency):'no fare';
     }
-    return liveFareCache.has(key)?'pricing…':'scheduled';
+    return fareActiveKeys.has(key)?'pricing…':liveFareCache.has(key)?'queued':'scheduled';
   }
   function calendarFareTitle(a,b,date,av){
     if(av.status==='available'){
@@ -432,6 +433,8 @@
       }
       const task=fareQueue.shift();
       fareActive+=1;
+      fareActiveKeys.add(task.key);
+      updateCalendarCell(task.date);
       lastFareStartAt=Date.now();
       fetch(`/.netlify/functions/flight-proxy?origin=${encodeURIComponent(task.a)}&destination=${encodeURIComponent(task.b)}&date=${encodeURIComponent(task.date)}`,{headers:{Accept:'application/json'}})
         .then(async res=>{
@@ -439,7 +442,9 @@
           if(!res.ok){
             if(res.status===429&&Number(data.retryAfterMs)>0){
               fareBlockedUntil=Math.max(fareBlockedUntil,Date.now()+Number(data.retryAfterMs));
+              fareActiveKeys.delete(task.key);
               if(task.priority)fareQueue.unshift(task);else fareQueue.push(task);
+              updateCalendarCell(task.date);
               return;
             }
             const err=new Error(data.message||data.error||'Pricing lookup failed');err.status=res.status;throw err;
@@ -448,6 +453,8 @@
         })
         .catch(task.reject)
         .finally(()=>{
+          fareActiveKeys.delete(task.key);
+          updateCalendarCell(task.date);
           fareActive=Math.max(0,fareActive-1);
           pumpFareQueue();
         });
@@ -457,7 +464,7 @@
     const key=fareKey(a,b,date);
     if(liveFareCache.has(key))return liveFareCache.get(key);
     const p=new Promise((resolve,reject)=>{
-      const task={a,b,date,resolve,reject,priority:Boolean(priority)};
+      const task={a,b,date,key,resolve,reject,priority:Boolean(priority)};
       if(priority)fareQueue.unshift(task);else fareQueue.push(task);
       pumpFareQueue();
     }).catch(err=>{
