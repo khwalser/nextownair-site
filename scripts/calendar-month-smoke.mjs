@@ -26,7 +26,7 @@ async function worker(){
     const idx=nextIndex++;
     if(idx>=dates.length)return;
     const date=dates[idx];
-    const gap=Math.max(0,lastStart+300-Date.now());
+    const gap=Math.max(0,lastStart+1250-Date.now());
     if(gap)await sleep(gap);
     lastStart=Date.now();
     const started=Date.now();
@@ -41,13 +41,13 @@ async function worker(){
     }
   }
 }
-await Promise.all([worker(),worker(),worker()]);
+await Promise.all([worker(),worker()]);
 results.sort((a,b)=>a.date.localeCompare(b.date));
 const hardFailures=results.filter(r=>r.status!==200);
 const priced=results.filter(r=>Number.isFinite(r.lowest));
 const noOffers=results.filter(r=>r.status===200&&!Number.isFinite(r.lowest));
 const result={dates:dates.length,priced:priced.length,noOffers:noOffers.length,hardFailures:hardFailures.length,failures:hardFailures.slice(0,10),sample:results.slice(0,6)};
 const ok=hardFailures.length===0&&priced.length>0;
-const name=ok?`calendar-month-pass-${priced.length}-of-${dates.length}.html`:`calendar-month-fail-${hardFailures.length}.html`;
+const name=ok?`calendar-month-pass-${priced.length}-of-${dates.length}.html`:`calendar-month-fail-${hardFailures.length}-status-${hardFailures[0]?.status||0}.html`;
 fs.writeFileSync(name,`<!doctype html><title>calendar month smoke</title><pre>${JSON.stringify(result,null,2)}</pre>`);
 console.log("CALENDAR_MONTH_SMOKE",JSON.stringify(result));
