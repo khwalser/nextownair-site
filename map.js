@@ -7,7 +7,7 @@
   let networkLines=[];
   let activeFilter='all';
   const markers=new Map();
-  let autoConnectorCodes=new Set();
+  let autoConnectorCodes=new Set(state.autoConnectors||[]);
 
   const el={
     trip:document.getElementById('trip'),
@@ -80,6 +80,7 @@
   function setRoute(next,contextMessage=''){
     const fixed=repairRoute(next);
     autoConnectorCodes=new Set([...autoConnectorCodes,...fixed.inserted.map(x=>x.code)].filter(code=>fixed.route.includes(code)));
+    state.autoConnectors=[...autoConnectorCodes];
     state=window.NTA.setRoute(state,fixed.route);
     render();
     const repairText=autoConnectorMessage(fixed.inserted);
@@ -115,9 +116,7 @@
   function removeAt(i){
     const a=by(state.route[i]);
     if(autoConnectorCodes.has(state.route[i])){
-      const next=state.route.slice();next.splice(i,1);
-      autoConnectorCodes.delete(state.route[i]);
-      setRoute(next,a?`Removed connector ${a.city} (${a.code}).`:'Connector removed.');
+      el.finderStatus.textContent=a?`${a.city} (${a.code}) is an automatic connection. Change the destinations around it and NexTownAir will recalculate the path.`:'This is an automatic connection. Change the surrounding destinations to recalculate the path.';
       return;
     }
     const next=state.route
@@ -165,7 +164,7 @@
         const controls=document.createElement('div');controls.className='stopcontrols';
         const up=document.createElement('button');up.type='button';up.className='smallbtn';up.textContent='Move up';up.disabled=i===0||autoInserted;up.setAttribute('aria-label',`Move ${a.city} earlier in trip`);up.addEventListener('click',()=>move(i,-1));
         const down=document.createElement('button');down.type='button';down.className='smallbtn';down.textContent='Move down';down.disabled=i===n-1||autoInserted;down.setAttribute('aria-label',`Move ${a.city} later in trip`);down.addEventListener('click',()=>move(i,1));
-        const remove=document.createElement('button');remove.type='button';remove.className='smallbtn remove';remove.textContent=autoInserted?'Remove connector':'Remove';remove.setAttribute('aria-label',`Remove ${a.city} from trip`);remove.addEventListener('click',()=>removeAt(i));
+        const remove=document.createElement('button');remove.type='button';remove.className='smallbtn remove';remove.textContent=autoInserted?'Automatic':'Remove';remove.setAttribute('aria-label',autoInserted?`${a.city} is an automatic connector`:`Remove ${a.city} from trip`);remove.disabled=autoInserted;if(!autoInserted)remove.addEventListener('click',()=>removeAt(i));
         controls.append(up,down,remove);body.append(title,label,controls);row.append(num,body);el.trip.appendChild(row);
       });
     }
@@ -176,12 +175,12 @@
       el.legSummary.innerHTML='<b>Flight legs</b>'+state.route.slice(0,-1).map((code,i)=>{const known=hasKnownRoute(code,state.route[i+1]);if(!known)unsupported++;return `<div>Leg ${i+1}: ${code} → ${state.route[i+1]} ${known?'':'<span class="route-warning">· no verified route found</span>'}</div>`;}).join('');
     } else {el.legSummary.hidden=true;el.legSummary.innerHTML='';}
 
-    const ready=n>=2;
+    const ready=n>=2&&unsupported===0;
     el.plan.classList.toggle('disabled',!ready);
     el.plan.setAttribute('aria-disabled',String(!ready));
     el.returnStart.disabled=n<2 || state.route[n-1]===state.route[0];
     el.returnStart.textContent=(n>1&&state.route[n-1]===state.route[0])?'Round trip complete':'Return to start';
-    el.status.textContent=ready?(unsupported?`${n-1} flight legs · ${unsupported} ${unsupported===1?'leg has':'legs have'} no verified route.`:`${n-1} flight leg${n-1===1?'':'s'} ready. Connector hubs are inserted automatically when needed.`):'Choose at least two places to create your first flight leg.';
+    el.status.textContent=n<2?'Choose at least two places to create your first flight leg.':unsupported?`${unsupported} ${unsupported===1?'leg has':'legs have'} no verified path in the current network. Change that destination before continuing.`:`${n-1} flight leg${n-1===1?'':'s'} ready. Connector hubs are inserted automatically when needed.`;
   }
   function render(){syncLinks();renderTrip();renderRouteLine();}
 
@@ -298,8 +297,16 @@
     if(state.route.length && !window.confirm('Start over and clear this trip?'))return;
     state=window.NTA.clearTrip();el.finderStatus.textContent='Trip cleared. Choose a new starting point.';render();
   });
-  el.plan.addEventListener('click',ev=>{if(state.route.length<2)ev.preventDefault();});
+  el.plan.addEventListener('click',ev=>{const supported=state.route.length>=2&&state.route.slice(0,-1).every((code,i)=>hasKnownRoute(code,state.route[i+1]));if(!supported)ev.preventDefault();});
 
+  if(state.route.length>1){
+    const fixed=repairRoute(state.route);
+    if(fixed.route.join(',')!==state.route.join(',')){
+      autoConnectorCodes=new Set([...autoConnectorCodes,...fixed.inserted.map(x=>x.code)]);
+      state.autoConnectors=[...autoConnectorCodes].filter(code=>fixed.route.includes(code));
+      state=window.NTA.setRoute(state,fixed.route);
+    }
+  }
   initFinder();
   initMapTools();
   initRegionFilters();
