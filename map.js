@@ -160,7 +160,7 @@
         const num=document.createElement('div');num.className='stopnum';num.textContent=String(i+1);
         const body=document.createElement('div');body.className='stopbody';
         const title=document.createElement('strong');title.textContent=`${a.city}, ${a.state} · ${a.code}`;
-        const label=document.createElement('div');label.className='stoplabel';label.textContent=autoInserted?`${routeLabel(i)} · Auto-inserted connector · ${airportRegionName(a)}`:`${routeLabel(i)} · ${a.type==='eas'?'EAS stop':'Hub / connector'} · ${airportRegionName(a)}`;
+        const label=document.createElement('div');label.className='stoplabel';label.textContent=autoInserted?`${routeLabel(i)} · Automatic connection · ${airportRegionName(a)}`:`${routeLabel(i)} · ${a.type==='eas'?'EAS / small-airport stop':'Chosen airport'} · ${airportRegionName(a)}`;
         const controls=document.createElement('div');controls.className='stopcontrols';
         const up=document.createElement('button');up.type='button';up.className='smallbtn';up.textContent='Move up';up.disabled=i===0||autoInserted;up.setAttribute('aria-label',`Move ${a.city} earlier in trip`);up.addEventListener('click',()=>move(i,-1));
         const down=document.createElement('button');down.type='button';down.className='smallbtn';down.textContent='Move down';down.disabled=i===n-1||autoInserted;down.setAttribute('aria-label',`Move ${a.city} later in trip`);down.addEventListener('click',()=>move(i,1));
