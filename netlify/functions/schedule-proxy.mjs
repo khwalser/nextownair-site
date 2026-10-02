@@ -151,6 +151,9 @@ export default async(req)=>{
       if(err?.status===400&&/no active subscription/i.test(message)){
         return json({error:"schedule_subscription_inactive",message:"AeroDataBox API.Market subscription is not active.",upstreamStatus:400},503,false);
       }
+      if(err?.status===429&&/no more api calls|upgrade/i.test(message)){
+        return json({error:"schedule_quota_exhausted",message:"AeroDataBox API.Market quota is exhausted.",upstreamStatus:429},503,false);
+      }
       lastUpstreamError={status:Number(err?.status||0),message:message.slice(0,300)};
       unknownDates.push(date);
     }
