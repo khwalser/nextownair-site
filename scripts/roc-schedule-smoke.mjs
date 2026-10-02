@@ -11,6 +11,7 @@ const files={
 };
 
 const failures=[];
+function slug(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,80);}
 function check(name,condition,detail=""){if(!condition)failures.push({name,detail:String(detail)});}
 
 try{new Function(files.itinerary);}catch(e){failures.push({name:"itinerary-syntax",detail:e.message});}
@@ -76,6 +77,6 @@ for(const [a,b] of pathChecks){
 }
 
 const result={ok:failures.length===0,totalRoutes:D.routes.length,totalEas:eas.length,scheduleResults,failures};
-const name=result.ok?`network-fallback-pass-${D.routes.length}-routes.html`:`network-fallback-fail-${failures.length}.html`;
+const name=result.ok?`network-fallback-pass-${D.routes.length}-routes.html`:`network-fallback-fail-${failures.length}-${slug(failures[0]?.name)}-${slug(failures[0]?.detail)}.html`;
 fs.writeFileSync(name,`<!doctype html><title>NexTownAir network fallback</title><pre>${JSON.stringify(result,null,2)}</pre>`);
 console.log("NETWORK_FALLBACK_SMOKE",JSON.stringify(result));
