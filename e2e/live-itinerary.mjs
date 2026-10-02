@@ -154,6 +154,20 @@ try{
   assert(!/\b0\s+of\s+\d+\b/i.test(calendarSnapshot.status),'Calendar never freezes at 0 of N',calendarSnapshot.status);
   if(scheduleCode==='schedule_quota_exhausted'){
     assert(calendarSnapshot.future.length>0&&calendarSnapshot.future.every(x=>!x.disabled),'Quota fallback keeps future dates selectable');
+    await page.waitForFunction(date=>{
+      const future=[...document.querySelectorAll('.calendar-day[data-calendar-date]')]
+        .filter(x=>x.dataset.calendarDate>=date);
+      const autoQueued=future.filter(x=>{
+        const t=x.querySelector('.calendar-fare')?.textContent?.trim()||'';
+        return t!=='check fare'&&t!=='';
+      });
+      return autoQueued.length>=Math.min(12,future.length);
+    },tripDate,{timeout:10000});
+    const autoState=await page.evaluate(date=>{
+      const future=[...document.querySelectorAll('.calendar-day[data-calendar-date]')].filter(x=>x.dataset.calendarDate>=date);
+      return future.map(x=>x.querySelector('.calendar-fare')?.textContent?.trim()||'');
+    },tripDate);
+    assert(autoState.filter(t=>t&&t!=='check fare').length>=Math.min(12,autoState.length),'Fallback automatically queues the full visible month for live pricing, not only nearby dates');
   }else{
     pass('Published schedule path is usable','schedule response '+scheduleResponse.status);
   }
