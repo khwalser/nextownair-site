@@ -151,80 +151,6 @@ async function searchDuffel(origin,destination,departureDate){
   };
 }
 
-async function getAmadeusToken(){
-  const key=process.env.AMADEUS_API_KEY;
-  const secret=process.env.AMADEUS_API_SECRET;
-  if(!key||!secret)return null;
-  const authBody=new URLSearchParams({
-    grant_type:'client_credentials',
-    client_id:key,
-    client_secret:secret
-  }).toString();
-  const response=await httpsRequestJson({
-    hostname:'test.api.amadeus.com',
-    path:'/v1/security/oauth2/token',
-    method:'POST',
-    headers:{
-      'Content-Type':'application/x-www-form-urlencoded',
-      'Content-Length':Buffer.byteLength(authBody)
-    }
-  },authBody);
-  return response.access_token||null;
-}
-
-async function searchAmadeusTest(origin,destination,departureDate){
-  const token=await getAmadeusToken();
-  if(!token)return null;
-  const query=new URLSearchParams({
-    originLocationCode:origin,
-    destinationLocationCode:destination,
-    departureDate,
-    adults:'1',
-    currencyCode:'USD',
-    nonStop:'true',
-    max:'8'
-  }).toString();
-  const response=await httpsRequestJson({
-    hostname:'test.api.amadeus.com',
-    path:`/v2/shopping/flight-offers?${query}`,
-    method:'GET',
-    headers:{Authorization:`Bearer ${token}`}
-  });
-  const offers=(response.data||[]).map(offer=>{
-    const itin=(offer.itineraries||[])[0];
-    const segs=(itin&&itin.segments)||[];
-    if(segs.length!==1)return null;
-    const seg=segs[0]||{};
-    const amount=Number(offer.price&&offer.price.total);
-    if(!Number.isFinite(amount))return null;
-    return {
-      provider:'amadeus-test',
-      liveMode:false,
-      offerId:offer.id||null,
-      origin,
-      destination,
-      departureDate,
-      departureTime:seg.departure&&seg.departure.at,
-      arrivalTime:seg.arrival&&seg.arrival.at,
-      operatingCarrier:null,
-      operatingCarrierCode:seg.carrierCode||null,
-      flightNumber:seg.number?`${seg.carrierCode||''}${seg.number}`:null,
-      amount,
-      currency:(offer.price&&offer.price.currency)||'USD',
-      expiresAt:null
-    };
-  }).filter(Boolean).sort((a,b)=>a.amount-b.amount);
-  return {
-    provider:'amadeus-test',
-    liveMode:false,
-    checkedAt:new Date().toISOString(),
-    origin,
-    destination,
-    departureDate,
-    offers:offers.slice(0,8)
-  };
-}
-
 exports.handler=async event=>{
   if(event.httpMethod==='OPTIONS')return json(204,{});
   if(event.httpMethod!=='GET')return json(405,{error:'Method not allowed'});
@@ -242,12 +168,9 @@ exports.handler=async event=>{
     const duffel=await searchDuffel(origin,destination,departureDate);
     if(duffel)return json(200,duffel);
 
-    const amadeus=await searchAmadeusTest(origin,destination,departureDate);
-    if(amadeus)return json(200,amadeus);
-
     return json(503,{
       error:'pricing_not_configured',
-      message:'Live pricing provider credentials are not configured.'
+      message:'Duffel live pricing is not configured.'
     });
   }catch(err){
     console.error('flight-proxy error',err);
