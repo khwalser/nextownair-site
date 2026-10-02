@@ -63,6 +63,14 @@
     b.selections=(raw.selections&&typeof raw.selections==='object')?raw.selections:{};
     return b;
   }
+  function clearSavedAppState(){
+    try{
+      Object.keys(localStorage).filter(k=>k.startsWith('nextownair.')).forEach(k=>localStorage.removeItem(k));
+    }catch(_){/* storage can be disabled */}
+    try{
+      Object.keys(sessionStorage).filter(k=>k.startsWith('nextownair.')).forEach(k=>sessionStorage.removeItem(k));
+    }catch(_){/* storage can be disabled */}
+  }
   function readStored(){
     try{return sanitize(JSON.parse(localStorage.getItem(KEY)||'null'));}catch(_){return baseState();}
   }
@@ -95,8 +103,16 @@
     return normalizeRoute((q.get('route')||'').split(','));
   }
   function load(){
-    const state=readStored();
     const q=new URLSearchParams(location.search);
+    if(q.get('fresh')==='1'){
+      clearSavedAppState();
+      q.delete('fresh');
+      try{
+        const clean=location.pathname+(q.toString()?('?'+q.toString()):'')+location.hash;
+        history.replaceState(null,'',clean);
+      }catch(_){/* file previews may block */}
+    }
+    const state=readStored();
     const qr=routeFromQuery();
     if(qr!==null)reconcileRoute(state,qr);
     if(q.has('auto'))state.autoConnectors=normalizeRoute((q.get('auto')||'').split(',')).filter(code=>state.route.includes(code));
@@ -125,5 +141,5 @@
     if(!validDate(s))return '';
     return parseDate(s).toLocaleDateString(undefined,Object.assign({month:'short',day:'numeric',timeZone:'UTC'},opts||{}));
   }
-  window.NTA={KEY,todayLocal,validDate,normalizeRoute,load,save,setRoute,clearTrip,buildUrl,updateAddress,byCode,addDays,diffDays,fmtDate,hasListedRoute,isNetworkHub,hasFlightLink,findFlightPath};
+  window.NTA={KEY,todayLocal,validDate,normalizeRoute,load,save,setRoute,clearTrip,clearSavedAppState,buildUrl,updateAddress,byCode,addDays,diffDays,fmtDate,hasListedRoute,isNetworkHub,hasFlightLink,findFlightPath};
 })();
