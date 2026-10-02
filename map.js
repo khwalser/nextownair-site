@@ -145,7 +145,7 @@
   function initLeaflet(){
     if(!window.L)return false;
     try{
-      map=window.L.map('map',{scrollWheelZoom:false,minZoom:2}).setView([39.5,-97.5],4);
+      map=window.L.map('map',{scrollWheelZoom:true,minZoom:2}).setView([39.5,-97.5],4);
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:12,attribution:'© OpenStreetMap'}).addTo(map);
       (D.routes||[]).forEach(r=>{
         const A=by(r[0]),B=by(r[1]);if(!A||!B)return;
