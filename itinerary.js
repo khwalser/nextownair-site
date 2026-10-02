@@ -239,7 +239,9 @@
       const queued=monthCells.filter(cell=>calendarFareJobs.has(fareKey(leg.a,leg.b,cell.dataset.calendarDate))).length;
       const total=monthCells.length;
       el.calendarStatus.textContent=queued
-        ?`Loading live fares across the month: ${checked} of ${total} dates checked, ${priced} with a fare so far. Selected and nearby dates go first.`
+        ?checked
+          ?`Loading live fares across the month: ${checked} of ${total} dates checked, ${priced} with a fare so far. Selected and nearby dates go first.`
+          :`Live fare scan started for ${total} dates. Selected and nearby dates go first; prices will fill in automatically.`
         :priced
           ?`Live fare scan complete: ${checked} of ${total} dates checked, ${priced} with a fare. Select any date to refresh it first.`
           :checked
