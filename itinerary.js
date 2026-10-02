@@ -37,6 +37,7 @@
   const FARE_START_GAP_MS=1250;
   let fareActive=0;
   let lastFareStartAt=0;
+  let fareBlockedUntil=0;
   let farePumpTimer=null;
   let renderVersion=0;
   let calendarMonthDate=null;
@@ -419,9 +420,14 @@
     clearTimeout(farePumpTimer);
     farePumpTimer=null;
     while(fareQueue.length&&fareActive<FARE_MAX_CONCURRENT){
-      const wait=Math.max(0,lastFareStartAt+FARE_START_GAP_MS-Date.now());
+      const now=Date.now();
+      const wait=Math.max(0,fareBlockedUntil-now,lastFareStartAt+FARE_START_GAP_MS-now);
       if(wait){
-        farePumpTimer=setTimeout(()=>{farePumpTimer=null;pumpFareQueue();},wait);
+        if(fareBlockedUntil>now){
+          const seconds=Math.max(1,Math.ceil((fareBlockedUntil-now)/1000));
+          if(el.calendarStatus)el.calendarStatus.textContent=`Live fare provider rate limit reached; calendar pricing resumes automatically in about ${seconds}s.`;
+        }
+        farePumpTimer=setTimeout(()=>{farePumpTimer=null;pumpFareQueue();},Math.min(wait,5000));
         return;
       }
       const task=fareQueue.shift();
@@ -430,7 +436,14 @@
       fetch(`/.netlify/functions/flight-proxy?origin=${encodeURIComponent(task.a)}&destination=${encodeURIComponent(task.b)}&date=${encodeURIComponent(task.date)}`,{headers:{Accept:'application/json'}})
         .then(async res=>{
           const data=await res.json().catch(()=>({}));
-          if(!res.ok){const err=new Error(data.message||data.error||'Pricing lookup failed');err.status=res.status;throw err;}
+          if(!res.ok){
+            if(res.status===429&&Number(data.retryAfterMs)>0){
+              fareBlockedUntil=Math.max(fareBlockedUntil,Date.now()+Number(data.retryAfterMs));
+              if(task.priority)fareQueue.unshift(task);else fareQueue.push(task);
+              return;
+            }
+            const err=new Error(data.message||data.error||'Pricing lookup failed');err.status=res.status;throw err;
+          }
           task.resolve(data);
         })
         .catch(task.reject)
@@ -444,7 +457,7 @@
     const key=fareKey(a,b,date);
     if(liveFareCache.has(key))return liveFareCache.get(key);
     const p=new Promise((resolve,reject)=>{
-      const task={a,b,date,resolve,reject};
+      const task={a,b,date,resolve,reject,priority:Boolean(priority)};
       if(priority)fareQueue.unshift(task);else fareQueue.push(task);
       pumpFareQueue();
     }).catch(err=>{
