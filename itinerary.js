@@ -36,7 +36,7 @@
   const fareActiveKeys=new Set();
   const FARE_MAX_CONCURRENT=1;
   const FARE_START_GAP_MS=3200;
-  const AUTO_PRICE_WINDOW=7;
+  const AUTO_PRICE_WINDOW=31;
   const FARE_SESSION_KEY='nextownair.liveFares.v1';
   const FARE_SESSION_TTL_MS=5*60*1000;
   const SCHEDULE_FALLBACK_SESSION_KEY='nextownair.scheduleFallback.v1';
@@ -237,13 +237,14 @@
       const priced=monthCells.filter(cell=>Boolean(lowestOffer(liveFareData.get(fareKey(leg.a,leg.b,cell.dataset.calendarDate))))).length;
       const checked=monthCells.filter(cell=>liveFareData.has(fareKey(leg.a,leg.b,cell.dataset.calendarDate))).length;
       const queued=monthCells.filter(cell=>calendarFareJobs.has(fareKey(leg.a,leg.b,cell.dataset.calendarDate))).length;
-      el.calendarStatus.textContent=priced
-        ?`Live fares found on ${priced} nearby date${priced===1?'':'s'}. Select any date to refresh that date first.`
-        :queued
-          ?`Checking live fares for the selected and nearby dates. Select any date to move it to the front of the queue.`
+      const total=monthCells.length;
+      el.calendarStatus.textContent=queued
+        ?`Loading live fares across the month: ${checked} of ${total} dates checked, ${priced} with a fare so far. Selected and nearby dates go first.`
+        :priced
+          ?`Live fare scan complete: ${checked} of ${total} dates checked, ${priced} with a fare. Select any date to refresh it first.`
           :checked
-            ?`No live fares were found in the nearby checks. Select a date and NexTownAir will check that date again immediately.`
-            :`Select a date and NexTownAir will check that date live.`;
+            ?`Live fare scan complete: ${checked} of ${total} dates checked. No live nonstop fares were returned for this route in the checked dates.`
+            :`Loading live fares across the month. Selected and nearby dates go first.`;
       return;
     }
     const dates=scheduledCalendarDates(leg.a,leg.b,month);
@@ -252,9 +253,11 @@
       el.calendarStatus.textContent='Published schedule loaded. No nonstop service dates were found in this month.';
       return;
     }
-    el.calendarStatus.textContent=priced
-      ?`Published schedule loaded. Live fares found on ${priced} nearby scheduled date${priced===1?'':'s'}; choose any scheduled date for an immediate live check.`
-      :`Published schedule loaded. Checking live fares for the selected and nearby scheduled dates.`;
+    const checked=dates.filter(date=>liveFareData.has(fareKey(leg.a,leg.b,date))).length;
+    const queued=dates.filter(date=>calendarFareJobs.has(fareKey(leg.a,leg.b,date))).length;
+    el.calendarStatus.textContent=queued
+      ?`Loading live fares for scheduled dates: ${checked} of ${dates.length} checked, ${priced} with a fare so far. Selected and nearby dates go first.`
+      :`Live fare scan complete for scheduled dates: ${checked} of ${dates.length} checked, ${priced} with a fare.`;
   }
   function queueCalendarFarePricing(a,b,dates,token,limit=AUTO_PRICE_WINDOW){
     const selected=state.startDate;
