@@ -92,7 +92,7 @@ export default async(req)=>{
     return json({error:"Use origin=AAA&destination=BBB&month=YYYY-MM"},400,false);
   }
 
-  const apiKey=Netlify.env.get("AERODATABOX_API_MARKET_KEY");
+  const apiKey=(globalThis.Netlify?.env?.get?.("AERODATABOX_API_MARKET_KEY"))||process.env.AERODATABOX_API_MARKET_KEY;
   if(!apiKey){
     return json({
       error:"schedule_provider_not_configured",
@@ -108,11 +108,12 @@ export default async(req)=>{
   if(!targetDates.length)return json({error:"No valid dates requested"},400,false);
 
   const started=Date.now();
-  const maxWorkMs=52000;
+  const maxWorkMs=18000;
   const days={};
   const unknownDates=[];
   const checkedDates=[];
   const seen=new Set();
+  let lastUpstreamError=null;
 
   for(let i=0;i<targetDates.length;i++){
     const date=targetDates[i];
@@ -137,6 +138,7 @@ export default async(req)=>{
       if(err?.status===401||err?.status===403){
         return json({error:"schedule_auth_failed",message:String(err.message||err),upstreamStatus:err.status},502,false);
       }
+      lastUpstreamError={status:Number(err?.status||0),message:String(err?.message||err).slice(0,300)};
       unknownDates.push(date);
     }
   }
@@ -149,7 +151,8 @@ export default async(req)=>{
     partial:unknownDates.length>0,
     checkedDates,
     unknownDates:[...new Set(unknownDates)],
-    days
+    days,
+    ...(lastUpstreamError?{lastUpstreamError}: {})
   });
 };
 
