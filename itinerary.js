@@ -31,6 +31,7 @@
   const liveFareByLeg=new Map();
   const scheduleMonthCache=new Map();
   const scheduleMonthData=new Map();
+  const calendarFareJobs=new Set();
   const fareQueue=[];
   const fareStarts=[];
   const FARE_WINDOW_MS=60000;
@@ -40,6 +41,7 @@
   let calendarMonthDate=null;
   let calendarLoadVersion=0;
   let calendarAutoLoadKey='';
+  let calendarScheduleCompleteKey='';
   function isoDate(iso){return String(iso||'').slice(0,10);}
   function isoMinutes(iso){
     const m=String(iso||'').match(/T(\d{2}):(\d{2})/);
@@ -137,6 +139,72 @@
     if(stateForDate.status==='error')return {status:'retry',label:'Unavailable'};
     return {status:'checking',label:'Checking'};
   }
+  function calendarFareText(a,b,date,av){
+    if(av.status!=='available')return av.status==='unavailable'?'—':av.status==='unconfigured'?'choose':'…';
+    const key=fareKey(a,b,date),data=liveFareData.get(key);
+    if(data){
+      if(data.error)return 'fare —';
+      const best=lowestOffer(data);
+      return best?formatMoney(best.amount,best.currency):'no fare';
+    }
+    return liveFareCache.has(key)?'pricing…':'scheduled';
+  }
+  function calendarFareTitle(a,b,date,av){
+    if(av.status==='available'){
+      const data=liveFareData.get(fareKey(a,b,date)),best=lowestOffer(data);
+      if(best)return `Published nonstop service · lowest live fare ${formatMoney(best.amount,best.currency)}`;
+      if(data&&!data.error)return 'Published nonstop service · Duffel returned no nonstop fare';
+      if(data?.error)return 'Published nonstop service · live fare lookup unavailable';
+      return 'Published nonstop service · live fare is loading';
+    }
+    if(av.status==='unavailable')return 'No published nonstop service found for this date';
+    if(av.status==='unconfigured')return 'Schedule source is not configured; you can still choose this date';
+    return 'Checking published schedule';
+  }
+  function scheduledCalendarDates(a,b,month){
+    const data=scheduleMonthData.get(scheduleMonthKey(a,b,month));
+    if(!data||data.error)return [];
+    return Object.entries(data.days||{})
+      .filter(([date,day])=>date.startsWith(month+'-')&&day&&day.count>0)
+      .map(([date])=>date)
+      .sort();
+  }
+  function updateCalendarFareStatus(){
+    const leg=firstLeg();if(!leg||!calendarMonthDate)return;
+    const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
+    const key=scheduleMonthKey(leg.a,leg.b,month);
+    if(calendarScheduleCompleteKey!==key)return;
+    const dates=scheduledCalendarDates(leg.a,leg.b,month);
+    const priced=dates.filter(date=>liveFareData.has(fareKey(leg.a,leg.b,date))&&!liveFareData.get(fareKey(leg.a,leg.b,date))?.error).length;
+    if(!dates.length){
+      el.calendarStatus.textContent='Published schedule loaded. No nonstop service dates were found in this month.';
+      return;
+    }
+    el.calendarStatus.textContent=priced>=dates.length
+      ?`Lowest live fares loaded for all ${dates.length} scheduled date${dates.length===1?'':'s'}. Select a date to see flight and fare choices.`
+      :`Published schedule loaded. Lowest live fares: ${priced} of ${dates.length} scheduled dates priced; the rest load progressively.`;
+  }
+  function queueCalendarFarePricing(a,b,dates,token){
+    const ordered=[...new Set(dates)].sort((x,y)=>x===state.startDate?-1:y===state.startDate?1:x.localeCompare(y));
+    ordered.forEach(date=>{
+      if(scheduleState(a,b,date).status!=='yes')return;
+      const key=fareKey(a,b,date);
+      if(liveFareData.has(key)||calendarFareJobs.has(key))return;
+      calendarFareJobs.add(key);
+      const promise=fetchFare(a,b,date,false);
+      updateCalendarCell(date);
+      promise.then(data=>{
+        liveFareData.set(key,data);
+        if(token===calendarLoadVersion)updateCalendarCell(date);
+      }).catch(err=>{
+        liveFareData.set(key,{error:true,status:err.status||0,offers:[],message:String(err.message||err)});
+        if(token===calendarLoadVersion)updateCalendarCell(date);
+      }).finally(()=>{
+        calendarFareJobs.delete(key);
+        if(token===calendarLoadVersion)updateCalendarFareStatus();
+      });
+    });
+  }
   function updateCalendarCell(date){
     const cell=el.calendarGrid.querySelector(`[data-calendar-date="${date}"]`);
     if(!cell)return;
@@ -145,8 +213,9 @@
     cell.classList.add(av.status);
     cell.disabled=av.status!=='available'&&av.status!=='unconfigured';
     const fare=cell.querySelector('.calendar-fare');
-    if(fare)fare.textContent=av.status==='available'?'scheduled':av.status==='unavailable'?'—':av.status==='unconfigured'?'choose':'…';
-    cell.title=av.status==='available'?'Published nonstop service is scheduled for this date':av.status==='unavailable'?'No published nonstop service found for this date':av.status==='unconfigured'?'Schedule source is not configured; you can still choose this date':'Checking published schedule';
+    const leg=firstLeg();
+    if(fare)fare.textContent=leg?calendarFareText(leg.a,leg.b,date,av):(av.status==='unavailable'?'—':'…');
+    cell.title=leg?calendarFareTitle(leg.a,leg.b,date,av):'Choose a route first';
   }
   function renderStartCalendar(){
     if(!calendarMonthDate)calendarMonthDate=monthStart(state.startDate);
@@ -174,7 +243,8 @@
       const n=document.createElement('span');n.className='calendar-day-number';n.textContent=String(day);
       const fare=document.createElement('span');fare.className='calendar-fare';
       const av=calendarAvailability(date);
-      fare.textContent=date<today?'':av.status==='available'?'scheduled':av.status==='unavailable'?'—':av.status==='unconfigured'?'choose':'…';
+      const leg=firstLeg();
+      fare.textContent=date<today?'':leg?calendarFareText(leg.a,leg.b,date,av):(av.status==='unavailable'?'—':'…');
       btn.append(n,fare);
       btn.addEventListener('click',()=>{
         if(btn.disabled)return;
@@ -206,7 +276,9 @@
     let remaining=monthDatesAll.filter(d=>!checked.has(d)||unknown.has(d));
     if(!remaining.length){
       renderStartCalendar();
-      el.calendarStatus.textContent='Green dates have published nonstop service for the first leg. Fares are checked with Duffel after you choose a date.';
+      calendarScheduleCompleteKey=key;
+      queueCalendarFarePricing(leg.a,leg.b,scheduledCalendarDates(leg.a,leg.b,month),token);
+      updateCalendarFareStatus();
       return;
     }
 
@@ -227,6 +299,7 @@
         scheduleMonthData.set(key,current);
         completed=new Set(current.checkedDates||[]).size;
         renderStartCalendar();
+        queueCalendarFarePricing(leg.a,leg.b,batch,token);
         el.calendarStatus.textContent=`Loading published ${leg.a} → ${leg.b} schedule… ${Math.min(completed,monthDatesAll.length)} of ${monthDatesAll.length} dates checked.`;
       }
 
@@ -241,13 +314,18 @@
         current=mergeScheduleData(current,data);
         scheduleMonthData.set(key,current);
         renderStartCalendar();
+        queueCalendarFarePricing(leg.a,leg.b,batch,token);
       }
 
       if(token!==calendarLoadVersion)return;
       const stillUnknown=(current?.unknownDates||[]).filter(d=>monthDatesAll.includes(d));
-      el.calendarStatus.textContent=stillUnknown.length
-        ?`Published schedule loaded for most dates. ${stillUnknown.length} date${stillUnknown.length===1?'':'s'} could not be confirmed and remain amber.`
-        :'Green dates have published nonstop service for the first leg. Fares are checked with Duffel after you choose a date.';
+      calendarScheduleCompleteKey=key;
+      queueCalendarFarePricing(leg.a,leg.b,scheduledCalendarDates(leg.a,leg.b,month),token);
+      if(stillUnknown.length){
+        el.calendarStatus.textContent=`Published schedule loaded for most dates. ${stillUnknown.length} date${stillUnknown.length===1?'':'s'} could not be confirmed; live fares for confirmed service dates load progressively.`;
+      }else{
+        updateCalendarFareStatus();
+      }
     }catch(err){
       if(token!==calendarLoadVersion)return;
       const data={error:true,status:err.status||0,code:err.code||'',message:String(err.message||err),days:{}};
@@ -355,11 +433,12 @@
       farePumpTimer=setTimeout(()=>{farePumpTimer=null;pumpFareQueue();},wait);
     }
   }
-  function fetchFare(a,b,date){
+  function fetchFare(a,b,date,priority=false){
     const key=fareKey(a,b,date);
     if(liveFareCache.has(key))return liveFareCache.get(key);
     const p=new Promise((resolve,reject)=>{
-      fareQueue.push({a,b,date,resolve,reject});
+      const task={a,b,date,resolve,reject};
+      if(priority)fareQueue.unshift(task);else fareQueue.push(task);
       pumpFareQueue();
     }).catch(err=>{
       liveFareCache.delete(key);
@@ -399,7 +478,7 @@
         return;
       }
       try{
-        const data=await fetchFare(req.a,req.b,req.date);
+        const data=await fetchFare(req.a,req.b,req.date,true);
         if(version!==renderVersion)return;
         liveFareData.set(key,data);
         if(req.leg!=null)liveFareByLeg.set(req.leg,data);
