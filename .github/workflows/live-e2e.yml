@@ -20,7 +20,7 @@ on:
       base_url:
         description: "Immutable Netlify deploy URL or production URL to test"
         required: false
-        default: "https://6ac042553d3ab20008bbf69b--nextownair-site.netlify.app"
+        default: "https://6ac043b048b4440008ee5ffd--nextownair-site.netlify.app"
       route:
         description: "Comma-separated airport route"
         required: false
@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     env:
-      E2E_BASE_URL: ${{ inputs.base_url || 'https://6ac042553d3ab20008bbf69b--nextownair-site.netlify.app' }}
+      E2E_BASE_URL: ${{ inputs.base_url || 'https://6ac043b048b4440008ee5ffd--nextownair-site.netlify.app' }}
       E2E_ROUTE: ${{ inputs.route || 'DTW,ROC,DTW' }}
       E2E_DATE: ${{ inputs.date || '' }}
       E2E_OUT_DIR: artifacts
