@@ -39,6 +39,7 @@
   let renderVersion=0;
   let calendarMonthDate=null;
   let calendarLoadVersion=0;
+  let calendarAutoLoadKey='';
   function isoDate(iso){return String(iso||'').slice(0,10);}
   function isoMinutes(iso){
     const m=String(iso||'').match(/T(\d{2}):(\d{2})/);
@@ -169,8 +170,8 @@
       btn.addEventListener('click',()=>{
         if(btn.disabled)return;
         state.startDate=date;state.selections={};save();
-        el.startDateCalendar.hidden=true;el.startDateButton.setAttribute('aria-expanded','false');
         calendarMonthDate=monthStart(date);
+        el.startDateCalendar.hidden=false;el.startDateButton.setAttribute('aria-expanded','true');
         render();
       });
       el.calendarGrid.appendChild(btn);
@@ -229,6 +230,20 @@
   function closeStartCalendar(){
     el.startDateCalendar.hidden=true;
     el.startDateButton.setAttribute('aria-expanded','false');
+  }
+  function showStartCalendar(forceReload=false){
+    calendarMonthDate=calendarMonthDate||monthStart(state.startDate);
+    renderStartCalendar();
+    el.startDateCalendar.hidden=false;
+    el.startDateButton.setAttribute('aria-expanded','true');
+    const leg=firstLeg();
+    if(!leg)return;
+    const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
+    const key=scheduleMonthKey(leg.a,leg.b,month);
+    if(forceReload||calendarAutoLoadKey!==key){
+      calendarAutoLoadKey=key;
+      loadStartCalendarMonth();
+    }
   }
   function providerOptions(data,a,b,date){
     if(!data||!Array.isArray(data.offers))return null;
@@ -562,12 +577,14 @@
         fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value">No nonstop offer returned</div><div class="small">The route is verified, but Duffel returned no nonstop inventory for this date.</div></div>`;
       }else{
         const best=lowestOffer(fareData),isLive=Boolean(fareData.liveMode&&best&&best.liveMode);
-        fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?(locked?'Live fare preview':'Live flights'):'Duffel test flights'} · nonstop economy${previewNote}</div><div class="live-fare-value">${best?formatMoney(best.amount,best.currency):'—'}+</div><div class="small">${fareData.offers.length} flight${fareData.offers.length===1?'':'s'} · duplicate fare brands collapsed · checked ${checkedTime(fareData.checkedAt)}${locked?' · exact choices unlock after inbound flight selection':''}</div></div>`;
+        fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?(locked?'Live fare preview':'Live flights'):'Duffel test flights'} · nonstop economy${previewNote}</div><div class="live-fare-value">From ${best?formatMoney(best.amount,best.currency):'—'}</div><div class="small">${fareData.offers.length} flight${fareData.offers.length===1?'':'s'} · duplicate fare brands collapsed · checked ${checkedTime(fareData.checkedAt)}${locked?' · exact choices unlock after inbound flight selection':''}</div>${locked?'':`<button class="view-flight-options" type="button" data-view-flight-options>View ${fareData.offers.length} flight option${fareData.offers.length===1?'':'s'} ↓</button>`}</div>`;
       }
     }
 
-    leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${A.city} → ${B.city}</h2><div class="muted">${a} → ${b}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div><p class="small">${note}</p>${fareMarkup}<div class="options"></div>`;
+    leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${A.city} → ${B.city}</h2><div class="muted">${a} → ${b}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div><p class="small">${note}</p>${fareMarkup}<div class="options" id="flight-options-${i}"></div>`;
     const box=leg.querySelector('.options');
+    const viewOptions=leg.querySelector('[data-view-flight-options]');
+    if(viewOptions)viewOptions.addEventListener('click',()=>box.scrollIntoView({behavior:'smooth',block:'start'}));
 
     if(locked){
       if(state.selections[String(i)]){delete state.selections[String(i)];save();}
@@ -587,6 +604,10 @@
       box.innerHTML='<div class="no-flights">No flight offers match this timing. Change the stay or departure date to see more choices.</div>';
       return {section:leg,chosen:null,departDate,options:[]};
     }
+
+    const optionHead=document.createElement('div');optionHead.className='flight-options-head';
+    optionHead.innerHTML=`<div><strong>Choose a flight</strong><span>${opts.length} nonstop option${opts.length===1?'':'s'} for ${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</span></div><span>Select one to continue</span>`;
+    box.appendChild(optionHead);
 
     opts.forEach(o=>{
       const selected=state.selections[String(i)]===o.id;
@@ -692,7 +713,7 @@
     liveFareByLeg.clear();
     syncLinks();el.startDate.value=state.startDate;el.startDateButtonText.textContent=formatStartDate(state.startDate);
     if(state.route.length<2){renderEmpty();return;}
-    el.toolbar.hidden=false;renderRoutebar();el.content.innerHTML='';
+    el.toolbar.hidden=false;renderRoutebar();showStartCalendar();el.content.innerHTML='';
     let departDate=state.startDate;
     let previousChosen=null;
     let previousArrivalDate=state.startDate;
@@ -742,21 +763,22 @@
   }
 
   el.startDateButton.addEventListener('click',()=>{
-    if(el.startDateCalendar.hidden)openStartCalendar();else closeStartCalendar();
+    calendarMonthDate=monthStart(state.startDate);
+    showStartCalendar(true);
   });
   el.calendarPrev.addEventListener('click',()=>{
     if(el.calendarPrev.disabled)return;
     calendarMonthDate=new Date(calendarMonthDate.getFullYear(),calendarMonthDate.getMonth()-1,1,12);
-    renderStartCalendar();loadStartCalendarMonth();
+    renderStartCalendar();
+    calendarAutoLoadKey='';
+    showStartCalendar(true);
   });
   el.calendarNext.addEventListener('click',()=>{
     calendarMonthDate=new Date(calendarMonthDate.getFullYear(),calendarMonthDate.getMonth()+1,1,12);
-    renderStartCalendar();loadStartCalendarMonth();
+    renderStartCalendar();
+    calendarAutoLoadKey='';
+    showStartCalendar(true);
   });
-  document.addEventListener('click',ev=>{
-    if(!el.startDateCalendar.hidden&&!ev.target.closest('.start-date-field'))closeStartCalendar();
-  });
-  document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closeStartCalendar();});
   el.printTrip.addEventListener('click',()=>window.print());
   render();
 })();
