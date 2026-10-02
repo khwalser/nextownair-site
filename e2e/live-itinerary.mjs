@@ -143,7 +143,10 @@ try{
 
   // 3) Prove a real Duffel price can make it from the provider into the rendered calendar and flight cards.
   const candidates=[
-    ['DTW','ROC'],['APN','DTW'],['DTW','APN'],['ESC','DTW'],['DTW','ESC']
+    ['DTW','ROC'],
+    ['LAR','DEN'],['BFF','DEN'],['COD','DEN'],['SUX','DEN'],['SUX','ORD'],
+    ['GCK','DFW'],['GRI','DFW'],['ABR','MSP'],['BJI','MSP'],['RHI','MSP'],
+    ['APN','DTW'],['DTW','APN'],['ESC','DTW'],['DTW','ESC']
   ];
   let priced=null;
   for(const [origin,destination] of candidates){
