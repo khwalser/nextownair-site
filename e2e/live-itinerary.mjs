@@ -99,6 +99,14 @@ try{
   await page.goto(BASE_URL+'/index.html',{waitUntil:'domcontentloaded',timeout:60000});
   await page.evaluate(()=>localStorage.clear());
   await page.reload({waitUntil:'domcontentloaded'});
+  const easExplainer=page.locator('.eas-explainer');
+  await easExplainer.waitFor({state:'visible'});
+  assert(/Essential Air Service/i.test(await easExplainer.innerText())&&/Department of Transportation/i.test(await easExplainer.innerText()),'Start page explains Essential Air Service in plain language');
+  await page.waitForFunction(()=>{
+    const strokes=[...document.querySelectorAll('.leaflet-overlay-pane path')].map(p=>(p.getAttribute('stroke')||'').toLowerCase());
+    return strokes.includes('#2f8f86')&&strokes.includes('#7255a1');
+  });
+  pass('Map visually distinguishes EAS service links from hub-to-hub connector links');
 
   await addAirport('DTW');
   await addAirport('ROC');
@@ -111,6 +119,8 @@ try{
   assert(mapLabels.some(x=>x.includes('Stop 1')&&x.includes('Chosen airport'))&&!mapLabels.some(x=>x.includes('Stop 1')&&x.includes('connector')),'User-chosen hub is presented as a stop, not mislabeled as a connector',mapLabels.join(' | '));
   assert(await page.locator('#plan').getAttribute('aria-disabled')==='false','Supported route enables itinerary navigation');
   assert(!/no verified path/i.test(await page.locator('#status').innerText()),'Supported route does not show a false routing warning');
+  await page.waitForFunction(()=>[...document.querySelectorAll('.leaflet-overlay-pane path')].some(p=>(p.getAttribute('stroke')||'').toLowerCase()==='#c084fc'));
+  pass('Selected hub-to-hub route uses the hub-link color');
 
   await page.locator('#plan').click();
   await page.waitForURL(/itinerary\.html/,{timeout:15000});
@@ -208,6 +218,8 @@ try{
   await page.waitForFunction(()=>document.querySelectorAll('#trip .auto-inserted').length>0);
   const repairedStops=await page.locator('#trip .stop strong').allTextContents();
   assert(repairedStops.length===pair.path.length&&pair.path.every((code,i)=>repairedStops[i].includes(code)),'Automatic route repair inserts the exact verified connector path',repairedStops.join(' | '));
+  await page.waitForFunction(()=>[...document.querySelectorAll('.leaflet-overlay-pane path')].filter(p=>(p.getAttribute('stroke')||'').toLowerCase()==='#5eead4').length>=2);
+  pass('Selected EAS service legs use the EAS-link color');
   const autoText=await page.locator('#trip .auto-inserted').first().innerText();
   assert(autoText.includes(pair.path[1])&&/Automatic connection/i.test(autoText),'Automatically inserted connector is visibly and correctly identified',autoText.replace(/\s+/g,' '));
   assert(await page.locator('#plan').getAttribute('aria-disabled')==='false','Auto-repaired route remains plannable');
