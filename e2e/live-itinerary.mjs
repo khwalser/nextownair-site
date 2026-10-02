@@ -107,6 +107,8 @@ try{
 
   const mapStops=(await page.locator('#trip .stop strong').allTextContents()).join(' | ');
   assert(mapStops.includes('DTW')&&mapStops.includes('ROC'),'Map route can be built without manual URL editing',mapStops);
+  const mapLabels=await page.locator('#trip .stoplabel').allTextContents();
+  assert(mapLabels.some(x=>x.includes('Stop 1')&&x.includes('Chosen airport'))&&!mapLabels.some(x=>x.includes('Stop 1')&&x.includes('connector')),'User-chosen hub is presented as a stop, not mislabeled as a connector',mapLabels.join(' | '));
   assert(await page.locator('#plan').getAttribute('aria-disabled')==='false','Supported route enables itinerary navigation');
   assert(!/no verified path/i.test(await page.locator('#status').innerText()),'Supported route does not show a false routing warning');
 
@@ -121,6 +123,11 @@ try{
   assert(routeChips[1].includes('stop'),'A user-chosen intermediate city is treated as a stop, not an automatic connector',routeChips[1]);
   await page.waitForFunction(()=>document.querySelector('.stay-summary')?.textContent?.includes('Stay 2 nights'));
   pass('Journey-first stay default is rendered','ROC defaults to a 2-night stop');
+  await page.locator('.stay').first().getByRole('button',{name:'1 night'}).click();
+  await page.waitForFunction(()=>document.querySelector('.stay-summary')?.textContent?.includes('Stay 1 night'));
+  pass('Stay duration can be changed directly in the itinerary');
+  await page.locator('.stay').first().getByRole('button',{name:'2 nights'}).click();
+  await page.waitForFunction(()=>document.querySelector('.stay-summary')?.textContent?.includes('Stay 2 nights'));
 
   // 2) Calendar remains usable whether published schedules are available or the feed is exhausted.
   const scheduleResponse=await waitForAnySchedule();
@@ -143,10 +150,10 @@ try{
 
   // 3) Prove a real Duffel price can make it from the provider into the rendered calendar and flight cards.
   const candidates=[
-    ['DTW','ROC'],
+    ['GCK','DFW'],
     ['LAR','DEN'],['BFF','DEN'],['COD','DEN'],['SUX','DEN'],['SUX','ORD'],
-    ['GCK','DFW'],['GRI','DFW'],['ABR','MSP'],['BJI','MSP'],['RHI','MSP'],
-    ['APN','DTW'],['DTW','APN'],['ESC','DTW'],['DTW','ESC']
+    ['GRI','DFW'],['ABR','MSP'],['BJI','MSP'],['RHI','MSP'],
+    ['DTW','ROC'],['APN','DTW'],['DTW','APN'],['ESC','DTW'],['DTW','ESC']
   ];
   let priced=null;
   for(const [origin,destination] of candidates){
@@ -249,6 +256,8 @@ try{
   await mobile.goto(BASE_URL+'/itinerary.html?route=DTW,ROC,DTW&date='+encodeURIComponent(tripDate),{waitUntil:'domcontentloaded'});
   const navVisible=await mobile.locator('.nav').isVisible();
   assert(navVisible,'Primary navigation remains visible on mobile');
+  const itineraryOverflow=await mobile.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  assert(itineraryOverflow<=2,'Itinerary has no horizontal mobile overflow',String(itineraryOverflow));
   await mobile.close();
 
   assert(diagnostics.pageErrors.length===0,'No uncaught browser errors',diagnostics.pageErrors.join(' | '));
