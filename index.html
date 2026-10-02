@@ -23,6 +23,11 @@
   <div class="eyebrow">Map mode</div>
   <h1>Where would you like to wander?</h1>
   <p class="lead">Build an air road trip through small-town America. Pick the places you actually want to visit and NexTownAir connects the dots through verified small-airport and hub links, then carries the route into a date, fare, flight, and stopover itinerary.</p>
+  <aside class="eas-explainer" aria-label="What is Essential Air Service?">
+    <strong>What is Essential Air Service?</strong>
+    <span>EAS is a U.S. Department of Transportation program created after airline deregulation to keep eligible smaller communities connected to the national air transportation system, subsidizing service when needed, usually to a larger hub. NexTownAir is built around making that overlooked network easier to discover and travel.</span>
+    <a href="https://www.transportation.gov/policy/aviation-policy/small-community-rural-air-service/essential-air-service" target="_blank" rel="noopener">About EAS at U.S. DOT</a>
+  </aside>
 
   <div class="layout">
     <section class="mapcolumn" aria-label="Airport map">
@@ -48,9 +53,11 @@
       </div>
       <div id="map" aria-label="Interactive airport map"></div>
       <div class="legend">
-        <span class="legend-item"><span class="dot eas"></span>EAS / small-airport spotlight</span>
-        <span class="legend-item"><span class="dot other"></span>Hub / connector / non-EAS airport</span>
-        <span class="legend-item"><span class="dot warning"></span>Automatically inserted connector path</span>
+        <span class="legend-item"><span class="dot eas"></span>EAS / small-airport</span>
+        <span class="legend-item"><span class="dot other"></span>Hub / connector airport</span>
+        <span class="legend-item"><span class="line-key eas-link"></span>EAS service link</span>
+        <span class="legend-item"><span class="line-key hub-link"></span>Hub-to-hub connector link</span>
+        <span class="legend-item"><span class="line-key warning-link"></span>Unverified / unavailable link</span>
         <span class="legend-item">Hover or tap a pin: city, region, airport code</span>
       </div>
       <p class="prototype-note"><strong>Network coverage:</strong> 183 subsidized EAS communities using the U.S. DOT May 2026 reports: 107 in the Lower 48, 71 in Alaska, 4 in Hawaii, and 1 in Puerto Rico. Alaska local identifiers are normalized to traveler-facing airport codes where available while retaining the DOT code as a searchable alias. <a href="https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports" target="_blank" rel="noopener">View the DOT source reports</a>.</p>
