@@ -383,7 +383,7 @@
     const currency=cheapest[0]&&cheapest[0].currency||'USD';
     const same=cheapest.every(x=>(x.currency||'USD')===currency);
     const total=same?formatMoney(cheapest.reduce((sum,x)=>sum+Number(x.amount||0),0),currency):'Multiple currencies';
-    node.innerHTML=`<strong>From ${total}</strong><span>${live.length===legs?'planned-date live fare estimate':`live quotes for ${live.length} of ${legs} legs`} · sum of lowest nonstop one-way fares · updates as trip timing changes</span>`;
+    node.innerHTML=`<strong>Lowest available total ${total}</strong><span>${live.length===legs?'planned-date live fare estimate':`live quotes for ${live.length} of ${legs} legs`} · sum of the lowest returned nonstop one-way fares · updates as trip timing changes</span>`;
   }
   async function hydrateLivePricing(version){
     const legNodes=[...document.querySelectorAll('.live-fare[data-leg-index]')];
@@ -619,7 +619,7 @@
         fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value">No nonstop offer returned</div><div class="small">The route is verified, but Duffel returned no nonstop inventory for this date.</div></div>`;
       }else{
         const best=lowestOffer(fareData),isLive=Boolean(fareData.liveMode&&best&&best.liveMode);
-        fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?(locked?'Live fare preview':'Live flights'):'Duffel test flights'} · nonstop economy${previewNote}</div><div class="live-fare-value">From ${best?formatMoney(best.amount,best.currency):'—'}</div><div class="small">${fareData.offers.length} flight${fareData.offers.length===1?'':'s'} · duplicate fare brands collapsed · checked ${checkedTime(fareData.checkedAt)}${locked?' · exact choices unlock after inbound flight selection':''}</div>${locked?'':`<button class="view-flight-options" type="button" data-view-flight-options>View ${fareData.offers.length} flight option${fareData.offers.length===1?'':'s'} ↓</button>`}</div>`;
+        fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?(locked?'Live fare preview':'Live flights'):'Duffel test flights'} · nonstop economy${previewNote}</div><div class="live-fare-value">Lowest fare ${best?formatMoney(best.amount,best.currency):'—'}</div><div class="small">${fareData.offers.length} flight${fareData.offers.length===1?'':'s'} · exact returned fare prices shown below · checked ${checkedTime(fareData.checkedAt)}${locked?' · exact choices unlock after inbound flight selection':''}</div>${locked?'':`<button class="view-flight-options" type="button" data-view-flight-options>View ${fareData.offers.length} flight option${fareData.offers.length===1?'':'s'} ↓</button>`}</div>`;
       }
     }
 
@@ -656,8 +656,13 @@
       const arr=F.arrival(o,departDate);
       const bt=document.createElement('button');bt.type='button';bt.className=`flight${selected?' selected':''}`;bt.setAttribute('aria-pressed',String(selected));
       const badge=usingProvider?(o.liveMode?'Live flight':'Duffel test flight'):'Verified route · sample schedule';
-      const fareLabel=o.fareCount>1?`From ${formatMoney(o.price,o.currency)}`:formatMoney(o.price,o.currency);
-      const price=usingProvider?`<div class="price">${fareLabel}</div>${o.fareCount>1?`<div class="small">${o.fareCount} fare brands for this flight</div>`:''}`:'';
+      const fareChoices=(o.fareChoices||[]).filter(x=>Number.isFinite(Number(x.amount)));
+      const fareLabel=formatMoney(o.price,o.currency);
+      const price=usingProvider?(
+        fareChoices.length>1
+          ? `<div class="price">Lowest fare ${fareLabel}</div><div class="fare-choice-list" aria-label="Returned fare prices">${fareChoices.map((f,idx)=>`<span class="fare-choice${idx===0?' lowest':''}">${idx===0?'Lowest · ':''}${formatMoney(f.amount,f.currency||o.currency)}</span>`).join('')}</div><div class="small">${fareChoices.length} live fare prices returned for this flight</div>`
+          : `<div class="price">${fareLabel}</div>`
+      ):'';
       bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${fmtDuration(o.duration)} · nonstop</div>${price}<span class="flight-badge">${badge}</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
       bt.addEventListener('click',()=>chooseFlight(i,o.id));box.appendChild(bt);
     });
