@@ -52,11 +52,12 @@
     }
     return null;
   }
-  function baseState(){return {version:1,route:[],startDate:todayLocal(),stays:{},selections:{}};}
+  function baseState(){return {version:1,route:[],autoConnectors:[],startDate:todayLocal(),stays:{},selections:{}};}
   function sanitize(raw){
     const b=baseState();
     if(!raw||typeof raw!=='object')return b;
     b.route=normalizeRoute(raw.route);
+    b.autoConnectors=normalizeRoute(raw.autoConnectors).filter(code=>b.route.includes(code));
     b.startDate=validDate(raw.startDate)?raw.startDate:b.startDate;
     b.stays=(raw.stays&&typeof raw.stays==='object')?raw.stays:{};
     b.selections=(raw.selections&&typeof raw.selections==='object')?raw.selections:{};
@@ -79,12 +80,13 @@
   function reconcileRoute(state,newRoute){
     const next=normalizeRoute(newRoute);
     const old=state.route||[];
-    if(sameRoute(old,next)){state.route=next;return state;}
+    if(sameRoute(old,next)){state.route=next;state.autoConnectors=(state.autoConnectors||[]).filter(code=>next.includes(code));return state;}
     const d=firstDiff(old,next);
     const legCut=Math.max(0,d-1);
     Object.keys(state.selections||{}).forEach(k=>{if(Number(k)>=legCut)delete state.selections[k];});
     Object.keys(state.stays||{}).forEach(k=>{if(Number(k)>=Math.max(1,d))delete state.stays[k];});
     state.route=next;
+    state.autoConnectors=(state.autoConnectors||[]).filter(code=>next.includes(code));
     return state;
   }
   function routeFromQuery(){
@@ -97,6 +99,7 @@
     const q=new URLSearchParams(location.search);
     const qr=routeFromQuery();
     if(qr!==null)reconcileRoute(state,qr);
+    if(q.has('auto'))state.autoConnectors=normalizeRoute((q.get('auto')||'').split(',')).filter(code=>state.route.includes(code));
     if(validDate(q.get('date')))state.startDate=q.get('date');
     return save(state);
   }
@@ -105,6 +108,7 @@
   function buildUrl(page,state){
     const p=new URLSearchParams();
     if(state.route&&state.route.length)p.set('route',state.route.join(','));
+    if(state.autoConnectors&&state.autoConnectors.length)p.set('auto',state.autoConnectors.join(','));
     if(validDate(state.startDate))p.set('date',state.startDate);
     const qs=p.toString();
     return page+(qs?`?${qs}`:'');
