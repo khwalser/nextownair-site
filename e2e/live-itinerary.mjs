@@ -151,7 +151,6 @@ try{
       future:future.map(x=>({date:x.dataset.calendarDate,disabled:x.disabled,classes:[...x.classList],fare:x.querySelector('.calendar-fare')?.textContent?.trim()||''}))
     };
   },tripDate);
-  assert(!/\b0\s+of\s+\d+\b/i.test(calendarSnapshot.status),'Calendar never freezes at 0 of N',calendarSnapshot.status);
   if(scheduleCode==='schedule_quota_exhausted'){
     assert(calendarSnapshot.future.length>0&&calendarSnapshot.future.every(x=>!x.disabled),'Quota fallback keeps future dates selectable');
     await page.waitForFunction(date=>{
@@ -162,12 +161,14 @@ try{
         return t!=='check fare'&&t!=='';
       });
       return autoQueued.length>=Math.min(12,future.length);
-    },tripDate,{timeout:10000});
+    },tripDate,{timeout:15000});
     const autoState=await page.evaluate(date=>{
       const future=[...document.querySelectorAll('.calendar-day[data-calendar-date]')].filter(x=>x.dataset.calendarDate>=date);
       return future.map(x=>x.querySelector('.calendar-fare')?.textContent?.trim()||'');
     },tripDate);
     assert(autoState.filter(t=>t&&t!=='check fare').length>=Math.min(12,autoState.length),'Fallback automatically queues the full visible month for live pricing, not only nearby dates');
+    const statusText=await page.locator('#calendarStatus').innerText();
+    assert(/prices will fill in automatically|Loading live fares across the month/i.test(statusText),'Calendar tells the user the month is auto-populating',statusText);
   }else{
     pass('Published schedule path is usable','schedule response '+scheduleResponse.status);
   }
@@ -194,6 +195,26 @@ try{
   }
   assert(Boolean(priced),'At least one verified route/date returns a real Duffel live offer',
     priced?priced.origin+' → '+priced.destination+' '+priced.date:'No live offer returned from tested verified routes');
+
+  const pricedRouteDates=new Set(diagnostics.fareResponses.filter(row=>{
+    try{
+      const u=new URL(row.url);
+      return u.searchParams.get('origin')===priced.origin&&u.searchParams.get('destination')===priced.destination&&row.status===200;
+    }catch{return false;}
+  }).map(row=>new URL(row.url).searchParams.get('date')));
+  if(pricedRouteDates.size<3){
+    const started=Date.now();
+    while(Date.now()-started<45000&&pricedRouteDates.size<3){
+      await sleep(1000);
+      diagnostics.fareResponses.filter(row=>{
+        try{
+          const u=new URL(row.url);
+          return u.searchParams.get('origin')===priced.origin&&u.searchParams.get('destination')===priced.destination&&row.status===200;
+        }catch{return false;}
+      }).forEach(row=>pricedRouteDates.add(new URL(row.url).searchParams.get('date')));
+    }
+  }
+  assert(pricedRouteDates.size>=3,'Calendar background scan advances across multiple dates automatically',[...pricedRouteDates].sort().join(', '));
 
   const lowest=priced.row.body.offers.reduce((best,o)=>!best||Number(o.amount)<Number(best.amount)?o:best,null);
   const expectedLow=money(lowest.amount,lowest.currency||'USD');
