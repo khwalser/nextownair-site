@@ -1,0 +1,61 @@
+name: Live browser E2E
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "e2e/live-itinerary.mjs"
+      - ".github/workflows/live-e2e.yml"
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Immutable Netlify deploy URL or production URL to test"
+        required: false
+        default: "https://6ac02a6f35e24800084bc419--nextownair-site.netlify.app"
+      route:
+        description: "Comma-separated airport route"
+        required: false
+        default: "DTW,ROC,DTW"
+      date:
+        description: "Trip start date (YYYY-MM-DD)"
+        required: false
+        default: "2026-10-02"
+
+permissions:
+  contents: read
+
+jobs:
+  live-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      E2E_BASE_URL: ${{ inputs.base_url || 'https://6ac02a6f35e24800084bc419--nextownair-site.netlify.app' }}
+      E2E_ROUTE: ${{ inputs.route || 'DTW,ROC,DTW' }}
+      E2E_DATE: ${{ inputs.date || '2026-10-02' }}
+      E2E_OUT_DIR: artifacts
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Run live rendered itinerary test
+        run: node e2e/live-itinerary.mjs
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-e2e-evidence
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 14
