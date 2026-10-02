@@ -1,4 +1,3 @@
 # NexTownAir Netlify configuration
 [build]
-  command = "node scripts/calendar-price-smoke.mjs"
   functions = "netlify/functions"
