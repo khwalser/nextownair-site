@@ -202,7 +202,7 @@ try{
   const repairedStops=await page.locator('#trip .stop strong').allTextContents();
   assert(repairedStops.length===pair.path.length&&pair.path.every((code,i)=>repairedStops[i].includes(code)),'Automatic route repair inserts the exact verified connector path',repairedStops.join(' | '));
   const autoText=await page.locator('#trip .auto-inserted').first().innerText();
-  assert(autoText.includes(pair.path[1])&&/Auto-inserted connector/i.test(autoText),'Automatically inserted connector is visibly and correctly identified',autoText.replace(/\s+/g,' '));
+  assert(autoText.includes(pair.path[1])&&/Automatic connection/i.test(autoText),'Automatically inserted connector is visibly and correctly identified',autoText.replace(/\s+/g,' '));
   assert(await page.locator('#plan').getAttribute('aria-disabled')==='false','Auto-repaired route remains plannable');
 
   await page.locator('#plan').click();
