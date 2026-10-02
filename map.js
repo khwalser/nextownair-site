@@ -7,7 +7,7 @@
   let networkLines=[];
   let activeFilter='all';
   const markers=new Map();
-  let recentAutoConnectors=new Set();
+  let autoConnectorCodes=new Set();
 
   const el={
     trip:document.getElementById('trip'),
@@ -79,7 +79,7 @@
   }
   function setRoute(next,contextMessage=''){
     const fixed=repairRoute(next);
-    recentAutoConnectors=new Set(fixed.inserted.map(x=>x.code));
+    autoConnectorCodes=new Set([...autoConnectorCodes,...fixed.inserted.map(x=>x.code)].filter(code=>fixed.route.includes(code)));
     state=window.NTA.setRoute(state,fixed.route);
     render();
     const repairText=autoConnectorMessage(fixed.inserted);
@@ -137,15 +137,15 @@
       state.route.forEach((code,i)=>{
         const a=by(code);if(!a)return;
         const row=document.createElement('div');row.className='stop';
-        const autoInserted=recentAutoConnectors.has(code);if(autoInserted)row.classList.add('auto-inserted');
+        const autoInserted=autoConnectorCodes.has(code);if(autoInserted)row.classList.add('auto-inserted');
         const num=document.createElement('div');num.className='stopnum';num.textContent=String(i+1);
         const body=document.createElement('div');body.className='stopbody';
         const title=document.createElement('strong');title.textContent=`${a.city}, ${a.state} · ${a.code}`;
         const label=document.createElement('div');label.className='stoplabel';label.textContent=autoInserted?`${routeLabel(i)} · Auto-inserted connector · ${airportRegionName(a)}`:`${routeLabel(i)} · ${a.type==='eas'?'EAS stop':'Hub / connector'} · ${airportRegionName(a)}`;
         const controls=document.createElement('div');controls.className='stopcontrols';
-        const up=document.createElement('button');up.type='button';up.className='smallbtn';up.textContent='Move up';up.disabled=i===0;up.setAttribute('aria-label',`Move ${a.city} earlier in trip`);up.addEventListener('click',()=>move(i,-1));
-        const down=document.createElement('button');down.type='button';down.className='smallbtn';down.textContent='Move down';down.disabled=i===n-1;down.setAttribute('aria-label',`Move ${a.city} later in trip`);down.addEventListener('click',()=>move(i,1));
-        const remove=document.createElement('button');remove.type='button';remove.className='smallbtn remove';remove.textContent='Remove';remove.setAttribute('aria-label',`Remove ${a.city} from trip`);remove.addEventListener('click',()=>removeAt(i));
+        const up=document.createElement('button');up.type='button';up.className='smallbtn';up.textContent='Move up';up.disabled=i===0||autoInserted;up.setAttribute('aria-label',`Move ${a.city} earlier in trip`);up.addEventListener('click',()=>move(i,-1));
+        const down=document.createElement('button');down.type='button';down.className='smallbtn';down.textContent='Move down';down.disabled=i===n-1||autoInserted;down.setAttribute('aria-label',`Move ${a.city} later in trip`);down.addEventListener('click',()=>move(i,1));
+        const remove=document.createElement('button');remove.type='button';remove.className='smallbtn remove';remove.textContent='Remove';remove.disabled=autoInserted;remove.setAttribute('aria-label',`Remove ${a.city} from trip`);remove.addEventListener('click',()=>removeAt(i));
         controls.append(up,down,remove);body.append(title,label,controls);row.append(num,body);el.trip.appendChild(row);
       });
     }
