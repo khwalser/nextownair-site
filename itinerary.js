@@ -69,6 +69,12 @@
   function monthKeyFromDate(date){return String(date||'').slice(0,7);}
   function scheduleMonthKey(a,b,month){return `${a}|${b}|${month}`;}
   function mergeScheduleData(base,next){
+    const nextChecked=new Set(next.checkedDates||[]);
+    const checkedDates=[...new Set([...(base?.checkedDates||[]),...(next.checkedDates||[])])];
+    const unknownDates=[...new Set([
+      ...(base?.unknownDates||[]).filter(d=>!nextChecked.has(d)),
+      ...(next.unknownDates||[])
+    ])];
     const merged={
       provider:next.provider||base?.provider||'aerodatabox-apimarket',
       sourceType:next.sourceType||base?.sourceType||'published-schedule',
@@ -77,9 +83,9 @@
       month:next.month||base?.month,
       checkedAt:next.checkedAt||base?.checkedAt,
       days:{...(base?.days||{})},
-      checkedDates:[...new Set([...(base?.checkedDates||[]),...(next.checkedDates||[])])],
-      unknownDates:[...new Set(next.unknownDates||[])],
-      partial:Boolean(next.partial)
+      checkedDates,
+      unknownDates,
+      partial:unknownDates.length>0
     };
     for(const [date,value] of Object.entries(next.days||{}))merged.days[date]=value;
     return merged;
@@ -97,6 +103,7 @@
           const err=new Error(data.message||data.error||'Schedule lookup failed');
           err.status=res.status;err.code=data.error||'';throw err;
         }
+        if(data&&data.partial)scheduleMonthCache.delete(requestKey);
         return data;
       })
       .catch(err=>{scheduleMonthCache.delete(requestKey);throw err;});
@@ -114,7 +121,8 @@
     const day=data.days&&data.days[date];
     if(day&&day.count>0)return {status:'yes',label:'Scheduled',detail:`${day.count} published flight${day.count===1?'':'s'}`};
     if(Array.isArray(data.unknownDates)&&data.unknownDates.includes(date))return {status:'error',label:'Schedule check incomplete',detail:'retry this date'};
-    return {status:'none',label:'No scheduled nonstop',detail:'no published nonstop service found'};
+    if(Array.isArray(data.checkedDates)&&data.checkedDates.includes(date))return {status:'none',label:'No scheduled nonstop',detail:'no published nonstop service found'};
+    return {status:'checking',label:'Checking…',detail:''};
   }
   function firstLeg(){
     return state.route.length>=2?{a:state.route[0],b:state.route[1]}:null;
@@ -186,27 +194,58 @@
     const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
     const key=scheduleMonthKey(leg.a,leg.b,month);
     let current=scheduleMonthData.get(key);
-    if(current&&!current.error&&!current.partial){
+    const y=calendarMonthDate.getFullYear(),m=calendarMonthDate.getMonth();
+    const daysInMonth=new Date(y,m+1,0,12).getDate();
+    const today=window.NTA.todayLocal();
+    const monthDatesAll=Array.from({length:daysInMonth},(_,idx)=>ymd(y,m+1,idx+1)).filter(d=>d>=today);
+
+    if(current&&current.error)current=null;
+    const checked=new Set(current?.checkedDates||[]);
+    const unknown=new Set(current?.unknownDates||[]);
+    let remaining=monthDatesAll.filter(d=>!checked.has(d)||unknown.has(d));
+    if(!remaining.length){
       renderStartCalendar();
       el.calendarStatus.textContent='Green dates have published nonstop service for the first leg. Fares are checked with Duffel after you choose a date.';
       return;
     }
-    el.calendarStatus.textContent=`Loading published ${leg.a} → ${leg.b} schedule for ${monthTitle(calendarMonthDate)}…`;
+
+    if(remaining.includes(state.startDate)){
+      remaining=[state.startDate,...remaining.filter(d=>d!==state.startDate)];
+    }
+
+    const BATCH_SIZE=4;
+    let completed=monthDatesAll.length-remaining.length;
+    el.calendarStatus.textContent=`Loading published ${leg.a} → ${leg.b} schedule… ${completed} of ${monthDatesAll.length} dates checked.`;
+
     try{
-      let remaining=current&&!current.error&&Array.isArray(current.unknownDates)&&current.unknownDates.length?current.unknownDates:null;
-      for(let pass=0;pass<3;pass++){
-        const data=await fetchScheduleMonth(leg.a,leg.b,month,remaining);
+      for(let offset=0;offset<remaining.length;offset+=BATCH_SIZE){
+        const batch=remaining.slice(offset,offset+BATCH_SIZE);
+        const data=await fetchScheduleMonth(leg.a,leg.b,month,batch);
         if(token!==calendarLoadVersion)return;
-        current=mergeScheduleData(current&&!current.error?current:null,data);
+        current=mergeScheduleData(current,data);
+        scheduleMonthData.set(key,current);
+        completed=new Set(current.checkedDates||[]).size;
+        renderStartCalendar();
+        el.calendarStatus.textContent=`Loading published ${leg.a} → ${leg.b} schedule… ${Math.min(completed,monthDatesAll.length)} of ${monthDatesAll.length} dates checked.`;
+      }
+
+      if(token!==calendarLoadVersion)return;
+
+      // Retry any transiently incomplete dates once, in tiny batches.
+      const retryDates=(current?.unknownDates||[]).filter(d=>monthDatesAll.includes(d));
+      for(let offset=0;offset<retryDates.length;offset+=2){
+        const batch=retryDates.slice(offset,offset+2);
+        const data=await fetchScheduleMonth(leg.a,leg.b,month,batch);
+        if(token!==calendarLoadVersion)return;
+        current=mergeScheduleData(current,data);
         scheduleMonthData.set(key,current);
         renderStartCalendar();
-        if(!current.partial||!current.unknownDates.length)break;
-        remaining=current.unknownDates;
-        el.calendarStatus.textContent=`Published schedule is partially loaded. Finishing ${remaining.length} unchecked date${remaining.length===1?'':'s'}…`;
       }
+
       if(token!==calendarLoadVersion)return;
-      el.calendarStatus.textContent=current.partial
-        ?'Most published schedule dates are loaded. Amber dates were not confirmed and can be retried; they are not being treated as no-service dates.'
+      const stillUnknown=(current?.unknownDates||[]).filter(d=>monthDatesAll.includes(d));
+      el.calendarStatus.textContent=stillUnknown.length
+        ?`Published schedule loaded for most dates. ${stillUnknown.length} date${stillUnknown.length===1?'':'s'} could not be confirmed and remain amber.`
         :'Green dates have published nonstop service for the first leg. Fares are checked with Duffel after you choose a date.';
     }catch(err){
       if(token!==calendarLoadVersion)return;
@@ -214,10 +253,10 @@
       scheduleMonthData.set(key,data);
       renderStartCalendar();
       el.calendarStatus.textContent=err.code==='schedule_provider_not_configured'
-        ?'Published-schedule calendar is ready but needs your AeroDataBox API.Market key. You can still choose a date manually.'
+        ?'Published-schedule calendar needs the AeroDataBox API.Market key.'
         :err.code==='schedule_auth_failed'
-          ?'AeroDataBox API.Market rejected the key. Check the Netlify environment variable and subscription.'
-          :'Published schedule lookup is temporarily unavailable. You can still choose a date manually.';
+          ?'AeroDataBox API.Market rejected the configured key or subscription.'
+          :'Published schedule lookup failed before any batch could complete. Retry the calendar.';
     }
   }
   function openStartCalendar(){
@@ -763,7 +802,6 @@
   }
 
   el.startDateButton.addEventListener('click',()=>{
-    calendarMonthDate=monthStart(state.startDate);
     showStartCalendar(true);
   });
   el.calendarPrev.addEventListener('click',()=>{
