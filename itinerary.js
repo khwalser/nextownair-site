@@ -38,7 +38,9 @@
   const FARE_START_GAP_MS=3200;
   const AUTO_PRICE_WINDOW=7;
   const FARE_SESSION_KEY='nextownair.liveFares.v1';
-  const FARE_SESSION_TTL_MS=10*60*1000;
+  const FARE_SESSION_TTL_MS=5*60*1000;
+  const SCHEDULE_FALLBACK_SESSION_KEY='nextownair.scheduleFallback.v1';
+  const SCHEDULE_FALLBACK_TTL_MS=15*60*1000;
   let fareActive=0;
   let lastFareStartAt=0;
   let fareBlockedUntil=0;
@@ -49,7 +51,19 @@
   let calendarAutoLoadKey='';
   let calendarScheduleCompleteKey='';
   const scheduleFallbackCodes=new Set(['schedule_provider_not_configured','schedule_subscription_inactive','schedule_auth_failed','schedule_quota_exhausted']);
+  let scheduleProviderUnavailableCode='';
   function isScheduleFallbackCode(code){return scheduleFallbackCodes.has(String(code||''));}
+  function restoreScheduleFallback(){
+    try{
+      const saved=JSON.parse(sessionStorage.getItem(SCHEDULE_FALLBACK_SESSION_KEY)||'null');
+      if(saved&&isScheduleFallbackCode(saved.code)&&Date.now()-Number(saved.savedAt||0)<=SCHEDULE_FALLBACK_TTL_MS)scheduleProviderUnavailableCode=saved.code;
+    }catch(_){/* session storage can be unavailable */}
+  }
+  function rememberScheduleFallback(code){
+    if(!isScheduleFallbackCode(code))return;
+    scheduleProviderUnavailableCode=code;
+    try{sessionStorage.setItem(SCHEDULE_FALLBACK_SESSION_KEY,JSON.stringify({code,savedAt:Date.now()}));}catch(_){/* session storage can be unavailable */}
+  }
   function restoreFareSession(){
     try{
       const now=Date.now(),store=JSON.parse(sessionStorage.getItem(FARE_SESSION_KEY)||'{}');
@@ -71,6 +85,7 @@
     return data;
   }
   restoreFareSession();
+  restoreScheduleFallback();
   function isoDate(iso){return String(iso||'').slice(0,10);}
   function isoMinutes(iso){
     const m=String(iso||'').match(/T(\d{2}):(\d{2})/);
@@ -162,24 +177,28 @@
   }
   function calendarAvailability(date){
     const leg=firstLeg();if(!leg)return {status:'none',label:''};
+    const fareData=liveFareData.get(fareKey(leg.a,leg.b,date));
+    if(lowestOffer(fareData))return {status:'available',label:'Live fare'};
     const stateForDate=scheduleState(leg.a,leg.b,date);
     if(stateForDate.status==='yes')return {status:'available',label:'Scheduled'};
     if(stateForDate.status==='none')return {status:'unavailable',label:'No nonstop'};
     if(stateForDate.status==='fallback')return {status:'fallback',label:'Live fare check'};
-    if(stateForDate.status==='error')return {status:'retry',label:'Unavailable'};
+    if(stateForDate.status==='error')return {status:'retry',label:'Retry'};
     return {status:'checking',label:'Checking'};
   }
   function calendarFareText(a,b,date,av){
-    if(av.status==='unavailable')return '—';
-    if(av.status==='retry'||av.status==='checking')return '…';
     const key=fareKey(a,b,date),data=liveFareData.get(key);
     if(data){
-      if(data.error)return av.status==='fallback'?'retry fare':'fare —';
+      if(data.error)return av.status==='fallback'||av.status==='checking'?'retry fare':'fare —';
       const best=lowestOffer(data);
-      return best?formatMoney(best.amount,best.currency):(av.status==='fallback'?'no live fare':'no fare');
+      if(best)return formatMoney(best.amount,best.currency);
+      if(av.status!=='unavailable')return 'no live fare';
     }
     if(fareActiveKeys.has(key))return 'pricing…';
     if(liveFareCache.has(key))return 'queued';
+    if(av.status==='unavailable')return '—';
+    if(av.status==='retry')return 'retry';
+    if(av.status==='checking')return 'check fare';
     return av.status==='fallback'?'check fare':'scheduled';
   }
   function calendarFareTitle(a,b,date,av){
@@ -270,7 +289,7 @@
     const av=calendarAvailability(date);
     cell.classList.remove('checking','available','unavailable','retry','unconfigured');
     cell.classList.add(av.status);
-    cell.disabled=!['available','fallback'].includes(av.status);
+    cell.disabled=av.status==='unavailable';
     const fare=cell.querySelector('.calendar-fare');
     const leg=firstLeg();
     if(fare)fare.textContent=leg?calendarFareText(leg.a,leg.b,date,av):(av.status==='unavailable'?'—':'…');
@@ -297,7 +316,7 @@
       }else{
         const av=calendarAvailability(date);
         btn.classList.add(av.status);
-        btn.disabled=!['available','fallback'].includes(av.status);
+        btn.disabled=av.status==='unavailable';
       }
       const n=document.createElement('span');n.className='calendar-day-number';n.textContent=String(day);
       const fare=document.createElement('span');fare.className='calendar-fare';
@@ -329,6 +348,14 @@
     const today=window.NTA.todayLocal();
     const monthDatesAll=Array.from({length:daysInMonth},(_,idx)=>ymd(y,m+1,idx+1)).filter(d=>d>=today);
 
+    if(scheduleProviderUnavailableCode){
+      current={error:true,status:503,code:scheduleProviderUnavailableCode,message:'Published schedule feed unavailable for this session.',days:{}};
+      scheduleMonthData.set(key,current);
+      renderStartCalendar();calendarScheduleCompleteKey=key;
+      queueCalendarFarePricing(leg.a,leg.b,monthDatesAll,token);
+      updateCalendarFareStatus();
+      return;
+    }
     if(current&&current.error&&isScheduleFallbackCode(current.code)){
       renderStartCalendar();calendarScheduleCompleteKey=key;
       queueCalendarFarePricing(leg.a,leg.b,monthDatesAll,token);
@@ -394,6 +421,7 @@
       const data={error:true,status:err.status||0,code:err.code||'',message:String(err.message||err),days:{}};
       scheduleMonthData.set(key,data);
       const providerFallback=isScheduleFallbackCode(err.code);
+      if(providerFallback)rememberScheduleFallback(err.code);
       renderStartCalendar();
       if(providerFallback){
         calendarScheduleCompleteKey=key;
@@ -586,6 +614,11 @@
       if(!requests.has(key))requests.set(key,{a,b,month,dates:[]});
       requests.get(key).dates.push(date);
     });
+    if(scheduleProviderUnavailableCode){
+      requests.forEach((req,key)=>scheduleMonthData.set(key,{error:true,status:503,code:scheduleProviderUnavailableCode,message:'Published schedule feed unavailable for this session.',days:{}}));
+      if(requests.size&&version===renderVersion)render();
+      return;
+    }
     let learnedSomething=false;
     await Promise.all([...requests.entries()].map(async([key,req])=>{
       const existing=scheduleMonthData.get(key);
@@ -604,6 +637,7 @@
         learnedSomething=true;
       }catch(err){
         if(version!==renderVersion)return;
+        if(isScheduleFallbackCode(err.code))rememberScheduleFallback(err.code);
         if(!existing){
           scheduleMonthData.set(key,{error:true,status:err.status||0,code:err.code||'',message:String(err.message||err),days:{}});
         }
