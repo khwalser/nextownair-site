@@ -40,14 +40,23 @@ function normalizeFlight(flight,destination){
 }
 
 const API_BASE="https://prod.api.market/api/v1/aedbx/aerodatabox";
-const MIN_START_GAP_MS=1050;
+const MIN_START_GAP_MS=1250;
 let lastStartAt=0;
 
 async function rateLimitedFetch(url,apiKey){
-  const wait=Math.max(0,lastStartAt+MIN_START_GAP_MS-Date.now());
-  if(wait)await sleep(wait);
-  lastStartAt=Date.now();
-  return fetch(url,{headers:{Accept:"application/json","x-api-market-key":apiKey}});
+  let lastResponse=null;
+  for(let attempt=0;attempt<3;attempt++){
+    const wait=Math.max(0,lastStartAt+MIN_START_GAP_MS-Date.now());
+    if(wait)await sleep(wait);
+    lastStartAt=Date.now();
+    const res=await fetch(url,{headers:{Accept:"application/json","x-api-market-key":apiKey}});
+    lastResponse=res;
+    if(res.status!==429)return res;
+    const retryAfter=Number.parseFloat(res.headers.get("retry-after")||"1");
+    const backoff=Math.max(MIN_START_GAP_MS,Number.isFinite(retryAfter)?Math.ceil(retryAfter*1000)+250:1500);
+    await sleep(backoff);
+  }
+  return lastResponse;
 }
 
 async function fetchHalfDay(apiKey,origin,destination,from,to){
