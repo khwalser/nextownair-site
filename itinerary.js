@@ -593,7 +593,7 @@
     const fareData=liveFareData.get(key);
     let providerOpts=providerOptions(fareData,a,b,departDate);
     let usingProvider=Array.isArray(providerOpts)&&providerOpts.length>0;
-    let opts=usingProvider?providerOpts:F.getOptions(a,b,departDate,i);
+    let opts=usingProvider?providerOpts:[];
     let note=knownRoute?'Choose one flight to continue.':'No routable planning link is available for this pair yet.';
 
     if(!locked&&i>0&&plan&&plan.notBefore!=null){
@@ -601,7 +601,7 @@
       if(opts.length===0){
         note=usingProvider
           ?'No provider offer fits this connection window. Change the stay above or choose another departure date.'
-          :'No sample flight fits this connection window. Change the stay above to see more choices.';
+          :'No live flight offer fits this connection window. Change the stay above or choose another departure date.';
       }
     }else if(locked){
       note='Choose the inbound flight first. NexTownAir will then show only departures that leave after you arrive and clear the connection buffer.';
@@ -655,7 +655,7 @@
       const selected=state.selections[String(i)]===o.id;
       const arr=F.arrival(o,departDate);
       const bt=document.createElement('button');bt.type='button';bt.className=`flight${selected?' selected':''}`;bt.setAttribute('aria-pressed',String(selected));
-      const badge=usingProvider?(o.liveMode?'Live flight':'Duffel test flight'):'Verified route · sample schedule';
+      const badge=o.liveMode?'Live flight':'Duffel flight';
       const fareChoices=(o.fareChoices||[]).filter(x=>Number.isFinite(Number(x.amount)));
       const fareLabel=formatMoney(o.price,o.currency);
       const price=usingProvider?(
