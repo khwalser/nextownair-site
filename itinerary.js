@@ -33,8 +33,8 @@
   const scheduleMonthData=new Map();
   const calendarFareJobs=new Set();
   const fareQueue=[];
-  const FARE_MAX_CONCURRENT=3;
-  const FARE_START_GAP_MS=300;
+  const FARE_MAX_CONCURRENT=2;
+  const FARE_START_GAP_MS=1250;
   let fareActive=0;
   let lastFareStartAt=0;
   let farePumpTimer=null;
