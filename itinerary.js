@@ -238,12 +238,12 @@
       const checked=monthCells.filter(cell=>liveFareData.has(fareKey(leg.a,leg.b,cell.dataset.calendarDate))).length;
       const queued=monthCells.filter(cell=>calendarFareJobs.has(fareKey(leg.a,leg.b,cell.dataset.calendarDate))).length;
       el.calendarStatus.textContent=priced
-        ?`Live fares found on ${priced} nearby date${priced===1?'':'s'}. Choose any date for an immediate live check; nearby dates continue pricing in the background.`
+        ?`Live fares found on ${priced} nearby date${priced===1?'':'s'}. Select any date to refresh that date first.`
         :queued
-          ?`Published schedule feed is unavailable. Checking live fares for the selected and nearby dates; choose any date for an immediate live check.`
+          ?`Checking live fares for the selected and nearby dates. Select any date to move it to the front of the queue.`
           :checked
-            ?`Published schedule feed is unavailable. Nearby live fare checks finished; choose any date to check it live.`
-            :`Published schedule feed is unavailable. Choose any date to check its live fare.`;
+            ?`No live fares were found in the nearby checks. Select a date and NexTownAir will check that date again immediately.`
+            :`Select a date and NexTownAir will check that date live.`;
       return;
     }
     const dates=scheduledCalendarDates(leg.a,leg.b,month);
@@ -326,6 +326,8 @@
       btn.append(n,fare);
       btn.addEventListener('click',()=>{
         if(btn.disabled)return;
+        const leg=firstLeg();
+        if(leg)prioritizeFareCheck(leg.a,leg.b,date,{forceIfUnpriced:true});
         state.startDate=date;state.selections={};save();
         calendarMonthDate=monthStart(date);
         el.startDateCalendar.hidden=false;el.startDateButton.setAttribute('aria-expanded','true');
@@ -556,6 +558,31 @@
     });
     liveFareCache.set(key,p);
     return p;
+  }
+  function prioritizeFareCheck(a,b,date,{forceIfUnpriced=false}={}){
+    const key=fareKey(a,b,date);
+    if(fareActiveKeys.has(key))return liveFareCache.get(key)||null;
+    const queuedIndex=fareQueue.findIndex(task=>task.key===key);
+    if(queuedIndex>=0){
+      const task=fareQueue.splice(queuedIndex,1)[0];
+      task.priority=true;
+      fareQueue.unshift(task);
+      pumpFareQueue();
+      return liveFareCache.get(key)||null;
+    }
+    const existing=liveFareData.get(key);
+    if(forceIfUnpriced&&!lowestOffer(existing)){
+      liveFareData.delete(key);
+      liveFareCache.delete(key);
+      try{
+        const store=JSON.parse(sessionStorage.getItem(FARE_SESSION_KEY)||'{}');
+        if(store&&Object.prototype.hasOwnProperty.call(store,key)){
+          delete store[key];
+          sessionStorage.setItem(FARE_SESSION_KEY,JSON.stringify(store));
+        }
+      }catch(_){/* session storage can be unavailable */}
+    }
+    return fetchFare(a,b,date,true);
   }
   function updateLiveTripFare(){
     const node=document.getElementById('liveTripFare');if(!node)return;
