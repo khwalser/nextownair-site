@@ -454,7 +454,7 @@
   function selectedOption(legIndex,a,b,date,visibleOptions){
     const id=state.selections[String(legIndex)];
     if(!id)return null;
-    const opts=visibleOptions||F.getOptions(a,b,date,legIndex);
+    const opts=visibleOptions||[];
     return opts.find(o=>o.id===id)||null;
   }
   function minutesBetween(startDate,startMin,endDate,endMin){
