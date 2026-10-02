@@ -158,7 +158,6 @@ try{
       if(row?.status===200&&row.body?.liveMode===true&&Array.isArray(row.body.offers)&&row.body.offers.length){
         priced={origin,destination,date,row};
       }
-      if(row?.status===200&&!row.body?.offers?.length)break;
     }
     if(priced)break;
   }
