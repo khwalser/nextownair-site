@@ -98,13 +98,33 @@
       const m=markers.get(code);map.panTo(m.getLatLng());m.openTooltip();
     }
   }
+  function requestedEntries(){
+    return state.route.map((code,index)=>({code,index})).filter(x=>!autoConnectorCodes.has(x.code));
+  }
   function move(i,delta){
-    const j=i+delta;if(j<0||j>=state.route.length)return;
-    const next=state.route.slice();[next[i],next[j]]=[next[j],next[i]];
+    if(autoConnectorCodes.has(state.route[i]))return;
+    const requested=requestedEntries();
+    const pos=requested.findIndex(x=>x.index===i);
+    const j=pos+delta;
+    if(pos<0||j<0||j>=requested.length)return;
+    const next=requested.map(x=>x.code);
+    [next[pos],next[j]]=[next[j],next[pos]];
+    autoConnectorCodes.clear();
     setRoute(next,'Route reordered.');
   }
   function removeAt(i){
-    const next=state.route.slice();const a=by(next[i]);next.splice(i,1);
+    const a=by(state.route[i]);
+    if(autoConnectorCodes.has(state.route[i])){
+      const next=state.route.slice();next.splice(i,1);
+      autoConnectorCodes.delete(state.route[i]);
+      setRoute(next,a?`Removed connector ${a.city} (${a.code}).`:'Connector removed.');
+      return;
+    }
+    const next=state.route
+      .map((code,index)=>({code,index}))
+      .filter(x=>x.index!==i&&!autoConnectorCodes.has(x.code))
+      .map(x=>x.code);
+    autoConnectorCodes.clear();
     setRoute(next,a?`Removed ${a.city} (${a.code}) from this trip.`:'Stop removed.');
   }
   function syncLinks(){
@@ -145,7 +165,7 @@
         const controls=document.createElement('div');controls.className='stopcontrols';
         const up=document.createElement('button');up.type='button';up.className='smallbtn';up.textContent='Move up';up.disabled=i===0||autoInserted;up.setAttribute('aria-label',`Move ${a.city} earlier in trip`);up.addEventListener('click',()=>move(i,-1));
         const down=document.createElement('button');down.type='button';down.className='smallbtn';down.textContent='Move down';down.disabled=i===n-1||autoInserted;down.setAttribute('aria-label',`Move ${a.city} later in trip`);down.addEventListener('click',()=>move(i,1));
-        const remove=document.createElement('button');remove.type='button';remove.className='smallbtn remove';remove.textContent='Remove';remove.disabled=autoInserted;remove.setAttribute('aria-label',`Remove ${a.city} from trip`);remove.addEventListener('click',()=>removeAt(i));
+        const remove=document.createElement('button');remove.type='button';remove.className='smallbtn remove';remove.textContent=autoInserted?'Remove connector':'Remove';remove.setAttribute('aria-label',`Remove ${a.city} from trip`);remove.addEventListener('click',()=>removeAt(i));
         controls.append(up,down,remove);body.append(title,label,controls);row.append(num,body);el.trip.appendChild(row);
       });
     }
