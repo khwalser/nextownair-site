@@ -3,9 +3,9 @@ import handler from "../netlify/functions/schedule-proxy.mjs";
 
 function ymd(d){ return d.toISOString().slice(0,10); }
 function addDays(d,n){ const x=new Date(d); x.setUTCDate(x.getUTCDate()+n); return x; }
-function esc(s){ return String(s).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch])); }
+function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60); }
 
-let result={ok:false,message:"Smoke test did not run"};
+let result={ok:false,status:0,checked:0,unknown:0,flightDays:0,elapsed:0,upstreamStatus:0,error:"not-run"};
 try{
   const base=addDays(new Date(),1);
   const dates=[0,1,2,3].map(n=>ymd(addDays(base,n)));
@@ -22,19 +22,20 @@ try{
   const flightDays=Object.values(body.days||{}).filter(x=>x&&x.count>0).length;
   result={
     ok:res.ok&&!missing.length&&!incomplete.length,
-    message:res.ok
-      ? `HTTP ${res.status}; checked ${checked.size}/${dates.length}; unknown ${unknown.size}; flight-days ${flightDays}; ${elapsed}ms`
-      : `HTTP ${res.status}; ${body.error||body.message||"unknown error"}`,
-    detail:body.lastUpstreamError? `${body.lastUpstreamError.status||""} ${body.lastUpstreamError.message||""}` : ""
+    status:res.status,
+    checked:checked.size,
+    unknown:unknown.size,
+    flightDays,
+    elapsed,
+    upstreamStatus:Number(body.lastUpstreamError?.status||0),
+    error:body.error||body.message||body.lastUpstreamError?.message||""
   };
 }catch(err){
-  result={ok:false,message:String(err?.message||err),detail:""};
+  result.error=String(err?.message||err);
 }
 
-const indexPath="index.html";
-let html=fs.readFileSync(indexPath,"utf8");
-const tone=result.ok?"#0b5":"#b44";
-const banner=`<div id="schedule-smoke-banner" style="position:relative;z-index:99999;padding:10px 16px;background:${tone};color:white;font:700 14px/1.4 system-ui">Schedule smoke ${result.ok?"PASS":"FAIL"} · ${esc(result.message)}${result.detail?" · "+esc(result.detail):""}</div>`;
-html=html.replace("<body>","<body>"+banner);
-fs.writeFileSync(indexPath,html);
+const name=result.ok
+  ? `smoke-pass-http${result.status}-checked${result.checked}-unknown${result.unknown}-flightdays${result.flightDays}-ms${result.elapsed}.html`
+  : `smoke-fail-http${result.status}-checked${result.checked}-unknown${result.unknown}-upstream${result.upstreamStatus}-${slug(result.error)||"error"}.html`;
+fs.writeFileSync(name,`<!doctype html><title>schedule smoke</title><pre>${JSON.stringify(result,null,2)}</pre>`);
 console.log("SCHEDULE_SMOKE_RESULT",JSON.stringify(result));
