@@ -1,181 +1,185 @@
-function json(data, status=200, extraHeaders={}) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "public, max-age=900",
-      "Netlify-CDN-Cache-Control": "public, s-maxage=21600, stale-while-revalidate=86400",
-      ...extraHeaders
-    }
-  });
-}
-
-function validCode(v) {
-  return /^[A-Z]{3}$/.test(v);
-}
-
-function validMonth(v) {
-  return /^\d{4}-(0[1-9]|1[0-2])$/.test(v);
-}
-
-function pad(n) {
-  return String(n).padStart(2, "0");
-}
-
-function monthWindow(month) {
-  const [year, mon] = month.split("-").map(Number);
-  const first = new Date(Date.UTC(year, mon - 1, 1));
-  const next = new Date(Date.UTC(year, mon, 1));
-  const queryStart = new Date(first.getTime() - 24 * 60 * 60 * 1000);
-  const queryEnd = new Date(next.getTime() + 24 * 60 * 60 * 1000);
-  return {
-    start: queryStart.toISOString().replace(".000Z", "Z"),
-    end: queryEnd.toISOString().replace(".000Z", "Z")
+function json(data, status=200, cache=true) {
+  const headers={
+    "Content-Type":"application/json",
+    "Cache-Control":cache?"public, max-age=900":"no-store",
+    "Netlify-CDN-Cache-Control":cache?"public, s-maxage=21600, stale-while-revalidate=86400":"no-store"
   };
+  return new Response(JSON.stringify(data),{status,headers});
 }
 
-function localDateFor(iso, timezone) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  if (timezone) {
-    try {
-      const parts = new Intl.DateTimeFormat("en-CA", {
-        timeZone: timezone,
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-      }).formatToParts(d);
-      const vals = Object.fromEntries(parts.map(p => [p.type, p.value]));
-      if (vals.year && vals.month && vals.day) return `${vals.year}-${vals.month}-${vals.day}`;
-    } catch (_) {}
-  }
+function validCode(v){return /^[A-Z]{3}$/.test(v);}
+function validMonth(v){return /^\d{4}-(0[1-9]|1[0-2])$/.test(v);}
+function pad(n){return String(n).padStart(2,"0");}
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+
+function addDays(date,days){
+  const d=new Date(date+"T12:00:00Z");
+  d.setUTCDate(d.getUTCDate()+days);
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
 }
 
-function iataOf(flight, side) {
-  const obj = flight && flight[side];
-  return String(
-    flight?.[`${side}_iata`] ||
-    (obj && (obj.code_iata || obj.iata_code || obj.iata)) ||
-    ""
-  ).toUpperCase();
+function monthDays(month){
+  const [year,mon]=month.split("-").map(Number);
+  return new Date(Date.UTC(year,mon,0)).getUTCDate();
 }
 
-function timezoneOf(flight) {
-  const origin = flight && flight.origin;
-  return flight?.origin_timezone ||
-    flight?.origin_tz ||
-    (origin && (origin.timezone || origin.time_zone)) ||
-    null;
-}
-
-function flightIdent(flight) {
-  return flight.actual_ident_iata ||
-    flight.actual_ident_icao ||
-    flight.actual_ident ||
-    flight.ident_iata ||
-    flight.ident_icao ||
-    flight.ident ||
-    "Scheduled flight";
-}
-
-export default async (req) => {
-  if (req.method !== "GET") return json({ error: "Method not allowed" }, 405);
-
-  const url = new URL(req.url);
-  const origin = String(url.searchParams.get("origin") || "").toUpperCase();
-  const destination = String(url.searchParams.get("destination") || "").toUpperCase();
-  const month = String(url.searchParams.get("month") || "");
-
-  if (!validCode(origin) || !validCode(destination) || !validMonth(month)) {
-    return json({ error: "Use origin=AAA&destination=BBB&month=YYYY-MM" }, 400);
+function buildWindows(month){
+  const [year,mon]=month.split("-").map(Number);
+  const days=monthDays(month);
+  const out=[];
+  for(let day=1;day<=days;day++){
+    const date=`${year}-${pad(mon)}-${pad(day)}`;
+    const next=addDays(date,1);
+    out.push({date,from:`${date}T00:00`,to:`${date}T12:00`});
+    out.push({date,from:`${date}T12:00`,to:`${next}T00:00`});
   }
+  return out;
+}
 
-  const apiKey = Netlify.env.get("FLIGHTAWARE_AEROAPI_KEY");
-  if (!apiKey) {
-    return json({
-      error: "schedule_provider_not_configured",
-      message: "FlightAware AeroAPI is not configured.",
-      requiredEnvVar: "FLIGHTAWARE_AEROAPI_KEY"
-    }, 503, { "Cache-Control": "no-store", "Netlify-CDN-Cache-Control": "no-store" });
-  }
+function airportIata(movement){
+  return String(movement?.airport?.iata||"").toUpperCase();
+}
 
-  const { start, end } = monthWindow(month);
-  const params = new URLSearchParams({
-    origin,
-    destination,
-    include_codeshares: "false",
-    max_pages: "30"
+function localTime(movement){
+  return movement?.scheduledTime?.local||movement?.revisedTime?.local||null;
+}
+
+function flightNumber(flight){
+  return String(flight?.number||"Scheduled flight");
+}
+
+function normalizeFlight(flight,destination){
+  const arrival=flight?.arrival||{};
+  if(airportIata(arrival)!==destination)return null;
+  const scheduledOut=localTime(flight?.departure);
+  if(!scheduledOut)return null;
+  const scheduledIn=localTime(arrival);
+  return {
+    ident:flightNumber(flight),
+    scheduledOut,
+    scheduledIn:scheduledIn||null,
+    airline:flight?.airline?.name||null
+  };
+}
+
+async function fetchWindow(apiKey,origin,destination,window){
+  const params=new URLSearchParams({
+    direction:"Departure",
+    withLeg:"true",
+    withCancelled:"false",
+    withCodeshared:"true",
+    withCargo:"false",
+    withPrivate:"false",
+    withLocation:"false"
   });
-  const endpoint = `https://aeroapi.flightaware.com/aeroapi/schedules/${encodeURIComponent(start)}/${encodeURIComponent(end)}?${params}`;
+  const endpoint=`https://api.aerodatabox.com/flights/airports/iata/${encodeURIComponent(origin)}/${encodeURIComponent(window.from)}/${encodeURIComponent(window.to)}?${params}`;
+  const res=await fetch(endpoint,{
+    headers:{
+      Accept:"application/json",
+      "X-Api-Key":apiKey
+    }
+  });
+  if(res.status===204)return [];
+  const body=await res.json().catch(()=>({}));
+  if(!res.ok){
+    const msg=body?.message||body?.detail||body?.title||body?.errors?.[0]?.message||`AeroDataBox HTTP ${res.status}`;
+    const err=new Error(msg);
+    err.status=res.status;
+    throw err;
+  }
+  const departures=Array.isArray(body?.departures)?body.departures:[];
+  return departures.map(f=>normalizeFlight(f,destination)).filter(Boolean);
+}
 
-  let upstream;
-  try {
-    upstream = await fetch(endpoint, {
-      headers: {
-        Accept: "application/json",
-        "x-apikey": apiKey
+async function fetchMonth(apiKey,origin,destination,month){
+  const windows=buildWindows(month);
+  const results=[];
+  const errors=[];
+  const batchSize=5;
+
+  for(let i=0;i<windows.length;i+=batchSize){
+    const batch=windows.slice(i,i+batchSize);
+    const batchResults=await Promise.all(batch.map(async window=>{
+      try{
+        return {window,flights:await fetchWindow(apiKey,origin,destination,window)};
+      }catch(err){
+        return {window,error:err};
       }
-    });
-  } catch (err) {
-    return json({
-      error: "schedule_lookup_failed",
-      message: "Published schedule lookup is unavailable.",
-      details: String(err?.message || err)
-    }, 502, { "Cache-Control": "no-store", "Netlify-CDN-Cache-Control": "no-store" });
+    }));
+    for(const item of batchResults){
+      if(item.error)errors.push(item);
+      else results.push(item);
+    }
+    if(i+batchSize<windows.length)await sleep(1050);
   }
 
-  const body = await upstream.json().catch(() => ({}));
-  if (!upstream.ok) {
-    return json({
-      error: "schedule_lookup_failed",
-      message: body.detail || body.title || body.message || `FlightAware HTTP ${upstream.status}`,
-      upstreamStatus: upstream.status
-    }, upstream.status === 401 || upstream.status === 403 ? 502 : upstream.status, {
-      "Cache-Control": "no-store",
-      "Netlify-CDN-Cache-Control": "no-store"
-    });
+  if(errors.length){
+    const authError=errors.find(x=>x.error?.status===401||x.error?.status===403);
+    if(authError)throw authError.error;
+    if(results.length===0)throw errors[0].error;
   }
 
-  const seen = new Set();
-  const days = {};
-  const flights = Array.isArray(body.scheduled) ? body.scheduled : [];
-
-  for (const flight of flights) {
-    if (iataOf(flight, "origin") !== origin || iataOf(flight, "destination") !== destination) continue;
-    const scheduledOut = flight.scheduled_out || flight.scheduled_off;
-    if (!scheduledOut) continue;
-    const date = localDateFor(scheduledOut, timezoneOf(flight));
-    if (!date || !date.startsWith(month + "-")) continue;
-
-    const ident = flightIdent(flight);
-    const dedupeKey = `${ident}|${scheduledOut}|${flight.scheduled_in || flight.scheduled_on || ""}`;
-    if (seen.has(dedupeKey)) continue;
-    seen.add(dedupeKey);
-
-    if (!days[date]) days[date] = { count: 0, flights: [] };
-    days[date].count += 1;
-    if (days[date].flights.length < 12) {
-      days[date].flights.push({
-        ident,
-        scheduledOut,
-        scheduledIn: flight.scheduled_in || flight.scheduled_on || null
-      });
+  const seen=new Set();
+  const days={};
+  for(const item of results){
+    for(const flight of item.flights){
+      const date=String(flight.scheduledOut).slice(0,10);
+      if(!date.startsWith(month+"-"))continue;
+      const dedupeKey=`${date}|${flight.scheduledOut}|${flight.scheduledIn||""}|${destination}`;
+      if(seen.has(dedupeKey))continue;
+      seen.add(dedupeKey);
+      if(!days[date])days[date]={count:0,flights:[]};
+      days[date].count+=1;
+      if(days[date].flights.length<12)days[date].flights.push(flight);
     }
   }
 
-  return json({
-    provider: "flightaware-aeroapi",
-    sourceType: "published-schedule",
-    origin,
-    destination,
-    month,
-    checkedAt: new Date().toISOString(),
-    partial: Boolean(body?.links?.next),
-    days
-  });
+  return {
+    days,
+    partial:errors.length>0,
+    windowsChecked:results.length,
+    windowsFailed:errors.length
+  };
+}
+
+export default async(req)=>{
+  if(req.method!=="GET")return json({error:"Method not allowed"},405,false);
+  const url=new URL(req.url);
+  const origin=String(url.searchParams.get("origin")||"").toUpperCase();
+  const destination=String(url.searchParams.get("destination")||"").toUpperCase();
+  const month=String(url.searchParams.get("month")||"");
+
+  if(!validCode(origin)||!validCode(destination)||!validMonth(month)){
+    return json({error:"Use origin=AAA&destination=BBB&month=YYYY-MM"},400,false);
+  }
+
+  const apiKey=Netlify.env.get("AERODATABOX_API_KEY");
+  if(!apiKey){
+    return json({
+      error:"schedule_provider_not_configured",
+      message:"AeroDataBox schedule access is not configured.",
+      requiredEnvVar:"AERODATABOX_API_KEY"
+    },503,false);
+  }
+
+  try{
+    const result=await fetchMonth(apiKey,origin,destination,month);
+    return json({
+      provider:"aerodatabox",
+      sourceType:"published-schedule",
+      origin,
+      destination,
+      month,
+      checkedAt:new Date().toISOString(),
+      ...result
+    });
+  }catch(err){
+    return json({
+      error:"schedule_lookup_failed",
+      message:String(err?.message||err),
+      upstreamStatus:Number(err?.status||0)||null
+    },502,false);
+  }
 };
 
-export const config = {
-  path: "/api/schedule-calendar"
-};
+export const config={path:"/api/schedule-calendar"};
