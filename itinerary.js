@@ -93,6 +93,7 @@
     }
     const day=data.days&&data.days[date];
     if(day&&day.count>0)return {status:'yes',label:'Scheduled',detail:`${day.count} published flight${day.count===1?'':'s'}`};
+    if(Array.isArray(data.unknownDates)&&data.unknownDates.includes(date))return {status:'error',label:'Schedule check incomplete',detail:'retry this date'};
     return {status:'none',label:'No scheduled nonstop',detail:'no published nonstop service found'};
   }
   function firstLeg(){
