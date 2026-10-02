@@ -7,6 +7,7 @@
   let networkLines=[];
   let activeFilter='all';
   const markers=new Map();
+  let recentAutoConnectors=new Set();
 
   const el={
     trip:document.getElementById('trip'),
@@ -52,21 +53,45 @@
     if(i===n-1)return 'Finish';
     return `Stop ${i}`;
   }
-  function setRoute(next){state=window.NTA.setRoute(state,next);render();}
+  function repairRoute(route){
+    if(!Array.isArray(route)||route.length<2)return {route:(route||[]).slice(),inserted:[],unresolved:[]};
+    const repaired=[route[0]],inserted=[],unresolved=[];
+    for(let i=1;i<route.length;i++){
+      const from=repaired[repaired.length-1],to=route[i];
+      if(from===to)continue;
+      if(hasKnownRoute(from,to)){repaired.push(to);continue;}
+      const path=window.NTA.findFlightPath?window.NTA.findFlightPath(from,to):null;
+      if(path&&path.length>1){
+        const mids=path.slice(1,-1);
+        mids.forEach(code=>inserted.push({code,from,to}));
+        repaired.push(...path.slice(1));
+      }else{
+        unresolved.push({from,to});
+        repaired.push(to);
+      }
+    }
+    return {route:repaired,inserted,unresolved};
+  }
+  function autoConnectorMessage(inserted){
+    if(!inserted.length)return '';
+    const names=inserted.map(x=>{const a=by(x.code);return a?`${a.city} (${a.code})`:x.code;});
+    return `Auto-inserted connector${inserted.length===1?'':'s'}: ${names.join(' → ')}.`;
+  }
+  function setRoute(next,contextMessage=''){
+    const fixed=repairRoute(next);
+    recentAutoConnectors=new Set(fixed.inserted.map(x=>x.code));
+    state=window.NTA.setRoute(state,fixed.route);
+    render();
+    const repairText=autoConnectorMessage(fixed.inserted);
+    const unresolved=fixed.unresolved.length?` No verified route found for ${fixed.unresolved.map(x=>`${x.from} → ${x.to}`).join(', ')}.`:'';
+    el.finderStatus.textContent=[contextMessage,repairText].filter(Boolean).join(' ')+unresolved;
+  }
   function addAirport(code){
     const a=by(code);
     if(!a)return;
     if(state.route.length&&state.route[state.route.length-1]===code){el.finderStatus.textContent=`${a.city} is already your current stop. Choose another airport before returning here.`;return;}
-    const next=state.route.slice();
-    let inserted=[];
-    if(next.length){
-      const from=next[next.length-1];
-      const path=window.NTA.findFlightPath?window.NTA.findFlightPath(from,code):null;
-      if(path&&path.length>1){inserted=path.slice(1,-1);next.push(...path.slice(1));}
-      else next.push(code);
-    }else next.push(code);
-    setRoute(next);
-    el.finderStatus.textContent=inserted.length?`Added ${a.city}, ${a.state} (${a.code}) via ${inserted.join(' → ')}.`:`Added ${a.city}, ${a.state} (${a.code}).`;
+    const next=state.route.concat(code);
+    setRoute(next,`Added ${a.city}, ${a.state} (${a.code}).`);
     el.search.value='';
     if(map&&markers.has(code)){
       if(activeFilter!=='all'&&!matchesFilter(a))setRegionFilter(airportRegion(a),false);
@@ -75,11 +100,12 @@
   }
   function move(i,delta){
     const j=i+delta;if(j<0||j>=state.route.length)return;
-    const next=state.route.slice();[next[i],next[j]]=[next[j],next[i]];setRoute(next);
+    const next=state.route.slice();[next[i],next[j]]=[next[j],next[i]];
+    setRoute(next,'Route reordered.');
   }
   function removeAt(i){
-    const next=state.route.slice();const a=by(next[i]);next.splice(i,1);setRoute(next);
-    el.finderStatus.textContent=a?`Removed ${a.city} (${a.code}) from this trip.`:'Stop removed.';
+    const next=state.route.slice();const a=by(next[i]);next.splice(i,1);
+    setRoute(next,a?`Removed ${a.city} (${a.code}) from this trip.`:'Stop removed.');
   }
   function syncLinks(){
     el.itinNav.href=window.NTA.buildUrl('itinerary.html',state);
@@ -111,10 +137,11 @@
       state.route.forEach((code,i)=>{
         const a=by(code);if(!a)return;
         const row=document.createElement('div');row.className='stop';
+        const autoInserted=recentAutoConnectors.has(code);if(autoInserted)row.classList.add('auto-inserted');
         const num=document.createElement('div');num.className='stopnum';num.textContent=String(i+1);
         const body=document.createElement('div');body.className='stopbody';
         const title=document.createElement('strong');title.textContent=`${a.city}, ${a.state} · ${a.code}`;
-        const label=document.createElement('div');label.className='stoplabel';label.textContent=`${routeLabel(i)} · ${a.type==='eas'?'EAS stop':'Hub / connector'} · ${airportRegionName(a)}`;
+        const label=document.createElement('div');label.className='stoplabel';label.textContent=autoInserted?`${routeLabel(i)} · Auto-inserted connector · ${airportRegionName(a)}`:`${routeLabel(i)} · ${a.type==='eas'?'EAS stop':'Hub / connector'} · ${airportRegionName(a)}`;
         const controls=document.createElement('div');controls.className='stopcontrols';
         const up=document.createElement('button');up.type='button';up.className='smallbtn';up.textContent='Move up';up.disabled=i===0;up.setAttribute('aria-label',`Move ${a.city} earlier in trip`);up.addEventListener('click',()=>move(i,-1));
         const down=document.createElement('button');down.type='button';down.className='smallbtn';down.textContent='Move down';down.disabled=i===n-1;down.setAttribute('aria-label',`Move ${a.city} later in trip`);down.addEventListener('click',()=>move(i,1));
@@ -126,7 +153,7 @@
     let unsupported=0;
     if(n>1){
       el.legSummary.hidden=false;
-      el.legSummary.innerHTML='<b>Flight legs</b>'+state.route.slice(0,-1).map((code,i)=>{const known=hasKnownRoute(code,state.route[i+1]);if(!known)unsupported++;return `<div>Leg ${i+1}: ${code} → ${state.route[i+1]} ${known?'':'<span class="route-warning">· needs a connector</span>'}</div>`;}).join('');
+      el.legSummary.innerHTML='<b>Flight legs</b>'+state.route.slice(0,-1).map((code,i)=>{const known=hasKnownRoute(code,state.route[i+1]);if(!known)unsupported++;return `<div>Leg ${i+1}: ${code} → ${state.route[i+1]} ${known?'':'<span class="route-warning">· no verified route found</span>'}</div>`;}).join('');
     } else {el.legSummary.hidden=true;el.legSummary.innerHTML='';}
 
     const ready=n>=2;
@@ -134,7 +161,7 @@
     el.plan.setAttribute('aria-disabled',String(!ready));
     el.returnStart.disabled=n<2 || state.route[n-1]===state.route[0];
     el.returnStart.textContent=(n>1&&state.route[n-1]===state.route[0])?'Round trip complete':'Return to start';
-    el.status.textContent=ready?(unsupported?`${n-1} flight legs · ${unsupported} ${unsupported===1?'leg still needs':'legs still need'} routing help.`:`${n-1} flight leg${n-1===1?'':'s'} ready. Connector hubs are inserted automatically when needed.`):'Choose at least two places to create your first flight leg.';
+    el.status.textContent=ready?(unsupported?`${n-1} flight legs · ${unsupported} ${unsupported===1?'leg has':'legs have'} no verified route.`:`${n-1} flight leg${n-1===1?'':'s'} ready. Connector hubs are inserted automatically when needed.`):'Choose at least two places to create your first flight leg.';
   }
   function render(){syncLinks();renderTrip();renderRouteLine();}
 
