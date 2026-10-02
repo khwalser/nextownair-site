@@ -34,8 +34,11 @@
   const calendarFareJobs=new Set();
   const fareQueue=[];
   const fareActiveKeys=new Set();
-  const FARE_MAX_CONCURRENT=2;
-  const FARE_START_GAP_MS=1250;
+  const FARE_MAX_CONCURRENT=1;
+  const FARE_START_GAP_MS=3200;
+  const AUTO_PRICE_WINDOW=7;
+  const FARE_SESSION_KEY='nextownair.liveFares.v1';
+  const FARE_SESSION_TTL_MS=10*60*1000;
   let fareActive=0;
   let lastFareStartAt=0;
   let fareBlockedUntil=0;
@@ -45,6 +48,29 @@
   let calendarLoadVersion=0;
   let calendarAutoLoadKey='';
   let calendarScheduleCompleteKey='';
+  const scheduleFallbackCodes=new Set(['schedule_provider_not_configured','schedule_subscription_inactive','schedule_auth_failed','schedule_quota_exhausted']);
+  function isScheduleFallbackCode(code){return scheduleFallbackCodes.has(String(code||''));}
+  function restoreFareSession(){
+    try{
+      const now=Date.now(),store=JSON.parse(sessionStorage.getItem(FARE_SESSION_KEY)||'{}');
+      Object.entries(store).forEach(([key,entry])=>{
+        if(!entry||!entry.data||!Number.isFinite(Number(entry.savedAt))||now-Number(entry.savedAt)>FARE_SESSION_TTL_MS)return;
+        liveFareData.set(key,entry.data);liveFareCache.set(key,Promise.resolve(entry.data));
+      });
+    }catch(_){/* session storage can be unavailable */}
+  }
+  function rememberFareData(key,data){
+    rememberFareData(key,data);
+    if(!data||data.error)return data;
+    try{
+      const now=Date.now(),store=JSON.parse(sessionStorage.getItem(FARE_SESSION_KEY)||'{}');
+      store[key]={savedAt:now,data};
+      const fresh=Object.entries(store).filter(([,entry])=>entry&&now-Number(entry.savedAt||0)<=FARE_SESSION_TTL_MS).slice(-50);
+      sessionStorage.setItem(FARE_SESSION_KEY,JSON.stringify(Object.fromEntries(fresh)));
+    }catch(_){/* session storage can be unavailable */}
+    return data;
+  }
+  restoreFareSession();
   function isoDate(iso){return String(iso||'').slice(0,10);}
   function isoMinutes(iso){
     const m=String(iso||'').match(/T(\d{2}):(\d{2})/);
@@ -120,7 +146,7 @@
     const data=scheduleMonthData.get(scheduleMonthKey(a,b,month));
     if(!data)return {status:'checking',label:'Checking…',detail:''};
     if(data.error){
-      if(['schedule_provider_not_configured','schedule_subscription_inactive','schedule_auth_failed','schedule_quota_exhausted'].includes(data.code)){
+      if(isScheduleFallbackCode(data.code)){
         return {status:'fallback',label:'Live fare check',detail:data.code};
       }
       return {status:'error',label:'Schedule unavailable',detail:''};
@@ -186,24 +212,39 @@
     const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
     const key=scheduleMonthKey(leg.a,leg.b,month);
     if(calendarScheduleCompleteKey!==key)return;
+    const scheduleData=scheduleMonthData.get(key);
+    if(scheduleData&&scheduleData.error&&isScheduleFallbackCode(scheduleData.code)){
+      const monthCells=[...el.calendarGrid.querySelectorAll('.calendar-day[data-calendar-date]')].filter(cell=>!cell.classList.contains('past'));
+      const priced=monthCells.filter(cell=>Boolean(lowestOffer(liveFareData.get(fareKey(leg.a,leg.b,cell.dataset.calendarDate))))).length;
+      const checked=monthCells.filter(cell=>liveFareData.has(fareKey(leg.a,leg.b,cell.dataset.calendarDate))).length;
+      const queued=monthCells.filter(cell=>calendarFareJobs.has(fareKey(leg.a,leg.b,cell.dataset.calendarDate))).length;
+      el.calendarStatus.textContent=priced
+        ?`Live fares found on ${priced} nearby date${priced===1?'':'s'}. Choose any date for an immediate live check; nearby dates continue pricing in the background.`
+        :queued
+          ?`Published schedule feed is unavailable. Checking live fares for the selected and nearby dates; choose any date for an immediate live check.`
+          :checked
+            ?`Published schedule feed is unavailable. Nearby live fare checks finished; choose any date to check it live.`
+            :`Published schedule feed is unavailable. Choose any date to check its live fare.`;
+      return;
+    }
     const dates=scheduledCalendarDates(leg.a,leg.b,month);
     const priced=dates.filter(date=>Boolean(lowestOffer(liveFareData.get(fareKey(leg.a,leg.b,date))))).length;
     if(!dates.length){
       el.calendarStatus.textContent='Published schedule loaded. No nonstop service dates were found in this month.';
       return;
     }
-    el.calendarStatus.textContent=priced>=dates.length
-      ?`Lowest live fares loaded for all ${dates.length} scheduled date${dates.length===1?'':'s'}. Select a date to see flight and fare choices.`
-      :`Published schedule loaded. Lowest live fares: ${priced} of ${dates.length} scheduled dates priced; selected and nearby dates load first.`;
+    el.calendarStatus.textContent=priced
+      ?`Published schedule loaded. Live fares found on ${priced} nearby scheduled date${priced===1?'':'s'}; choose any scheduled date for an immediate live check.`
+      :`Published schedule loaded. Checking live fares for the selected and nearby scheduled dates.`;
   }
-  function queueCalendarFarePricing(a,b,dates,token){
+  function queueCalendarFarePricing(a,b,dates,token,limit=AUTO_PRICE_WINDOW){
     const selected=state.startDate;
     const ordered=[...new Set(dates)].sort((x,y)=>{
       if(x===selected)return -1;
       if(y===selected)return 1;
       const dx=Math.abs(window.NTA.diffDays(selected,x)),dy=Math.abs(window.NTA.diffDays(selected,y));
       return dx-dy||x.localeCompare(y);
-    });
+    }).slice(0,Math.max(1,Number(limit)||AUTO_PRICE_WINDOW));
     ordered.forEach(date=>{
       if(!['yes','fallback'].includes(scheduleState(a,b,date).status))return;
       const key=fareKey(a,b,date);
@@ -212,10 +253,10 @@
       const promise=fetchFare(a,b,date,false);
       updateCalendarCell(date);
       promise.then(data=>{
-        liveFareData.set(key,data);
+        rememberFareData(key,data);
         if(token===calendarLoadVersion)updateCalendarCell(date);
       }).catch(err=>{
-        liveFareData.set(key,{error:true,status:err.status||0,offers:[],message:String(err.message||err)});
+        rememberFareData(key,{error:true,status:err.status||0,offers:[],message:String(err.message||err)});
         if(token===calendarLoadVersion)updateCalendarCell(date);
       }).finally(()=>{
         calendarFareJobs.delete(key);
@@ -288,6 +329,12 @@
     const today=window.NTA.todayLocal();
     const monthDatesAll=Array.from({length:daysInMonth},(_,idx)=>ymd(y,m+1,idx+1)).filter(d=>d>=today);
 
+    if(current&&current.error&&isScheduleFallbackCode(current.code)){
+      renderStartCalendar();calendarScheduleCompleteKey=key;
+      queueCalendarFarePricing(leg.a,leg.b,monthDatesAll,token);
+      updateCalendarFareStatus();
+      return;
+    }
     if(current&&current.error)current=null;
     const checked=new Set(current?.checkedDates||[]);
     const unknown=new Set(current?.unknownDates||[]);
@@ -317,7 +364,6 @@
         scheduleMonthData.set(key,current);
         completed=new Set(current.checkedDates||[]).size;
         renderStartCalendar();
-        queueCalendarFarePricing(leg.a,leg.b,batch,token);
         el.calendarStatus.textContent=`Loading published ${leg.a} → ${leg.b} schedule… ${Math.min(completed,monthDatesAll.length)} of ${monthDatesAll.length} dates checked.`;
       }
 
@@ -332,7 +378,6 @@
         current=mergeScheduleData(current,data);
         scheduleMonthData.set(key,current);
         renderStartCalendar();
-        queueCalendarFarePricing(leg.a,leg.b,batch,token);
       }
 
       if(token!==calendarLoadVersion)return;
@@ -348,14 +393,12 @@
       if(token!==calendarLoadVersion)return;
       const data={error:true,status:err.status||0,code:err.code||'',message:String(err.message||err),days:{}};
       scheduleMonthData.set(key,data);
-      const providerFallback=['schedule_provider_not_configured','schedule_subscription_inactive','schedule_auth_failed','schedule_quota_exhausted'].includes(err.code);
+      const providerFallback=isScheduleFallbackCode(err.code);
       renderStartCalendar();
       if(providerFallback){
         calendarScheduleCompleteKey=key;
         queueCalendarFarePricing(leg.a,leg.b,monthDatesAll,token);
-        el.calendarStatus.textContent=err.code==='schedule_quota_exhausted'
-          ?'Published-schedule quota is exhausted. Falling back to Duffel live fares for this month; all dates remain selectable.'
-          :'Published schedules are unavailable. Falling back to Duffel live fares; all dates remain selectable.';
+        updateCalendarFareStatus();
       }else{
         el.calendarStatus.textContent='Published schedule lookup failed. You can retry the calendar.';
       }
@@ -425,7 +468,7 @@
     const av=scheduleState(a,b,date);
     if(av.status==='yes')return {status:'yes',label:'Scheduled',detail:av.detail};
     if(av.status==='none')return {status:'none',label:'No scheduled nonstop',detail:'published schedule'};
-    if(av.status==='fallback')return {status:'loading',label:'Live fare check',detail:'published schedule unavailable'};
+    if(av.status==='fallback')return {status:'fallback',label:'Check live fare',detail:'schedule feed unavailable'};
     if(av.status==='error')return {status:'error',label:'Schedule unavailable',detail:''};
     return {status:'loading',label:'Checking schedule…',detail:''};
   }
@@ -519,13 +562,13 @@
       try{
         const data=await fetchFare(req.a,req.b,req.date,true);
         if(version!==renderVersion)return;
-        liveFareData.set(key,data);
+        rememberFareData(key,data);
         if(req.leg!=null)liveFareByLeg.set(req.leg,data);
         learnedSomething=true;
       }catch(err){
         if(version!==renderVersion)return;
         const data={error:true,status:err.status||0,offers:[],message:String(err.message||err)};
-        liveFareData.set(key,data);
+        rememberFareData(key,data);
         if(req.leg!=null)liveFareByLeg.set(req.leg,data);
         learnedSomething=true;
       }
@@ -547,6 +590,7 @@
     await Promise.all([...requests.entries()].map(async([key,req])=>{
       const existing=scheduleMonthData.get(key);
       const needed=[...new Set(req.dates)].filter(date=>{
+        if(existing&&existing.error&&isScheduleFallbackCode(existing.code))return false;
         if(!existing||existing.error)return true;
         if(existing.days&&existing.days[date])return false;
         if(Array.isArray(existing.checkedDates)&&existing.checkedDates.includes(date))return false;
@@ -592,7 +636,11 @@
     if(s.mode==='later'||minutes>=240)return 'Long layover';
     return 'Connection';
   }
-  function defaultStay(i){return state.stays[String(i)]||{mode:'asap',nights:0,date:null};}
+  function defaultStay(i){
+    const stored=state.stays[String(i)];if(stored)return stored;
+    const code=state.route[i],autoConnector=(state.autoConnectors||[]).includes(code);
+    return autoConnector?{mode:'asap',nights:0,date:null}:{mode:'nights',nights:2,date:null};
+  }
   function save(){state=window.NTA.save(state);syncLinks();}
   function syncLinks(){
     const mapUrl=window.NTA.buildUrl('index.html',state);
@@ -625,12 +673,15 @@
   }
   function renderRoutebar(){
     el.routebar.innerHTML='';
+    const autoSet=new Set(state.autoConnectors||[]);
     state.route.forEach((code,i)=>{
       const a=by(code);if(!a)return;
       if(i){const arrow=document.createElement('span');arrow.className='arrow';arrow.textContent='→';el.routebar.appendChild(arrow);}
-      const hubStay=state.stays[String(i)];
-      const lingering=a.type!=='eas'&&hubStay&&hubStay.mode!=='asap';
-      const chip=document.createElement('span');chip.className=`routechip ${a.type==='eas'?'eas':'connector'}`;chip.textContent=`${a.city} · ${a.code}${a.type==='eas'?'':lingering?' · stay':' · connect'}`;el.routebar.appendChild(chip);
+      const intermediate=i>0&&i<state.route.length-1;
+      const autoConnector=intermediate&&autoSet.has(code);
+      const s=intermediate?defaultStay(i):null;
+      const suffix=autoConnector?(s&&s.mode!=='asap'?' · stay':' · connect'):(intermediate?' · stop':'');
+      const chip=document.createElement('span');chip.className=`routechip ${autoConnector?'connector':a.type==='eas'?'eas':'destination'}`;chip.textContent=`${a.city} · ${a.code}${suffix}`;el.routebar.appendChild(chip);
     });
   }
   function appendStayAvailability(section,i,airport,arrivalDate,hasExactArrival,s){
@@ -662,7 +713,7 @@
       const meta=document.createElement('span');
       meta.textContent=window.NTA.fmtDate(date,{weekday:'short',month:'short',day:'numeric'})+(av.detail?' · '+av.detail:'');
       btn.append(nights,value,meta);
-      btn.disabled=av.status==='none'||av.status==='loading'||(av.status==='error'&&av.label!=='Schedule source needed');
+      btn.disabled=av.status==='none'||av.status==='loading'||av.status==='error';
       btn.addEventListener('click',()=>{if(!btn.disabled)setStay(i,{mode:'nights',nights:n,date:null});});
       grid.appendChild(btn);
     });
@@ -674,17 +725,17 @@
   }
   function renderStay(i,airport,arrivalDate,arrivalMin,hasExactArrival){
     const s=defaultStay(i),plan=stayPlan(i,arrivalDate,arrivalMin,hasExactArrival);
-    const isHub=airport.type!=='eas';
-    const section=document.createElement('section');section.className=`stay${isHub?' connector':''}`;
+    const autoConnector=(state.autoConnectors||[]).includes(airport.code);
+    const section=document.createElement('section');section.className=`stay${autoConnector?' connector':''}`;
     const arriveText=hasExactArrival?`${window.NTA.fmtDate(arrivalDate)} · ${F.timeFrom(arrivalMin)}`:`${window.NTA.fmtDate(arrivalDate)} · choose the inbound flight to set the arrival time`;
     section.innerHTML=`
-      <div class="eyebrow">At ${airport.city}, ${airport.state} · ${airport.code}${isHub?' · Hub / connector':''}</div>
-      <h3>${isHub?'Connect onward, or stay a while?':'Stay a while, or keep going?'}</h3>
+      <div class="eyebrow">At ${airport.city}, ${airport.state} · ${airport.code}${autoConnector?' · Automatic connection':''}</div>
+      <h3>${autoConnector?'Connect onward, or turn this into a stop?':'How long do you want to stay?'}</h3>
       <div class="small">Arrival: ${arriveText}</div>
       <div class="stay-grid">
         <div>
           <div class="choices" role="group" aria-label="Stay duration at ${airport.city}">
-            <button type="button" class="choice ${s.mode==='asap'?'active':''}" data-mode="asap" ${hasExactArrival?'':'title="Pick the previous flight to calculate an exact connection"'}>${isHub?'Connect ASAP':'ASAP'}</button>
+            <button type="button" class="choice ${s.mode==='asap'?'active':''}" data-mode="asap" ${hasExactArrival?'':'title="Pick the previous flight to calculate an exact connection"'}>${autoConnector?'Connect ASAP':'Keep moving'}</button>
             <button type="button" class="choice ${s.mode==='later'?'active':''}" data-mode="later" ${hasExactArrival?'':'title="Pick the previous flight to calculate an exact connection"'}>Later today</button>
             ${[1,2,3,4].map(n=>`<button type="button" class="choice ${s.mode==='nights'&&s.nights===n?'active':''}" data-nights="${n}">${n} night${n===1?'':'s'}</button>`).join('')}
           </div>
@@ -695,7 +746,7 @@
           <input id="departDate-${i}" class="dateinput" type="date" min="${arrivalDate}" value="${plan.date}">
         </div>
       </div>
-      ${isHub?`<div class="small" style="margin-top:8px"><strong>Hub stopover:</strong> this airport was inserted as a connector, but you can turn it into a real stop by choosing Later today, a number of nights, or a departure date.</div>`:airport.note?`<div class="small" style="margin-top:8px">Why stop here? ${airport.note}.</div>`:''}
+      ${autoConnector?`<div class="small" style="margin-top:8px"><strong>Automatic connection:</strong> NexTownAir inserted this airport to make the route work. Keep the quick connection or turn it into a stopover.</div>`:airport.note?`<div class="small" style="margin-top:8px">Why stop here? ${airport.note}.</div>`:''}
       ${Array.isArray(airport.stay)&&airport.stay.length?`<div class="small" style="margin-top:5px"><strong>Ideas:</strong> ${airport.stay.join(' · ')}</div>`:''}`;
     appendStayAvailability(section,i,airport,arrivalDate,hasExactArrival,s);
     section.querySelector('[data-mode="asap"]').addEventListener('click',()=>setStay(i,{mode:'asap',nights:0,date:null}));
@@ -928,7 +979,8 @@
   }
 
   el.startDateButton.addEventListener('click',()=>{
-    showStartCalendar(true);
+    if(!el.startDateCalendar.hidden){closeStartCalendar();return;}
+    showStartCalendar(false);
   });
   el.calendarPrev.addEventListener('click',()=>{
     if(el.calendarPrev.disabled)return;
