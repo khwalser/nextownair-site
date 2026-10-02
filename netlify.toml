@@ -1,4 +1,3 @@
 # NexTownAir Netlify configuration
 [build]
-  command = "node scripts/smoke-schedule.mjs"
   functions = "netlify/functions"
