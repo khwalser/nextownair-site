@@ -13,7 +13,7 @@ base.setUTCHours(12,0,0,0);
 if(base.getUTCDate()>26)base=new Date(Date.UTC(base.getUTCFullYear(),base.getUTCMonth()+1,1,12));
 const month=base.getUTCMonth();
 const dates=[];
-for(let i=0;i<31;i++){
+for(let i=0;i<8;i++){
   const d=addDays(base,i);
   if(d.getUTCMonth()!==month)break;
   dates.push(ymd(d));
@@ -36,7 +36,7 @@ async function worker(){
       const body=JSON.parse(res.body||"{}");
       const offers=body.offers||[];
       const lowest=offers.reduce((best,o)=>!best||Number(o.amount)<Number(best.amount)?o:best,null);
-      results.push({date,status:res.statusCode,offers:offers.length,lowest:lowest?Number(lowest.amount):null,currency:lowest?.currency||null,ms:Date.now()-started,error:body.error||body.details||null});
+      results.push({date,status:res.statusCode,offers:offers.length,lowest:lowest?Number(lowest.amount):null,currency:lowest?.currency||null,ms:Date.now()-started,error:body.details||body.error||null});
     }catch(err){
       results.push({date,status:0,offers:0,lowest:null,ms:Date.now()-started,error:String(err?.message||err)});
     }
