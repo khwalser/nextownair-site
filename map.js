@@ -46,6 +46,17 @@
   function hasKnownRoute(a,b){
     return window.NTA.hasFlightLink?window.NTA.hasFlightLink(a,b):(D.routes||[]).some(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a));
   }
+  function linkKind(a,b){
+    const A=by(a),B=by(b);
+    if(!A||!B)return 'unknown';
+    return A.type==='eas'||B.type==='eas'?'eas':'hub';
+  }
+  function linkStyle(a,b,{selected=false,known=true}={}){
+    if(!known)return {color:'#e7bd62',weight:selected?5:2,opacity:selected?.95:.5,dashArray:'3 7'};
+    const kind=linkKind(a,b);
+    if(kind==='eas')return {color:selected?'#5eead4':'#2f8f86',weight:selected?5:2.5,opacity:selected?.96:.62,dashArray:selected?null:'5 6'};
+    return {color:selected?'#c084fc':'#7255a1',weight:selected?5:2.5,opacity:selected?.96:.62,dashArray:selected?null:'2 7'};
+  }
   function routeLabel(i){
     const n=state.route.length;
     if(i===0)return 'Start';
@@ -140,7 +151,7 @@
       for(let i=0;i<state.route.length-1;i++){
         const A=by(state.route[i]),B=by(state.route[i+1]);if(!A||!B)continue;
         const known=hasKnownRoute(A.code,B.code);
-        const layer=window.L.polyline([[A.lat,A.lon],[B.lat,B.lon]],{color:known?'#75d9ff':'#e7bd62',weight:known?4:5,opacity:.9,dashArray:known?'7 6':'3 7'}).addTo(map);
+        const layer=window.L.polyline([[A.lat,A.lon],[B.lat,B.lon]],linkStyle(A.code,B.code,{selected:true,known})).addTo(map);
         tripLayers.push(layer);
       }
       if(pts.length>1){try{map.fitBounds(window.L.latLngBounds(pts),{padding:[48,48],maxZoom:6});}catch(_){/* noop */}}
@@ -195,7 +206,7 @@
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:12,attribution:'© OpenStreetMap'}).addTo(map);
       (D.routes||[]).forEach(r=>{
         const A=by(r[0]),B=by(r[1]);if(!A||!B)return;
-        const layer=window.L.polyline([[A.lat,A.lon],[B.lat,B.lon]],{color:'#3b566b',weight:2,opacity:.48,dashArray:'2 7',interactive:false}).addTo(map);
+        const layer=window.L.polyline([[A.lat,A.lon],[B.lat,B.lon]],{...linkStyle(A.code,B.code,{selected:false,known:true}),interactive:false}).addTo(map);
         networkLines.push({layer,a:A,b:B});
       });
       D.airports.forEach(a=>{
