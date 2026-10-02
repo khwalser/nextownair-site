@@ -137,6 +137,7 @@ async function fetchMonth(apiKey,origin,destination,month){
   return {
     days,
     partial:errors.length>0,
+    unknownDates:[...new Set(errors.map(x=>x.window.date))],
     windowsChecked:results.length,
     windowsFailed:errors.length
   };
