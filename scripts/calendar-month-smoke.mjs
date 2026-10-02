@@ -13,7 +13,7 @@ base.setUTCHours(12,0,0,0);
 if(base.getUTCDate()>26)base=new Date(Date.UTC(base.getUTCFullYear(),base.getUTCMonth()+1,1,12));
 const month=base.getUTCMonth();
 const dates=[];
-for(let i=0;i<8;i++){
+for(let i=0;i<12;i++){
   const d=addDays(base,i);
   if(d.getUTCMonth()!==month)break;
   dates.push(ymd(d));
