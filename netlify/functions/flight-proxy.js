@@ -1,5 +1,7 @@
 const https = require('https');
 
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+
 function httpsRequestJson(options, body = null) {
   return new Promise((resolve, reject) => {
     const req = https.request(options, res => {
@@ -60,18 +62,29 @@ async function searchDuffel(origin,destination,departureDate){
     }
   });
 
-  const response=await httpsRequestJson({
-    hostname:'api.duffel.com',
-    path:'/air/offer_requests?return_offers=true&supplier_timeout=9000',
-    method:'POST',
-    headers:{
-      'Authorization':`Bearer ${token}`,
-      'Duffel-Version':'v2',
-      'Accept':'application/json',
-      'Content-Type':'application/json',
-      'Content-Length':Buffer.byteLength(body)
+  let response=null,lastErr=null;
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      response=await httpsRequestJson({
+        hostname:'api.duffel.com',
+        path:'/air/offer_requests?return_offers=true&supplier_timeout=9000',
+        method:'POST',
+        headers:{
+          'Authorization':`Bearer ${token}`,
+          'Duffel-Version':'v2',
+          'Accept':'application/json',
+          'Content-Type':'application/json',
+          'Content-Length':Buffer.byteLength(body)
+        }
+      }, body);
+      break;
+    }catch(err){
+      lastErr=err;
+      if(err?.statusCode!==429||attempt===2)throw err;
+      await sleep(750*(attempt+1));
     }
-  }, body);
+  }
+  if(!response)throw lastErr||new Error('Duffel request failed');
 
   const request=response.data||{};
   const rawOffers=(request.offers||[])
