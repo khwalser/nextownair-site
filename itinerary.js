@@ -185,7 +185,7 @@
       scheduleMonthData.set(key,data);
       renderStartCalendar();
       el.calendarStatus.textContent=err.code==='schedule_provider_not_configured'
-        ?'Published-schedule calendar is ready but needs the FlightAware AeroAPI key. You can still choose a date manually.'
+        ?'Published-schedule calendar is ready but needs the AeroDataBox API key. You can still choose a date manually.'
         :'Published schedule lookup is temporarily unavailable. You can still choose a date manually.';
     }
   }
