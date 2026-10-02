@@ -95,8 +95,21 @@ try{
 
   const tripDate=process.env.E2E_DATE||localDatePlus(14);
 
-  // 1) Build a round trip from the map using the same controls a human uses.
+  // 1) Verify the fresh-test link clears prior NexTownAir state without changing normal persistence.
   await page.goto(BASE_URL+'/index.html',{waitUntil:'domcontentloaded',timeout:60000});
+  await page.evaluate(()=>{
+    localStorage.setItem('nextownair.trip.v1',JSON.stringify({version:1,route:['DTW','ROC'],autoConnectors:[],startDate:'2026-10-20',stays:{},selections:{}}));
+    sessionStorage.setItem('nextownair.liveFares.v1',JSON.stringify({test:{savedAt:Date.now(),data:{offers:[{amount:'99',currency:'USD'}]}}}));
+  });
+  await page.goto(BASE_URL+'/index.html?fresh=1',{waitUntil:'domcontentloaded',timeout:60000});
+  const freshState=await page.evaluate(()=>({
+    route:JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}').route||[],
+    fareCache:sessionStorage.getItem('nextownair.liveFares.v1'),
+    url:location.href
+  }));
+  assert(freshState.route.length===0&&!freshState.fareCache&&!freshState.url.includes('fresh=1'),'Fresh-test link clears saved trip and pricing session once');
+  
+  // 2) Build a round trip from the map using the same controls a human uses.
   await page.evaluate(()=>localStorage.clear());
   await page.reload({waitUntil:'domcontentloaded'});
   const easExplainer=page.locator('.eas-explainer');
