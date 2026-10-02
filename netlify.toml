@@ -1,4 +1,3 @@
 # NexTownAir Netlify configuration
 [build]
-  command = "node scripts/calendar-month-smoke.mjs"
   functions = "netlify/functions"
