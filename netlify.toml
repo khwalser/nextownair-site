@@ -1,3 +1,1 @@
-[build]
-  command = "node scripts/smoke-schedule.mjs"
-  functions = "netlify/functions"
+[build]\n  functions = "netlify/functions"\n
