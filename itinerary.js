@@ -176,7 +176,7 @@
     const key=scheduleMonthKey(leg.a,leg.b,month);
     if(calendarScheduleCompleteKey!==key)return;
     const dates=scheduledCalendarDates(leg.a,leg.b,month);
-    const priced=dates.filter(date=>liveFareData.has(fareKey(leg.a,leg.b,date))&&!liveFareData.get(fareKey(leg.a,leg.b,date))?.error).length;
+    const priced=dates.filter(date=>Boolean(lowestOffer(liveFareData.get(fareKey(leg.a,leg.b,date))))).length;
     if(!dates.length){
       el.calendarStatus.textContent='Published schedule loaded. No nonstop service dates were found in this month.';
       return;
