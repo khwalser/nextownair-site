@@ -1,0 +1,41 @@
+name: Network coverage audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "e2e/network-coverage.mjs"
+      - ".github/workflows/network-coverage.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      COVERAGE_BASE_URL: https://6ac043b048b4440008ee5ffd--nextownair-site.netlify.app
+      COVERAGE_OUT_DIR: artifacts
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Run network/provider coverage audit
+        run: node e2e/network-coverage.mjs
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: network-coverage-audit
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 14
