@@ -34,6 +34,8 @@
   const calendarFareJobs=new Set();
   const fareQueue=[];
   const fareActiveKeys=new Set();
+  const fareNoOfferCounts=new Map();
+  const fareCoverageBlockedLegs=new Set();
   const FARE_MAX_CONCURRENT=1;
   const FARE_START_GAP_MS=5000;
   const AUTO_PRICE_WINDOW=31;
@@ -192,6 +194,7 @@
       if(data.error)return av.status==='fallback'||av.status==='checking'?'retry fare':'fare —';
       const best=lowestOffer(data);
       if(best)return formatMoney(best.amount,best.currency);
+      if(data.coverageLimited&&av.status!=='unavailable')return 'check live fare';
       if(av.status!=='unavailable')return 'no provider fare';
     }
     if(fareActiveKeys.has(key))return 'pricing…';
@@ -232,6 +235,10 @@
     const key=scheduleMonthKey(leg.a,leg.b,month);
     if(calendarScheduleCompleteKey!==key)return;
     const scheduleData=scheduleMonthData.get(key);
+    if(fareCoverageBlockedLegs.has(fareLegKey(leg.a,leg.b))){
+      el.calendarStatus.textContent='The connected fare provider does not cover this route reliably. Dates stay selectable; use the live-search link on the flight leg for current airline/market fares.';
+      return;
+    }
     if(scheduleData&&scheduleData.error&&isScheduleFallbackCode(scheduleData.code)){
       const monthCells=[...el.calendarGrid.querySelectorAll('.calendar-day[data-calendar-date]')].filter(cell=>!cell.classList.contains('past'));
       const priced=monthCells.filter(cell=>Boolean(lowestOffer(liveFareData.get(fareKey(leg.a,leg.b,cell.dataset.calendarDate))))).length;
@@ -489,6 +496,9 @@
     }).filter(Boolean).sort((x,y)=>x.departMin-y.departMin);
   }
   function fareKey(a,b,date){return `${a}|${b}|${date}`;}
+  function fareLegKey(a,b){return `${a}|${b}`;}
+  function externalFareSearchUrl(a,b,date){return `https://www.google.com/travel/flights?q=${encodeURIComponent(`Flights from ${a} to ${b} on ${date}`)}`;}
+  function coverageFallbackData(a,b,date){return {provider:'external-search',liveMode:false,checkedAt:new Date().toISOString(),origin:a,destination:b,departureDate:date,offers:[],coverageLimited:true,externalSearchUrl:externalFareSearchUrl(a,b,date)};}
   function lowestOffer(data){
     const offers=(data&&Array.isArray(data.offers))?data.offers:[];
     return offers.reduce((best,o)=>!best||Number(o.amount)<Number(best.amount)?o:best,null);
@@ -541,6 +551,24 @@
             }
             const err=new Error(data.message||data.error||'Pricing lookup failed');err.status=res.status;throw err;
           }
+          if(!Array.isArray(data.offers)||data.offers.length===0){
+            const lk=fareLegKey(task.a,task.b);
+            const misses=(fareNoOfferCounts.get(lk)||0)+1;
+            fareNoOfferCounts.set(lk,misses);
+            if(misses>=3){
+              fareCoverageBlockedLegs.add(lk);
+              for(let idx=fareQueue.length-1;idx>=0;idx--){
+                const pending=fareQueue[idx];
+                if(fareLegKey(pending.a,pending.b)!==lk)continue;
+                fareQueue.splice(idx,1);
+                pending.resolve(coverageFallbackData(pending.a,pending.b,pending.date));
+              }
+              task.resolve({...data,coverageLimited:true,externalSearchUrl:externalFareSearchUrl(task.a,task.b,task.date)});
+              return;
+            }
+          }else{
+            fareNoOfferCounts.set(fareLegKey(task.a,task.b),0);
+          }
           task.resolve(data);
         })
         .catch(task.reject)
@@ -554,6 +582,11 @@
   }
   function fetchFare(a,b,date,priority=false){
     const key=fareKey(a,b,date);
+    if(fareCoverageBlockedLegs.has(fareLegKey(a,b))){
+      const data=coverageFallbackData(a,b,date);
+      liveFareData.set(key,data);
+      const p=Promise.resolve(data);liveFareCache.set(key,p);return p;
+    }
     if(liveFareCache.has(key))return liveFareCache.get(key);
     const p=new Promise((resolve,reject)=>{
       const task={a,b,date,key,resolve,reject,priority:Boolean(priority)};
@@ -860,7 +893,9 @@
       }else if(fareData.error){
         fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value">Provider unavailable</div><div class="small">Pricing can be retried without changing the itinerary.</div></div>`;
       }else if(!fareData.offers||!fareData.offers.length){
-        fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value">No nonstop offer returned</div><div class="small">The route is verified, but Duffel returned no nonstop inventory for this date.</div></div>`;
+        const searchUrl=fareData.externalSearchUrl||externalFareSearchUrl(a,b,departDate);
+        const limited=fareData.coverageLimited||fareCoverageBlockedLegs.has(fareLegKey(a,b));
+        fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value">${limited?'Provider coverage gap':'No provider fare returned'}</div><div class="small">${limited?'The connected fare provider does not reliably cover this route.':'The route is verified, but the connected provider returned no nonstop inventory for this date.'} Airline fares may still exist.</div><a class="btn tertiary" href="${searchUrl}" target="_blank" rel="noopener">Check current fares ↗</a></div>`;
       }else{
         const best=lowestOffer(fareData),isLive=Boolean(fareData.liveMode&&best&&best.liveMode);
         fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?(locked?'Live fare preview':'Live flights'):'Duffel test flights'} · nonstop economy${previewNote}</div><div class="live-fare-value">Lowest fare ${best?formatMoney(best.amount,best.currency):'—'}</div><div class="small">${fareData.offers.length} flight${fareData.offers.length===1?'':'s'} · exact returned fare prices shown below · checked ${checkedTime(fareData.checkedAt)}${locked?' · exact choices unlock after inbound flight selection':''}</div>${locked?'':`<button class="view-flight-options" type="button" data-view-flight-options>View ${fareData.offers.length} flight option${fareData.offers.length===1?'':'s'} ↓</button>`}</div>`;
