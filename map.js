@@ -135,7 +135,7 @@
     }
     const next=state.route
       .map((code,index)=>({code,index}))
-      .filter(x=>x.index!==i&&!autoConnectorCodes.has(x.code))
+      .filter(x=>x.index!==i&&!autoConnectorIndices.has(x.index))
       .map(x=>x.code);
     autoConnectorIndices.clear();
     setRoute(next,a?`Removed ${a.city} (${a.code}) from this trip.`:'Stop removed.');
