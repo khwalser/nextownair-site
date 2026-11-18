@@ -52,12 +52,18 @@
     }
     return null;
   }
-  function baseState(){return {version:1,route:[],autoConnectors:[],startDate:todayLocal(),stays:{},selections:{}};}
+  function baseState(){return {version:2,route:[],autoConnectors:[],autoConnectorIndices:[],startDate:todayLocal(),stays:{},selections:{}};}
   function sanitize(raw){
     const b=baseState();
     if(!raw||typeof raw!=='object')return b;
     b.route=normalizeRoute(raw.route);
     b.autoConnectors=normalizeRoute(raw.autoConnectors).filter(code=>b.route.includes(code));
+    const legacyCodes=new Set(b.autoConnectors);
+    const rawIndices=Array.isArray(raw.autoConnectorIndices)?raw.autoConnectorIndices.map(Number).filter(Number.isInteger):[];
+    b.autoConnectorIndices=[...new Set(rawIndices.filter(i=>i>0&&i<b.route.length-1))];
+    if(!b.autoConnectorIndices.length&&legacyCodes.size){
+      b.autoConnectorIndices=b.route.map((code,i)=>({code,i})).filter(x=>x.i>0&&x.i<b.route.length-1&&legacyCodes.has(x.code)).map(x=>x.i);
+    }
     b.startDate=validDate(raw.startDate)?raw.startDate:b.startDate;
     b.stays=(raw.stays&&typeof raw.stays==='object')?raw.stays:{};
     b.selections=(raw.selections&&typeof raw.selections==='object')?raw.selections:{};
@@ -88,13 +94,14 @@
   function reconcileRoute(state,newRoute){
     const next=normalizeRoute(newRoute);
     const old=state.route||[];
-    if(sameRoute(old,next)){state.route=next;state.autoConnectors=(state.autoConnectors||[]).filter(code=>next.includes(code));return state;}
+    if(sameRoute(old,next)){state.route=next;state.autoConnectors=(state.autoConnectors||[]).filter(code=>next.includes(code));state.autoConnectorIndices=(state.autoConnectorIndices||[]).filter(i=>i>0&&i<next.length-1);return state;}
     const d=firstDiff(old,next);
     const legCut=Math.max(0,d-1);
     Object.keys(state.selections||{}).forEach(k=>{if(Number(k)>=legCut)delete state.selections[k];});
     Object.keys(state.stays||{}).forEach(k=>{if(Number(k)>=Math.max(1,d))delete state.stays[k];});
     state.route=next;
     state.autoConnectors=(state.autoConnectors||[]).filter(code=>next.includes(code));
+    state.autoConnectorIndices=[];
     return state;
   }
   function routeFromQuery(){
@@ -115,7 +122,17 @@
     const state=readStored();
     const qr=routeFromQuery();
     if(qr!==null)reconcileRoute(state,qr);
-    if(q.has('auto'))state.autoConnectors=normalizeRoute((q.get('auto')||'').split(',')).filter(code=>state.route.includes(code));
+    if(q.has('auto')){
+      const raw=(q.get('auto')||'').split(',').map(x=>x.trim()).filter(Boolean);
+      if(raw.every(x=>/^\d+$/.test(x))){
+        state.autoConnectorIndices=[...new Set(raw.map(Number).filter(i=>i>0&&i<state.route.length-1))];
+        state.autoConnectors=[...new Set(state.autoConnectorIndices.map(i=>state.route[i]).filter(Boolean))];
+      }else{
+        state.autoConnectors=normalizeRoute(raw).filter(code=>state.route.includes(code));
+        const codes=new Set(state.autoConnectors);
+        state.autoConnectorIndices=state.route.map((code,i)=>({code,i})).filter(x=>x.i>0&&x.i<state.route.length-1&&codes.has(x.code)).map(x=>x.i);
+      }
+    }
     if(validDate(q.get('date')))state.startDate=q.get('date');
     return save(state);
   }
@@ -124,7 +141,7 @@
   function buildUrl(page,state){
     const p=new URLSearchParams();
     if(state.route&&state.route.length)p.set('route',state.route.join(','));
-    if(state.autoConnectors&&state.autoConnectors.length)p.set('auto',state.autoConnectors.join(','));
+    if(state.autoConnectorIndices&&state.autoConnectorIndices.length)p.set('auto',state.autoConnectorIndices.join(','));
     if(validDate(state.startDate))p.set('date',state.startDate);
     const qs=p.toString();
     return page+(qs?`?${qs}`:'');
