@@ -36,6 +36,11 @@
   const fareActiveKeys=new Set();
   const fareNoOfferCounts=new Map();
   const fareCoverageBlockedLegs=new Set();
+  const KNOWN_FARE_COVERAGE_GAPS=new Set([
+    'DTW|CIU','CIU|DTW',
+    'ORD|CMX','CMX|ORD'
+  ]);
+  function isKnownFareCoverageGap(a,b){return KNOWN_FARE_COVERAGE_GAPS.has(fareLegKey(a,b));}
   const FARE_MAX_CONCURRENT=1;
   const FARE_START_GAP_MS=5000;
   const AUTO_PRICE_WINDOW=31;
@@ -188,7 +193,9 @@
     return {status:'checking',label:'Checking…',detail:''};
   }
   function firstLeg(){
-    return state.route.length>=2?{a:state.route[0],b:state.route[1]}:null;
+    const leg=state.route.length>=2?{a:state.route[0],b:state.route[1]}:null;
+    if(leg&&isKnownFareCoverageGap(leg.a,leg.b))fareCoverageBlockedLegs.add(fareLegKey(leg.a,leg.b));
+    return leg;
   }
   function calendarAvailability(date){
     const leg=firstLeg();if(!leg)return {status:'none',label:''};
@@ -373,6 +380,17 @@
   async function loadStartCalendarMonth(){
     const leg=firstLeg();
     if(!leg){el.calendarStatus.textContent='Choose a route first.';return;}
+    if(isKnownFareCoverageGap(leg.a,leg.b)){
+      fareCoverageBlockedLegs.add(fareLegKey(leg.a,leg.b));
+      const token=++calendarLoadVersion;
+      const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
+      const key=scheduleMonthKey(leg.a,leg.b,month);
+      scheduleMonthData.set(key,{error:true,status:503,code:'known_fare_coverage_gap',message:'Known fare-provider coverage gap for this route.',days:{}});
+      calendarScheduleCompleteKey=key;
+      renderStartCalendar();
+      updateCalendarFareStatus();
+      return;
+    }
     const token=++calendarLoadVersion;
     const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
     const key=scheduleMonthKey(leg.a,leg.b,month);
@@ -631,6 +649,7 @@
   }
   function fetchFare(a,b,date,priority=false){
     const key=fareKey(a,b,date);
+    if(isKnownFareCoverageGap(a,b))fareCoverageBlockedLegs.add(fareLegKey(a,b));
     if(fareCoverageBlockedLegs.has(fareLegKey(a,b))){
       const data=coverageFallbackData(a,b,date);
       liveFareData.set(key,data);
