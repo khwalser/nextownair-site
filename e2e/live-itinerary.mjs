@@ -280,6 +280,11 @@ try{
     await page.goto(target,{waitUntil:'domcontentloaded',timeout:60000});
     const chips=await page.locator('#routebar .routechip').allTextContents();
     assert(chips.length===7&&exactRoute.every((code,i)=>chips[i]?.includes(code)),'Exact demo route renders all seven route points',chips.join(' | '));
+    const stopLabels=await page.locator('#trip .stoplabel').allTextContents();
+    assert(/Automatic connection/i.test(stopLabels[2]||''),'Middle DTW occurrence is an automatic connector',stopLabels[2]||'');
+    assert(/Automatic connection/i.test(stopLabels[3]||''),'First ORD occurrence is an automatic connector',stopLabels[3]||'');
+    assert(/Automatic connection/i.test(stopLabels[5]||''),'Second ORD occurrence is an automatic connector',stopLabels[5]||'');
+    assert(!/Automatic connection/i.test(stopLabels[6]||'')&&/Return/i.test(stopLabels[6]||''),'Final DTW occurrence is a normal return, not an automatic connector',stopLabels[6]||'');
 
     for(let i=0;i<6;i++){
       const options=page.locator('#flight-options-'+i+' .flight');
