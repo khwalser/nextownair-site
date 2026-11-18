@@ -795,7 +795,7 @@
   }
   function defaultStay(i){
     const stored=state.stays[String(i)];if(stored)return stored;
-    const code=state.route[i],autoConnector=(state.autoConnectors||[]).includes(code);
+    const code=state.route[i],autoConnector=(state.autoConnectorIndices||[]).includes(i);
     return autoConnector?{mode:'asap',nights:0,date:null}:{mode:'nights',nights:2,date:null};
   }
   function save(){state=window.NTA.save(state);syncLinks();}
@@ -830,12 +830,12 @@
   }
   function renderRoutebar(){
     el.routebar.innerHTML='';
-    const autoSet=new Set(state.autoConnectors||[]);
+    const autoSet=new Set(state.autoConnectorIndices||[]);
     state.route.forEach((code,i)=>{
       const a=by(code);if(!a)return;
       if(i){const arrow=document.createElement('span');arrow.className='arrow';arrow.textContent='→';el.routebar.appendChild(arrow);}
       const intermediate=i>0&&i<state.route.length-1;
-      const autoConnector=intermediate&&autoSet.has(code);
+      const autoConnector=intermediate&&autoSet.has(i);
       const s=intermediate?defaultStay(i):null;
       const suffix=autoConnector?(s&&s.mode!=='asap'?' · stay':' · connect'):(intermediate?' · stop':'');
       const chip=document.createElement('span');chip.className=`routechip ${autoConnector?'connector':a.type==='eas'?'eas':'destination'}`;chip.textContent=`${a.city} · ${a.code}${suffix}`;el.routebar.appendChild(chip);
