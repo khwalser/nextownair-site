@@ -7,7 +7,7 @@
   let networkLines=[];
   let activeFilter='all';
   const markers=new Map();
-  let autoConnectorCodes=new Set(state.autoConnectors||[]);
+  let autoConnectorIndices=new Set(state.autoConnectorIndices||[]);
 
   const el={
     trip:document.getElementById('trip'),
@@ -74,7 +74,7 @@
       const path=window.NTA.findFlightPath?window.NTA.findFlightPath(from,to):null;
       if(path&&path.length>1){
         const mids=path.slice(1,-1);
-        mids.forEach(code=>inserted.push({code,from,to}));
+        mids.forEach((code,offset)=>inserted.push({code,from,to,index:repaired.length+offset}));
         repaired.push(...path.slice(1));
       }else{
         unresolved.push({from,to});
@@ -90,9 +90,12 @@
   }
   function setRoute(next,contextMessage=''){
     const fixed=repairRoute(next);
-    autoConnectorCodes=new Set([...autoConnectorCodes,...fixed.inserted.map(x=>x.code)].filter(code=>fixed.route.includes(code)));
-    state.autoConnectors=[...autoConnectorCodes];
+    const insertedIndices=fixed.inserted.map(x=>x.index).filter(Number.isInteger);
+    autoConnectorIndices=new Set(insertedIndices);
     state=window.NTA.setRoute(state,fixed.route);
+    state.autoConnectorIndices=[...autoConnectorIndices];
+    state.autoConnectors=[...new Set(state.autoConnectorIndices.map(i=>state.route[i]).filter(Boolean))];
+    state=window.NTA.save(state);
     render();
     const repairText=autoConnectorMessage(fixed.inserted);
     const unresolved=fixed.unresolved.length?` No verified route found for ${fixed.unresolved.map(x=>`${x.from} → ${x.to}`).join(', ')}.`:'';
@@ -111,22 +114,22 @@
     }
   }
   function requestedEntries(){
-    return state.route.map((code,index)=>({code,index})).filter(x=>!autoConnectorCodes.has(x.code));
+    return state.route.map((code,index)=>({code,index})).filter(x=>!autoConnectorIndices.has(x.index));
   }
   function move(i,delta){
-    if(autoConnectorCodes.has(state.route[i]))return;
+    if(autoConnectorIndices.has(i))return;
     const requested=requestedEntries();
     const pos=requested.findIndex(x=>x.index===i);
     const j=pos+delta;
     if(pos<0||j<0||j>=requested.length)return;
     const next=requested.map(x=>x.code);
     [next[pos],next[j]]=[next[j],next[pos]];
-    autoConnectorCodes.clear();
+    autoConnectorIndices.clear();
     setRoute(next,'Route reordered.');
   }
   function removeAt(i){
     const a=by(state.route[i]);
-    if(autoConnectorCodes.has(state.route[i])){
+    if(autoConnectorIndices.has(i)){
       el.finderStatus.textContent=a?`${a.city} (${a.code}) is an automatic connection. Change the destinations around it and NexTownAir will recalculate the path.`:'This is an automatic connection. Change the surrounding destinations to recalculate the path.';
       return;
     }
@@ -134,7 +137,7 @@
       .map((code,index)=>({code,index}))
       .filter(x=>x.index!==i&&!autoConnectorCodes.has(x.code))
       .map(x=>x.code);
-    autoConnectorCodes.clear();
+    autoConnectorIndices.clear();
     setRoute(next,a?`Removed ${a.city} (${a.code}) from this trip.`:'Stop removed.');
   }
   function syncLinks(){
@@ -167,7 +170,7 @@
       state.route.forEach((code,i)=>{
         const a=by(code);if(!a)return;
         const row=document.createElement('div');row.className='stop';
-        const autoInserted=autoConnectorCodes.has(code);if(autoInserted)row.classList.add('auto-inserted');
+        const autoInserted=autoConnectorIndices.has(i);if(autoInserted)row.classList.add('auto-inserted');
         const num=document.createElement('div');num.className='stopnum';num.textContent=String(i+1);
         const body=document.createElement('div');body.className='stopbody';
         const title=document.createElement('strong');title.textContent=`${a.city}, ${a.state} · ${a.code}`;
@@ -313,9 +316,11 @@
   if(state.route.length>1){
     const fixed=repairRoute(state.route);
     if(fixed.route.join(',')!==state.route.join(',')){
-      autoConnectorCodes=new Set([...autoConnectorCodes,...fixed.inserted.map(x=>x.code)]);
-      state.autoConnectors=[...autoConnectorCodes].filter(code=>fixed.route.includes(code));
+      autoConnectorIndices=new Set(fixed.inserted.map(x=>x.index).filter(Number.isInteger));
       state=window.NTA.setRoute(state,fixed.route);
+      state.autoConnectorIndices=[...autoConnectorIndices];
+      state.autoConnectors=[...new Set(state.autoConnectorIndices.map(i=>state.route[i]).filter(Boolean))];
+      state=window.NTA.save(state);
     }
   }
   initFinder();
