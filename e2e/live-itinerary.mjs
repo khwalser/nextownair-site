@@ -200,7 +200,7 @@ try{
     const href=await external.getAttribute('href');
     assert(/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(href||''),'Fare fallback link targets a live flight search',href||'');
     const statusText=await page.locator('#calendarStatus').innerText();
-    assert(/Choose a departure date|coverage gap|does not cover this route reliably/i.test(statusText),'Calendar identifies the known provider coverage gap immediately',statusText);
+    assert(/Daily nonstop service is published|Choose a departure date|coverage gap|does not cover this route reliably/i.test(statusText),'Calendar identifies published service availability immediately',statusText);
     assert(!/Loading live fares across the month|queued/i.test(statusText),'Known coverage-gap route does not begin a pointless month-long fare scan on first load',statusText);
     const initialFareLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
     assert(initialFareLabels.filter(x=>x.trim()==='nonstop').length>=3,'Published-service fallback marks operating dates as nonstop',initialFareLabels.join(' | '));
@@ -211,9 +211,9 @@ try{
     assert(!/rate limit reached|pricing resumes automatically/i.test(stableGapStatus),'Downstream provider rate limits do not overwrite the coverage-gap calendar status',stableGapStatus);
 
     // Prove the coverage-gap state survives a page reload and does not restart the month-long fare scan.
-    await page.waitForFunction(()=>/Choose a departure date|coverage gap|does not cover this route reliably/i.test(document.querySelector('#calendarStatus')?.textContent||''),null,{timeout:30000});
+    await page.waitForFunction(()=>/Daily nonstop service is published|Choose a departure date|coverage gap|does not cover this route reliably/i.test(document.querySelector('#calendarStatus')?.textContent||''),null,{timeout:30000});
     await page.reload({waitUntil:'domcontentloaded',timeout:60000});
-    await page.waitForFunction(()=>/Choose a departure date|coverage gap|does not cover this route reliably/i.test(document.querySelector('#calendarStatus')?.textContent||''),null,{timeout:15000});
+    await page.waitForFunction(()=>/Daily nonstop service is published|Choose a departure date|coverage gap|does not cover this route reliably/i.test(document.querySelector('#calendarStatus')?.textContent||''),null,{timeout:15000});
     const reloadedStatus=await page.locator('#calendarStatus').innerText();
     assert(!/Loading live fares across the month|queued/i.test(reloadedStatus),'Reload does not restart the pointless month-long fare scan',reloadedStatus);
     const visibleFareLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
