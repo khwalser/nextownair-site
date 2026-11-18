@@ -264,7 +264,32 @@ try{
   await page.waitForFunction(()=>document.querySelector('#summary')?.textContent?.includes('1 of 1 flight leg selected'));
   pass('Flight selection updates the itinerary summary');
 
-  // 5) Map ↔ itinerary navigation preserves the trip and automatic-connector semantics.
+  // 5) Exact NexTownAir demo route remains usable even when some fare providers lack inventory.
+  {
+    const exactRoute=['DTW','CIU','DTW','ORD','CMX','ORD','DTW'];
+    const target=BASE_URL+'/itinerary.html?route='+encodeURIComponent(exactRoute.join(','))+'&auto='+encodeURIComponent('DTW,ORD')+'&date='+encodeURIComponent(tripDate);
+    await page.goto(target,{waitUntil:'domcontentloaded',timeout:60000});
+    const chips=await page.locator('#routebar .routechip').allTextContents();
+    assert(chips.length===7&&exactRoute.every((code,i)=>chips[i]?.includes(code)),'Exact demo route renders all seven route points',chips.join(' | '));
+
+    for(let i=0;i<6;i++){
+      const options=page.locator('#flight-options-'+i+' .flight');
+      await options.first().waitFor({state:'visible',timeout:90000});
+      const text=(await options.first().innerText()).replace(/\s+/g,' ');
+      assert(/Live flight|Duffel flight|Planning window/i.test(text),'Leg '+(i+1)+' exposes a selectable live or planning option',text);
+      await options.first().click();
+      await page.waitForFunction(({index})=>{
+        const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
+        return Boolean(s.selections&&s.selections[String(index)]);
+      },{index:i},{timeout:15000});
+    }
+    await page.waitForFunction(()=>document.querySelector('#summary')?.textContent?.includes('6 of 6 flight legs selected'),null,{timeout:15000});
+    pass('Exact DTW-CIU-DTW-ORD-CMX-ORD-DTW route can be completed end to end');
+    const planningCount=await page.locator('.flight-badge',{hasText:'Planning window'}).count();
+    assert(planningCount>=1,'Coverage-gap route uses clearly labeled planning windows where live inventory is absent',String(planningCount));
+  }
+
+  // 6) Map ↔ itinerary navigation preserves the trip and automatic-connector semantics.
   await page.goto(BASE_URL+'/index.html',{waitUntil:'domcontentloaded'});
   await clearTrip();
   const pair=await page.evaluate(()=>{
@@ -300,7 +325,7 @@ try{
   await page.waitForURL(/index\.html/);
   assert(await page.locator('#trip .auto-inserted').count()>0,'Connector highlighting survives itinerary → map navigation');
 
-  // 6) Unroutable choices fail safely instead of sending the user into a broken itinerary.
+  // 7) Unroutable choices fail safely instead of sending the user into a broken itinerary.
   await clearTrip();
   const disconnected=await page.evaluate(()=>{
     const codes=(window.NTA_DATA?.airports||[]).map(a=>a.code);
@@ -317,13 +342,13 @@ try{
   assert(await page.locator('#plan').getAttribute('aria-disabled')==='true','Unroutable route cannot continue into itinerary');
   assert(/no verified path/i.test(await page.locator('#status').innerText()),'Unroutable route explains what must change');
 
-  // 7) Legacy navigation does not dead-end.
+  // 8) Legacy navigation does not dead-end.
   await page.goto(BASE_URL+'/route-builder.html?route=DTW,ROC',{waitUntil:'domcontentloaded'});
   await page.waitForURL(/index\.html\?route=DTW%2CROC|index\.html\?route=DTW,ROC/,{timeout:5000});
   await page.waitForFunction(()=>document.querySelectorAll('#trip .stop').length===2);
   pass('Legacy route-builder URL lands in the working map flow');
 
-  // 8) Basic mobile pass.
+  // 9) Basic mobile pass.
   const mobile=await context.newPage();
   attachDiagnostics(mobile);
   await mobile.setViewportSize({width:390,height:844});
