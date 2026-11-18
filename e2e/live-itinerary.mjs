@@ -238,6 +238,18 @@ try{
     assert(/Published schedule/i.test(firstLegText),'Alpena first leg uses published timetable choices instead of fake planning windows',firstLegText);
     assert(!/Morning planning window|Midday planning window|Evening planning window/i.test(firstLegText),'Alpena first leg contains no generic planning-window placeholders',firstLegText);
     pass('Exact Detroit-Alpena-Detroit-Chicago-Houghton-Chicago-Detroit route has a useful service-day calendar');
+
+    for(let i=0;i<6;i++){
+      const options=page.locator('#flight-options-'+i+' .flight');
+      await options.first().waitFor({state:'visible',timeout:90000});
+      await options.first().click();
+      await page.waitForFunction(({index})=>{
+        const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
+        return Boolean(s.selections&&s.selections[String(index)]);
+      },{index:i},{timeout:15000});
+    }
+    await page.waitForFunction(()=>document.querySelector('#summary')?.textContent?.includes('6 of 6 flight legs selected'),null,{timeout:15000});
+    pass('Exact Detroit-Alpena-Detroit-Chicago-Houghton-Chicago-Detroit route can be completed end to end');
   }
 
   // 5) Prove a real Duffel price can make it from the provider into the rendered calendar and flight cards.
@@ -333,8 +345,8 @@ try{
     }
     await page.waitForFunction(()=>document.querySelector('#summary')?.textContent?.includes('6 of 6 flight legs selected'),null,{timeout:15000});
     pass('Exact DTW-CIU-DTW-ORD-CMX-ORD-DTW route can be completed end to end');
-    const planningCount=await page.locator('.flight-badge',{hasText:'Planning window'}).count();
-    assert(planningCount>=1,'Coverage-gap route uses clearly labeled planning windows where live inventory is absent',String(planningCount));
+    const fallbackCount=await page.locator('.flight-badge',{hasText:/Published schedule|Planning window/}).count();
+    assert(fallbackCount>=1,'Coverage-gap route uses clearly labeled published-schedule or planning fallback where live inventory is absent',String(fallbackCount));
   }
 
   // 6) Map ↔ itinerary navigation preserves the trip and automatic-connector semantics.
