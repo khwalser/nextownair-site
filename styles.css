@@ -23,6 +23,16 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #fff}
 .nav{display:flex;gap:8px;flex-wrap:wrap}.nav a{text-decoration:none;padding:10px 14px;border-radius:10px;color:#c4d3dd;min-height:44px;display:inline-flex;align-items:center}.nav a.active{background:#102a40;color:#fff}.nav a:hover{background:#10253a}
 .wrap{max-width:var(--max);margin:auto;padding:24px}
 .narrow{max-width:1120px}
+.itinerary-wrap{max-width:1480px}
+.itinerary-workspace{display:grid;grid-template-columns:minmax(420px,560px) minmax(0,1fr);gap:20px;align-items:start}
+.itinerary-sidebar{min-width:0}
+.itinerary-sidebar .toolbar{margin:0;display:grid;gap:12px}
+.itinerary-sidebar .start-date-field{min-width:0;max-width:none;width:100%}
+.itinerary-sidebar .data-badge{justify-self:start}
+.itinerary-sidebar .btnrow{width:100%}
+.itinerary-sidebar .btnrow .btn{flex:1}
+.itinerary-main{min-width:0}
+.itinerary-main .leg:first-child{margin-top:0}
 .eyebrow{color:var(--accent);text-transform:uppercase;letter-spacing:.11em;font-size:12px;font-weight:900}
 h1{font-size:clamp(32px,4vw,54px);line-height:1.08;margin:7px 0 10px;letter-spacing:-.025em}
 h2{font-size:26px;line-height:1.2}h3{line-height:1.25}
@@ -64,7 +74,7 @@ h2{font-size:26px;line-height:1.2}h3{line-height:1.25}
 .empty-card{padding:30px;background:var(--panel);border:1px solid var(--border);border-radius:16px;text-align:center}.empty-card h2{margin-top:0}.empty-card .btnrow{justify-content:center}
 .footer{max-width:var(--max);margin:12px auto 0;padding:20px 24px 34px;color:#8fa6b6;font-size:14px;border-top:1px solid #14283b}.footer a{color:#c9dae4}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-@media(max-width:1000px){.layout{grid-template-columns:1fr}.side{min-height:0}#map{height:520px}.options{grid-template-columns:1fr 1fr}}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.itinerary-workspace{grid-template-columns:1fr}.side{min-height:0}#map{height:520px}.options{grid-template-columns:1fr 1fr}}
 @media(max-width:720px){body{font-size:16px}.sitehead{align-items:flex-start;flex-direction:column;padding:12px 16px}.nav{width:100%}.nav a{flex:1;justify-content:center}.wrap{padding:18px 14px}.lead{font-size:17px}.options{grid-template-columns:1fr}.stay{margin-left:8px;padding-left:12px}.stay-grid{grid-template-columns:1fr}.finder-row{grid-template-columns:1fr}.finder-row .btn{width:100%}.fallback-grid{grid-template-columns:1fr}.toolbar{align-items:stretch}.start-date-field{width:100%}.start-calendar{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-height:86vh;overflow:auto}.toolbar .btnrow{width:100%}.toolbar .btn{flex:1}.leghead{flex-direction:column}.routechip{font-size:14px}.stay-availability-grid{grid-template-columns:1fr 1fr}.live-fare{grid-template-columns:1fr}.live-fare-value{grid-row:auto;grid-column:1}.live-fare .small{grid-column:1}.live-trip-fare{text-align:left;min-width:0}.travel-row{grid-template-columns:1fr;gap:9px}.travel-header{display:none}.travel-leg{padding-bottom:3px}.travel-kpis{width:100%}.travel-kpi{flex:1 1 120px}.map-control-label{width:100%;min-width:0}.map-tools{gap:6px}.map-tool,.map-filter{min-height:38px;padding:6px 10px}.region-status{width:100%;padding-left:0}}
 @media print{body{background:#fff;color:#000}.sitehead,.nav,.btn,.choice,.dateinput,.toolbar .btnrow,.notice,.prototype-note,.start-calendar{display:none!important}.wrap{max-width:none;padding:0}.leg,.summary{break-inside:avoid;border-color:#bbb;background:#fff}.live-fare{background:#fff!important;color:#000;border-color:#aaa}.live-trip-fare{text-align:right}.travel-chart{break-inside:avoid}.travel-row{background:#fff!important;border-color:#bbb}.metric-track{background:#eee}.travel-kpi{background:#fff;border-color:#aaa}.trip-complete{background:#fff;color:#000;border-color:#888}.flight{background:#fff;color:#000;border-color:#bbb}.flight:not(.selected){display:none}.muted,.small,.lead{color:#444}.stay{border-left-color:#666}.stay-summary{background:#fff;color:#000;border-color:#aaa}.routechip{background:#fff;color:#000;border-color:#aaa}}
 
