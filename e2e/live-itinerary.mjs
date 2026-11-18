@@ -24,6 +24,7 @@ function money(amount,currency='USD'){
 }
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
+// Alpena exact-route validation target refresh
 const diagnostics={
   baseUrl:BASE_URL,
   startedAt:new Date().toISOString(),
