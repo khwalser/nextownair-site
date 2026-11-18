@@ -233,6 +233,12 @@ try{
     assert(await page.locator('#calendarServiceKey').isVisible(),'Alpena calendar shows the service-day legend');
     assert(await page.locator('#calendarKey').isHidden(),'Alpena calendar hides the fare-status legend');
     assert(!/no provider fare|queued|rate limit/i.test((await page.locator('#startDateCalendar').innerText())),'Alpena calendar does not expose provider-fare noise');
+    const desktopLayout=await page.evaluate(()=>{
+      const cal=document.querySelector('#startDateCalendar')?.getBoundingClientRect();
+      const leg=document.querySelector('#content .leg')?.getBoundingClientRect();
+      return {w:innerWidth,h:innerHeight,calTop:cal?.top,legTop:leg?.top,legBottom:leg?.bottom};
+    });
+    assert(desktopLayout.w<1000||((desktopLayout.legTop??99999)<desktopLayout.h),'Desktop layout shows Leg 1 without requiring a scroll past the calendar',JSON.stringify(desktopLayout));
     await page.waitForFunction(()=>/Published schedule/i.test(document.querySelector('#flight-options-0')?.textContent||''),null,{timeout:30000});
     const firstLegText=(await page.locator('#flight-options-0').innerText()).replace(/\s+/g,' ');
     assert(/Published schedule/i.test(firstLegText),'Alpena first leg uses published timetable choices instead of fake planning windows',firstLegText);
