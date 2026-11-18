@@ -535,7 +535,9 @@
     el.startDateButton.setAttribute('aria-expanded','true');
     const leg=firstLeg();
     if(!leg)return;
-    if(el.calendarKey)el.calendarKey.hidden=isKnownFareCoverageGap(leg.a,leg.b);
+    const gap=isKnownFareCoverageGap(leg.a,leg.b);
+    if(el.calendarKey)el.calendarKey.hidden=gap;
+    if(el.calendarServiceKey)el.calendarServiceKey.hidden=!gap;
     const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
     const key=scheduleMonthKey(leg.a,leg.b,month);
     if(forceReload||calendarAutoLoadKey!==key){
