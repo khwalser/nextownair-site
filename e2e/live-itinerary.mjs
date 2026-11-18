@@ -203,8 +203,9 @@ try{
     assert(/Choose a departure date|coverage gap|does not cover this route reliably/i.test(statusText),'Calendar identifies the known provider coverage gap immediately',statusText);
     assert(!/Loading live fares across the month|queued/i.test(statusText),'Known coverage-gap route does not begin a pointless month-long fare scan on first load',statusText);
     const initialFareLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
-    assert(initialFareLabels.every(x=>!x.trim()),'Known coverage-gap calendar is a clean date picker with no repeated fare labels',initialFareLabels.join(' | '));
-    assert(await page.locator('#calendarKey').isHidden(),'Known coverage-gap calendar hides the fare-status legend');
+    assert(initialFareLabels.filter(x=>x.trim()==='nonstop').length>=3,'Published-service fallback marks operating dates as nonstop',initialFareLabels.join(' | '));
+    assert(await page.locator('#calendarKey').isHidden(),'Published-service fallback hides the fare-status legend');
+    assert(await page.locator('#calendarServiceKey').isVisible(),'Published-service fallback shows the service-day legend');
     await page.waitForTimeout(7000);
     const stableGapStatus=await page.locator('#calendarStatus').innerText();
     assert(!/rate limit reached|pricing resumes automatically/i.test(stableGapStatus),'Downstream provider rate limits do not overwrite the coverage-gap calendar status',stableGapStatus);
@@ -216,7 +217,7 @@ try{
     const reloadedStatus=await page.locator('#calendarStatus').innerText();
     assert(!/Loading live fares across the month|queued/i.test(reloadedStatus),'Reload does not restart the pointless month-long fare scan',reloadedStatus);
     const visibleFareLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
-    assert(visibleFareLabels.every(x=>!x.trim()),'Reloaded coverage-gap calendar stays a clean date picker',visibleFareLabels.join(' | '));
+    assert(visibleFareLabels.filter(x=>x.trim()==='nonstop').length>=3,'Reloaded published-service calendar preserves nonstop service markers',visibleFareLabels.join(' | '));
   }
 
   // 4) Prove a real Duffel price can make it from the provider into the rendered calendar and flight cards.
