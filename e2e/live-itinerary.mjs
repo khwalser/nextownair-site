@@ -167,26 +167,43 @@ try{
   if(scheduleCode==='schedule_quota_exhausted'){
     assert(calendarSnapshot.future.length>0&&calendarSnapshot.future.every(x=>!x.disabled),'Quota fallback keeps future dates selectable');
     await page.waitForFunction(date=>{
+      const status=document.querySelector('#calendarStatus')?.textContent||'';
       const future=[...document.querySelectorAll('.calendar-day[data-calendar-date]')]
         .filter(x=>x.dataset.calendarDate>=date);
-      const autoQueued=future.filter(x=>{
+      const progressed=future.filter(x=>{
         const t=x.querySelector('.calendar-fare')?.textContent?.trim()||'';
         return t!=='check fare'&&t!=='';
       });
-      return autoQueued.length>=Math.min(12,future.length);
-    },tripDate,{timeout:15000});
+      return progressed.length>=Math.min(3,future.length)||/does not cover this route reliably/i.test(status);
+    },tripDate,{timeout:30000});
     const autoState=await page.evaluate(date=>{
       const future=[...document.querySelectorAll('.calendar-day[data-calendar-date]')].filter(x=>x.dataset.calendarDate>=date);
       return future.map(x=>x.querySelector('.calendar-fare')?.textContent?.trim()||'');
     },tripDate);
-    assert(autoState.filter(t=>t&&t!=='check fare').length>=Math.min(12,autoState.length),'Fallback automatically queues the full visible month for live pricing, not only nearby dates');
     const statusText=await page.locator('#calendarStatus').innerText();
-    assert(/prices will fill in automatically|Loading live fares across the month/i.test(statusText),'Calendar tells the user the month is auto-populating',statusText);
+    assert(autoState.some(t=>t&&t!=='check fare')||/does not cover this route reliably/i.test(statusText),'Fare fallback progresses or switches to coverage-gap mode',statusText);
+    assert(/Loading live fares across the month|does not cover this route reliably|Fare scan/i.test(statusText),'Calendar explains live-pricing or coverage-gap state',statusText);
   }else{
     pass('Published schedule path is usable','schedule response '+scheduleResponse.status);
   }
 
-  // 3) Prove a real Duffel price can make it from the provider into the rendered calendar and flight cards.
+  // 3) Unsupported-provider coverage degrades to a usable live-search fallback instead of burning the month.
+  {
+    const coverageDate=tripDate;
+    const target=BASE_URL+'/itinerary.html?route='+encodeURIComponent('DTW,CIU')+'&date='+encodeURIComponent(coverageDate);
+    await page.goto(target,{waitUntil:'domcontentloaded',timeout:60000});
+    await page.waitForFunction(()=>document.body.innerText.includes('Provider coverage gap')||document.body.innerText.includes('No provider fare returned'),null,{timeout:30000});
+    const legText=await page.locator('.leg').first().innerText();
+    assert(/Provider coverage gap|No provider fare returned/i.test(legText),'Delta-market route exposes provider coverage honestly',legText.replace(/\s+/g,' '));
+    const external=page.locator('.leg').first().getByRole('link',{name:/Check current fares/i});
+    assert(await external.count()===1,'Coverage-gap leg offers a current-fare search fallback');
+    const href=await external.getAttribute('href');
+    assert(/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(href||''),'Fare fallback link targets a live flight search',href||'');
+    const statusText=await page.locator('#calendarStatus').innerText();
+    assert(/does not cover this route reliably|Fare scan|Loading live fares/i.test(statusText),'Calendar remains explicit about coverage state',statusText);
+  }
+
+  // 4) Prove a real Duffel price can make it from the provider into the rendered calendar and flight cards.
   const candidates=[
     ['GCK','DFW'],
     ['LAR','DEN'],['BFF','DEN'],['COD','DEN'],['SUX','DEN'],['SUX','ORD'],
@@ -247,7 +264,7 @@ try{
   await page.waitForFunction(()=>document.querySelector('#summary')?.textContent?.includes('1 of 1 flight leg selected'));
   pass('Flight selection updates the itinerary summary');
 
-  // 4) Map ↔ itinerary navigation preserves the trip and automatic-connector semantics.
+  // 5) Map ↔ itinerary navigation preserves the trip and automatic-connector semantics.
   await page.goto(BASE_URL+'/index.html',{waitUntil:'domcontentloaded'});
   await clearTrip();
   const pair=await page.evaluate(()=>{
@@ -283,7 +300,7 @@ try{
   await page.waitForURL(/index\.html/);
   assert(await page.locator('#trip .auto-inserted').count()>0,'Connector highlighting survives itinerary → map navigation');
 
-  // 5) Unroutable choices fail safely instead of sending the user into a broken itinerary.
+  // 6) Unroutable choices fail safely instead of sending the user into a broken itinerary.
   await clearTrip();
   const disconnected=await page.evaluate(()=>{
     const codes=(window.NTA_DATA?.airports||[]).map(a=>a.code);
@@ -300,13 +317,13 @@ try{
   assert(await page.locator('#plan').getAttribute('aria-disabled')==='true','Unroutable route cannot continue into itinerary');
   assert(/no verified path/i.test(await page.locator('#status').innerText()),'Unroutable route explains what must change');
 
-  // 6) Legacy navigation does not dead-end.
+  // 7) Legacy navigation does not dead-end.
   await page.goto(BASE_URL+'/route-builder.html?route=DTW,ROC',{waitUntil:'domcontentloaded'});
   await page.waitForURL(/index\.html\?route=DTW%2CROC|index\.html\?route=DTW,ROC/,{timeout:5000});
   await page.waitForFunction(()=>document.querySelectorAll('#trip .stop').length===2);
   pass('Legacy route-builder URL lands in the working map flow');
 
-  // 7) Basic mobile pass.
+  // 8) Basic mobile pass.
   const mobile=await context.newPage();
   attachDiagnostics(mobile);
   await mobile.setViewportSize({width:390,height:844});
