@@ -88,7 +88,7 @@ async function waitForAnySchedule(timeoutMs=30000){
 }
 
 try{
-  browser=await chromium.launch({headless:true});
+  browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome'});
   const context=await browser.newContext({viewport:{width:1440,height:1200},locale:'en-US',timezoneId:'America/Detroit'});
   page=await context.newPage();
   attachDiagnostics(page);
