@@ -276,15 +276,21 @@ try{
   // 5) Exact NexTownAir demo route remains usable even when some fare providers lack inventory.
   {
     const exactRoute=['DTW','CIU','DTW','ORD','CMX','ORD','DTW'];
-    const target=BASE_URL+'/itinerary.html?route='+encodeURIComponent(exactRoute.join(','))+'&auto='+encodeURIComponent('DTW,ORD')+'&date='+encodeURIComponent(tripDate);
-    await page.goto(target,{waitUntil:'domcontentloaded',timeout:60000});
-    const chips=await page.locator('#routebar .routechip').allTextContents();
-    assert(chips.length===7&&exactRoute.every((code,i)=>chips[i]?.includes(code)),'Exact demo route renders all seven route points',chips.join(' | '));
+    const qs='?route='+encodeURIComponent(exactRoute.join(','))+'&auto='+encodeURIComponent('DTW,ORD')+'&date='+encodeURIComponent(tripDate);
+
+    // Validate connector identity on the map screen itself (the user-facing route builder).
+    await page.goto(BASE_URL+'/index.html'+qs,{waitUntil:'domcontentloaded',timeout:60000});
     const stopLabels=await page.locator('#trip .stoplabel').allTextContents();
+    assert(stopLabels.length===7,'Exact demo route renders all seven route points on map',stopLabels.join(' | '));
     assert(/Automatic connection/i.test(stopLabels[2]||''),'Middle DTW occurrence is an automatic connector',stopLabels[2]||'');
     assert(/Automatic connection/i.test(stopLabels[3]||''),'First ORD occurrence is an automatic connector',stopLabels[3]||'');
     assert(/Automatic connection/i.test(stopLabels[5]||''),'Second ORD occurrence is an automatic connector',stopLabels[5]||'');
     assert(!/Automatic connection/i.test(stopLabels[6]||'')&&/Return/i.test(stopLabels[6]||''),'Final DTW occurrence is a normal return, not an automatic connector',stopLabels[6]||'');
+
+    // Then validate the itinerary flow for the same exact route.
+    await page.goto(BASE_URL+'/itinerary.html'+qs,{waitUntil:'domcontentloaded',timeout:60000});
+    const chips=await page.locator('#routebar .routechip').allTextContents();
+    assert(chips.length===7&&exactRoute.every((code,i)=>chips[i]?.includes(code)),'Exact demo route renders all seven route points in itinerary',chips.join(' | '));
 
     for(let i=0;i<6;i++){
       const options=page.locator('#flight-options-'+i+' .flight');
