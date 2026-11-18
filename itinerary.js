@@ -22,7 +22,8 @@
     brandHome:document.getElementById('brandHome'),
     printTrip:document.getElementById('printTrip'),
     toolbar:document.getElementById('toolbar'),
-    calendarKey:document.getElementById('calendarKey')
+    calendarKey:document.getElementById('calendarKey'),
+    calendarServiceKey:document.getElementById('calendarServiceKey')
   };
 
   function by(code){return window.NTA.byCode(code);}
@@ -41,7 +42,27 @@
     'DTW|CIU','CIU|DTW',
     'ORD|CMX','CMX|ORD'
   ]);
+  const PUBLISHED_SERVICE_PATTERNS={
+    'DTW|CIU':{days:[0,1,2,3,4,5,6],count:1,label:'Daily nonstop service',source:'Chippewa County International Airport / Delta published schedule'},
+    'CIU|DTW':{days:[0,1,2,3,4,5,6],count:1,label:'Daily nonstop service',source:'Chippewa County International Airport / Delta published schedule'},
+    'ORD|CMX':{days:[0,1,2,3,4,5,6],count:2,label:'Daily nonstop service',source:'Houghton County Memorial Airport / United published schedule'},
+    'CMX|ORD':{days:[0,1,2,3,4,5,6],count:2,label:'Daily nonstop service',source:'Houghton County Memorial Airport / United published schedule'}
+  };
   function isKnownFareCoverageGap(a,b){return KNOWN_FARE_COVERAGE_GAPS.has(fareLegKey(a,b));}
+  function publishedServicePattern(a,b){return PUBLISHED_SERVICE_PATTERNS[fareLegKey(a,b)]||null;}
+  function publishedScheduleMonth(a,b,month){
+    const pattern=publishedServicePattern(a,b);if(!pattern)return null;
+    const [year,mon]=month.split('-').map(Number);
+    const daysInMonth=new Date(year,mon,0,12).getDate();
+    const days={},checkedDates=[];
+    for(let d=1;d<=daysInMonth;d++){
+      const date=`${year}-${String(mon).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      checkedDates.push(date);
+      const dow=new Date(Date.UTC(year,mon-1,d,12)).getUTCDay();
+      if(pattern.days.includes(dow))days[date]={count:pattern.count,source:'published-pattern'};
+    }
+    return {provider:'published-pattern',sourceType:'published-schedule',origin:a,destination:b,month,days,checkedDates,unknownDates:[],patternLabel:pattern.label,sourceLabel:pattern.source,publishedPattern:true};
+  }
   const FARE_MAX_CONCURRENT=1;
   const FARE_START_GAP_MS=5000;
   const AUTO_PRICE_WINDOW=31;
@@ -210,7 +231,7 @@
     return {status:'checking',label:'Checking'};
   }
   function calendarFareText(a,b,date,av){
-    if(fareCoverageBlockedLegs.has(fareLegKey(a,b))&&av.status!=='unavailable')return '';
+    if(fareCoverageBlockedLegs.has(fareLegKey(a,b))&&av.status!=='unavailable')return av.status==='available'?'nonstop':'';
     const key=fareKey(a,b,date),data=liveFareData.get(key);
     if(data){
       if(data.error)return av.status==='fallback'||av.status==='checking'?'retry fare':'fare —';
@@ -227,6 +248,10 @@
     return av.status==='fallback'?'check fare':'scheduled';
   }
   function calendarFareTitle(a,b,date,av){
+    if(fareCoverageBlockedLegs.has(fareLegKey(a,b))){
+      if(av.status==='available')return 'Published nonstop service · check current fare on the flight leg';
+      if(av.status==='unavailable')return 'No published nonstop service found for this date';
+    }
     const data=liveFareData.get(fareKey(a,b,date)),best=lowestOffer(data);
     if(av.status==='available'){
       if(best)return `Published nonstop service · lowest live fare ${formatMoney(best.amount,best.currency)}`;
@@ -258,7 +283,10 @@
     if(calendarScheduleCompleteKey!==key)return;
     const scheduleData=scheduleMonthData.get(key);
     if(fareCoverageBlockedLegs.has(fareLegKey(leg.a,leg.b))){
-      el.calendarStatus.textContent='Choose a departure date. Live fare pricing is not available in-app for this route; use “Check current fares” on the flight leg after selecting a date.';
+      const pattern=publishedServicePattern(leg.a,leg.b);
+      el.calendarStatus.textContent=pattern
+        ?`${pattern.label} is published for ${leg.a} → ${leg.b}. Choose a service date; live fares are checked separately on the flight leg.`
+        :`Choose a departure date. Live fare pricing is not available in-app for this route; use “Check current fares” on the flight leg after selecting a date.`;
       return;
     }
     if(scheduleData&&scheduleData.error&&isScheduleFallbackCode(scheduleData.code)){
@@ -389,7 +417,8 @@
       const token=++calendarLoadVersion;
       const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
       const key=scheduleMonthKey(leg.a,leg.b,month);
-      scheduleMonthData.set(key,{error:true,status:503,code:'known_fare_coverage_gap',message:'Known fare-provider coverage gap for this route.',days:{}});
+      const published=publishedScheduleMonth(leg.a,leg.b,month);
+      if(published)scheduleMonthData.set(key,published);
       calendarScheduleCompleteKey=key;
       renderStartCalendar();
       updateCalendarFareStatus();
