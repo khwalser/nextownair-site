@@ -200,7 +200,10 @@ try{
     const href=await external.getAttribute('href');
     assert(/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(href||''),'Fare fallback link targets a live flight search',href||'');
     const statusText=await page.locator('#calendarStatus').innerText();
-    assert(/does not cover this route reliably|coverage gap|Fare scan|Loading live fares/i.test(statusText),'Calendar remains explicit about coverage state',statusText);
+    assert(/does not cover this route reliably|coverage gap/i.test(statusText),'Calendar identifies the known provider coverage gap immediately',statusText);
+    assert(!/Loading live fares across the month|queued/i.test(statusText),'Known coverage-gap route does not begin a pointless month-long fare scan on first load',statusText);
+    const initialFareLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
+    assert(initialFareLabels.filter(x=>x.trim()==='check live fare').length>=3,'Known coverage-gap calendar immediately offers live-fare checks on first load',initialFareLabels.join(' | '));
 
     // Prove the coverage-gap state survives a page reload and does not restart the month-long fare scan.
     await page.waitForFunction(()=>/coverage gap|does not cover this route reliably/i.test(document.querySelector('#calendarStatus')?.textContent||''),null,{timeout:30000});
