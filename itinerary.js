@@ -576,8 +576,7 @@
           if(!res.ok){
             if(res.status===429&&Number(data.retryAfterMs)>0){
               fareBlockedUntil=Math.max(fareBlockedUntil,Date.now()+Number(data.retryAfterMs));
-              fareActiveKeys.delete(task.key);
-              if(task.priority||task.date===state.startDate)fareQueue.unshift(task);else fareQueue.push(task);
+              task.resolve({...coverageFallbackData(task.a,task.b,task.date),temporaryUnavailable:true,message:'Live pricing is temporarily rate-limited; use a planning window or check current fares externally.'});
               updateCalendarCell(task.date);
               return;
             }
@@ -902,7 +901,7 @@
     const fareData=liveFareData.get(key);
     let providerOpts=providerOptions(fareData,a,b,departDate);
     let usingProvider=Array.isArray(providerOpts)&&providerOpts.length>0;
-    const usingPlanningFallback=!usingProvider&&Boolean(fareData)&&(!fareData.offers||!fareData.offers.length);
+    const usingPlanningFallback=!usingProvider&&Boolean(fareData)&&(fareData.error||!fareData.offers||!fareData.offers.length);
     let opts=usingProvider?providerOpts:(usingPlanningFallback?planningOptions(a,b,departDate):[]);
     let note=knownRoute?(usingPlanningFallback?'Choose a planning window to keep building the itinerary; verify the exact flight before booking.':'Choose one flight to continue.'):'No routable planning link is available for this pair yet.';
 
