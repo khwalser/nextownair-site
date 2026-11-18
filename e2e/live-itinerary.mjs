@@ -200,7 +200,16 @@ try{
     const href=await external.getAttribute('href');
     assert(/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(href||''),'Fare fallback link targets a live flight search',href||'');
     const statusText=await page.locator('#calendarStatus').innerText();
-    assert(/does not cover this route reliably|Fare scan|Loading live fares/i.test(statusText),'Calendar remains explicit about coverage state',statusText);
+    assert(/does not cover this route reliably|coverage gap|Fare scan|Loading live fares/i.test(statusText),'Calendar remains explicit about coverage state',statusText);
+
+    // Prove the coverage-gap state survives a page reload and does not restart the month-long fare scan.
+    await page.waitForFunction(()=>/coverage gap|does not cover this route reliably/i.test(document.querySelector('#calendarStatus')?.textContent||''),null,{timeout:30000});
+    await page.reload({waitUntil:'domcontentloaded',timeout:60000});
+    await page.waitForFunction(()=>/coverage gap|does not cover this route reliably/i.test(document.querySelector('#calendarStatus')?.textContent||''),null,{timeout:15000});
+    const reloadedStatus=await page.locator('#calendarStatus').innerText();
+    assert(!/Loading live fares across the month|queued/i.test(reloadedStatus),'Reload does not restart the pointless month-long fare scan',reloadedStatus);
+    const visibleFareLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
+    assert(visibleFareLabels.filter(x=>x.trim()==='check live fare').length>=3,'Reloaded coverage-gap calendar immediately offers live-fare checks instead of queued scans',visibleFareLabels.join(' | '));
   }
 
   // 4) Prove a real Duffel price can make it from the provider into the rendered calendar and flight cards.
