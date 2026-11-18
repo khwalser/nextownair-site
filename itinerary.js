@@ -596,7 +596,13 @@
       if(wait){
         if(fareBlockedUntil>now){
           const seconds=Math.max(1,Math.ceil((fareBlockedUntil-now)/1000));
-          if(el.calendarStatus)el.calendarStatus.textContent=`Live fare provider rate limit reached; calendar pricing resumes automatically in about ${seconds}s.`;
+          const leg=firstLeg();
+          const calendarIsCoverageGap=leg&&fareCoverageBlockedLegs.has(fareLegKey(leg.a,leg.b));
+          if(el.calendarStatus&&!calendarIsCoverageGap){
+            el.calendarStatus.textContent=`Live fare provider rate limit reached; calendar pricing resumes automatically in about ${seconds}s.`;
+          }else if(calendarIsCoverageGap){
+            updateCalendarFareStatus();
+          }
         }
         farePumpTimer=setTimeout(()=>{farePumpTimer=null;pumpFareQueue();},Math.min(wait,5000));
         return;
