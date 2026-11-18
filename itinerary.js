@@ -35,7 +35,7 @@
   const fareQueue=[];
   const fareActiveKeys=new Set();
   const FARE_MAX_CONCURRENT=1;
-  const FARE_START_GAP_MS=3200;
+  const FARE_START_GAP_MS=5000;
   const AUTO_PRICE_WINDOW=31;
   const FARE_SESSION_KEY='nextownair.liveFares.v1';
   const FARE_SESSION_TTL_MS=5*60*1000;
@@ -192,7 +192,7 @@
       if(data.error)return av.status==='fallback'||av.status==='checking'?'retry fare':'fare —';
       const best=lowestOffer(data);
       if(best)return formatMoney(best.amount,best.currency);
-      if(av.status!=='unavailable')return 'no live fare';
+      if(av.status!=='unavailable')return 'no provider fare';
     }
     if(fareActiveKeys.has(key))return 'pricing…';
     if(liveFareCache.has(key))return 'queued';
@@ -205,13 +205,13 @@
     const data=liveFareData.get(fareKey(a,b,date)),best=lowestOffer(data);
     if(av.status==='available'){
       if(best)return `Published nonstop service · lowest live fare ${formatMoney(best.amount,best.currency)}`;
-      if(data&&!data.error)return 'Published nonstop service · Duffel returned no nonstop fare';
+      if(data&&!data.error)return 'Published nonstop service · connected fare provider returned no nonstop price; the airline may still sell this flight';
       if(data?.error)return 'Published nonstop service · live fare lookup unavailable';
       return 'Published nonstop service · live fare is loading';
     }
     if(av.status==='fallback'){
       if(best)return `Schedule provider unavailable · live Duffel fare ${formatMoney(best.amount,best.currency)}`;
-      if(data&&!data.error)return 'Schedule provider unavailable · no live Duffel nonstop offer returned';
+      if(data&&!data.error)return 'Schedule provider unavailable · connected fare provider returned no nonstop price; the airline may still sell this flight';
       if(data?.error)return 'Schedule provider unavailable · live fare lookup will retry when possible';
       return 'Schedule provider unavailable · checking Duffel live fares';
     }
@@ -245,7 +245,7 @@
         :priced
           ?`Live fare scan complete: ${checked} of ${total} dates checked, ${priced} with a fare. Select any date to refresh it first.`
           :checked
-            ?`Live fare scan complete: ${checked} of ${total} dates checked. No live nonstop fares were returned for this route in the checked dates.`
+            ?`Fare scan complete: ${checked} of ${total} dates checked. The connected provider returned no nonstop prices; this does not mean the airline has no fare.`
             :`Loading live fares across the month. Selected and nearby dates go first.`;
       return;
     }
@@ -259,7 +259,9 @@
     const queued=dates.filter(date=>calendarFareJobs.has(fareKey(leg.a,leg.b,date))).length;
     el.calendarStatus.textContent=queued
       ?`Loading live fares for scheduled dates: ${checked} of ${dates.length} checked, ${priced} with a fare so far. Selected and nearby dates go first.`
-      :`Live fare scan complete for scheduled dates: ${checked} of ${dates.length} checked, ${priced} with a fare.`;
+     :priced
+        ?`Fare scan complete for scheduled dates: ${checked} of ${dates.length} checked, ${priced} with a provider fare.`
+        :`Fare scan complete for scheduled dates: ${checked} of ${dates.length} checked. The connected provider returned no nonstop prices; airline fares may still exist.`;
   }
   function queueCalendarFarePricing(a,b,dates,token,limit=AUTO_PRICE_WINDOW){
     const selected=state.startDate;
@@ -597,7 +599,7 @@
     const test=rows.filter(x=>x&&!x.liveMode&&x.offers&&x.offers.length);
     if(!rows.length){node.innerHTML='<span class="small">Checking live fares…</span>';return;}
     if(!live.length){
-      node.innerHTML=test.length?'<strong>Pricing test mode</strong><span>Provider connected, but quotes are not live yet.</span>':'<strong>Live fares unavailable</strong><span>Pricing provider access is not connected yet.</span>';
+      node.innerHTML=test.length?'<strong>Pricing test mode</strong><span>Provider connected, but quotes are not live yet.</span>':'<strong>No provider fare returned</strong><span>The connected pricing provider returned no bookable offer for these legs. Airline fares may still exist.</span>';
       return;
     }
     const cheapest=live.map(lowestOffer).filter(Boolean);
