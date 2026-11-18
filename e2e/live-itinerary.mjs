@@ -233,6 +233,9 @@ try{
     assert(await page.locator('#calendarServiceKey').isVisible(),'Alpena calendar shows the service-day legend');
     assert(await page.locator('#calendarKey').isHidden(),'Alpena calendar hides the fare-status legend');
     assert(!/no provider fare|queued|rate limit/i.test((await page.locator('#startDateCalendar').innerText())),'Alpena calendar does not expose provider-fare noise');
+    const firstLegText=(await page.locator('#flight-options-0').innerText()).replace(/\s+/g,' ');
+    assert(/Published schedule/i.test(firstLegText),'Alpena first leg uses published timetable choices instead of fake planning windows',firstLegText);
+    assert(!/Morning planning window|Midday planning window|Evening planning window/i.test(firstLegText),'Alpena first leg contains no generic planning-window placeholders',firstLegText);
     pass('Exact Detroit-Alpena-Detroit-Chicago-Houghton-Chicago-Detroit route has a useful service-day calendar');
   }
 
@@ -320,7 +323,7 @@ try{
       const options=page.locator('#flight-options-'+i+' .flight');
       await options.first().waitFor({state:'visible',timeout:90000});
       const text=(await options.first().innerText()).replace(/\s+/g,' ');
-      assert(/Live flight|Duffel flight|Planning window/i.test(text),'Leg '+(i+1)+' exposes a selectable live or planning option',text);
+      assert(/Live flight|Duffel flight|Planning window|Published schedule/i.test(text),'Leg '+(i+1)+' exposes a selectable live, published-schedule, or planning option',text);
       await options.first().click();
       await page.waitForFunction(({index})=>{
         const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
