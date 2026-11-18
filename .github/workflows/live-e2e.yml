@@ -35,7 +35,7 @@ permissions:
 
 jobs:
   live-e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 12
     env:
       E2E_BASE_URL: ${{ inputs.base_url || 'https://6afdea473f9e448415b8d0eb--nextownair-site.netlify.app' }}
