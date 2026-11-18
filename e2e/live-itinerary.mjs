@@ -281,6 +281,21 @@ try{
   await page.waitForFunction(()=>document.querySelector('#summary')?.textContent?.includes('1 of 1 flight leg selected'));
   pass('Flight selection updates the itinerary summary');
 
+  // 5) Exact Alpena route from the live prototype shows published service days instead of fare-provider noise.
+  {
+    const alpenaRoute=['DTW','APN','DTW','ORD','CMX','ORD','DTW'];
+    const qs='?route='+encodeURIComponent(alpenaRoute.join(','))+'&auto='+encodeURIComponent('2,3,5')+'&date='+encodeURIComponent(tripDate);
+    await page.goto(BASE_URL+'/itinerary.html'+qs,{waitUntil:'domcontentloaded',timeout:60000});
+    const status=await page.locator('#calendarStatus').innerText();
+    assert(/Daily nonstop service is published for DTW → APN/i.test(status),'Alpena calendar reports published daily nonstop service',status);
+    const fares=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
+    assert(fares.filter(x=>x.trim()==='nonstop').length>=3,'Alpena calendar marks future operating dates as nonstop',fares.join(' | '));
+    assert(await page.locator('#calendarServiceKey').isVisible(),'Alpena calendar shows the service-day legend');
+    assert(await page.locator('#calendarKey').isHidden(),'Alpena calendar hides the fare-status legend');
+    assert(!/no provider fare|queued|rate limit/i.test((await page.locator('#startDateCalendar').innerText())),'Alpena calendar does not expose provider-fare noise');
+    pass('Exact Detroit-Alpena-Detroit-Chicago-Houghton-Chicago-Detroit route has a useful service-day calendar');
+  }
+
   // 5) Exact NexTownAir demo route remains usable even when some fare providers lack inventory.
   {
     const exactRoute=['DTW','CIU','DTW','ORD','CMX','ORD','DTW'];
