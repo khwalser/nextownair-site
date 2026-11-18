@@ -23,6 +23,18 @@
   function normalizeRoute(route){
     return Array.isArray(route)?route.map(x=>String(x).trim().toUpperCase()).filter(c=>airportCodes.has(c)):[];
   }
+  function airportByCode(code){return (D.airports||[]).find(a=>a.code===code)||null;}
+  function inferHubConnectorIndices(route){
+    const r=normalizeRoute(route),out=[];
+    for(let i=1;i<r.length-1;i++){
+      const cur=airportByCode(r[i]),prev=airportByCode(r[i-1]),next=airportByCode(r[i+1]);
+      if(!cur||cur.type==='eas')continue;
+      const servesPrev=prev&&prev.type==='eas'&&Array.isArray(prev.hubs)&&prev.hubs.includes(cur.code);
+      const servesNext=next&&next.type==='eas'&&Array.isArray(next.hubs)&&next.hubs.includes(cur.code);
+      if(servesPrev||servesNext)out.push(i);
+    }
+    return out;
+  }
   function hasListedRoute(a,b){return Boolean(listedAdj.get(a)&&listedAdj.get(a).has(b));}
   function isNetworkHub(code){return hubCodes.has(code);}
   function hasFlightLink(a,b){
@@ -126,12 +138,16 @@
       const raw=(q.get('auto')||'').split(',').map(x=>x.trim()).filter(Boolean);
       if(raw.every(x=>/^\d+$/.test(x))){
         state.autoConnectorIndices=[...new Set(raw.map(Number).filter(i=>i>0&&i<state.route.length-1))];
-        state.autoConnectors=[...new Set(state.autoConnectorIndices.map(i=>state.route[i]).filter(Boolean))];
       }else{
         state.autoConnectors=normalizeRoute(raw).filter(code=>state.route.includes(code));
         const codes=new Set(state.autoConnectors);
         state.autoConnectorIndices=state.route.map((code,i)=>({code,i})).filter(x=>x.i>0&&x.i<state.route.length-1&&codes.has(x.code)).map(x=>x.i);
       }
+      state.autoConnectorIndices=[...new Set([...state.autoConnectorIndices,...inferHubConnectorIndices(state.route)])].sort((a,b)=>a-b);
+      state.autoConnectors=[...new Set(state.autoConnectorIndices.map(i=>state.route[i]).filter(Boolean))];
+    }else if(state.route.length){
+      state.autoConnectorIndices=[...new Set([...(state.autoConnectorIndices||[]),...inferHubConnectorIndices(state.route)])].sort((a,b)=>a-b);
+      state.autoConnectors=[...new Set(state.autoConnectorIndices.map(i=>state.route[i]).filter(Boolean))];
     }
     if(validDate(q.get('date')))state.startDate=q.get('date');
     return save(state);
