@@ -203,7 +203,8 @@ try{
     assert(/does not cover this route reliably|coverage gap/i.test(statusText),'Calendar identifies the known provider coverage gap immediately',statusText);
     assert(!/Loading live fares across the month|queued/i.test(statusText),'Known coverage-gap route does not begin a pointless month-long fare scan on first load',statusText);
     const initialFareLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
-    assert(initialFareLabels.filter(x=>x.trim()==='check live fare').length>=3,'Known coverage-gap calendar immediately offers live-fare checks on first load',initialFareLabels.join(' | '));
+    assert(initialFareLabels.every(x=>!x.trim()),'Known coverage-gap calendar is a clean date picker with no repeated fare labels',initialFareLabels.join(' | '));
+    assert(await page.locator('#calendarKey').isHidden(),'Known coverage-gap calendar hides the fare-status legend');
     await page.waitForTimeout(7000);
     const stableGapStatus=await page.locator('#calendarStatus').innerText();
     assert(!/rate limit reached|pricing resumes automatically/i.test(stableGapStatus),'Downstream provider rate limits do not overwrite the coverage-gap calendar status',stableGapStatus);
@@ -215,7 +216,7 @@ try{
     const reloadedStatus=await page.locator('#calendarStatus').innerText();
     assert(!/Loading live fares across the month|queued/i.test(reloadedStatus),'Reload does not restart the pointless month-long fare scan',reloadedStatus);
     const visibleFareLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
-    assert(visibleFareLabels.filter(x=>x.trim()==='check live fare').length>=3,'Reloaded coverage-gap calendar immediately offers live-fare checks instead of queued scans',visibleFareLabels.join(' | '));
+    assert(visibleFareLabels.every(x=>!x.trim()),'Reloaded coverage-gap calendar stays a clean date picker',visibleFareLabels.join(' | '));
   }
 
   // 4) Prove a real Duffel price can make it from the provider into the rendered calendar and flight cards.
@@ -282,7 +283,7 @@ try{
   // 5) Exact NexTownAir demo route remains usable even when some fare providers lack inventory.
   {
     const exactRoute=['DTW','CIU','DTW','ORD','CMX','ORD','DTW'];
-    const qs='?route='+encodeURIComponent(exactRoute.join(','))+'&auto='+encodeURIComponent('DTW,ORD')+'&date='+encodeURIComponent(tripDate);
+    const qs='?route='+encodeURIComponent(exactRoute.join(','))+'&auto=5&date='+encodeURIComponent(tripDate);
 
     // Validate connector identity on the map screen itself (the user-facing route builder).
     await page.goto(BASE_URL+'/index.html'+qs,{waitUntil:'domcontentloaded',timeout:60000});
