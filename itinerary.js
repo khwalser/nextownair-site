@@ -495,6 +495,38 @@
       };
     }).filter(Boolean).sort((x,y)=>x.departMin-y.departMin);
   }
+  function estimatedFlightMinutes(a,b){
+    const A=by(a),B=by(b);
+    if(!A||!B||!Number.isFinite(Number(A.lat))||!Number.isFinite(Number(A.lon))||!Number.isFinite(Number(B.lat))||!Number.isFinite(Number(B.lon)))return 90;
+    const rad=x=>Number(x)*Math.PI/180;
+    const dLat=rad(Number(B.lat)-Number(A.lat)),dLon=rad(Number(B.lon)-Number(A.lon));
+    const lat1=rad(A.lat),lat2=rad(B.lat);
+    const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+    const miles=3958.8*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
+    return Math.max(45,Math.min(240,Math.round((miles/430)*60+35)));
+  }
+  function planningOptions(a,b,date){
+    const duration=estimatedFlightMinutes(a,b);
+    return [
+      {label:'Morning',departMin:8*60},
+      {label:'Midday',departMin:13*60},
+      {label:'Evening',departMin:18*60}
+    ].map((slot,idx)=>{
+      const total=slot.departMin+duration;
+      return {
+        id:`planning|${idx}|${a}|${b}|${date}`,
+        date,
+        departMin:slot.departMin,
+        arrivalMin:total%1440,
+        arrivalDayOffset:Math.floor(total/1440),
+        duration,
+        price:null,currency:'USD',fareCount:0,fareChoices:[],
+        carrier:'Verify with airline',
+        flightNo:`${slot.label} planning window`,
+        sample:false,provider:'planning-fallback',liveMode:false,planning:true
+      };
+    });
+  }
   function fareKey(a,b,date){return `${a}|${b}|${date}`;}
   function fareLegKey(a,b){return `${a}|${b}`;}
   function externalFareSearchUrl(a,b,date){return `https://www.google.com/travel/flights?q=${encodeURIComponent(`Flights from ${a} to ${b} on ${date}`)}`;}
@@ -870,8 +902,9 @@
     const fareData=liveFareData.get(key);
     let providerOpts=providerOptions(fareData,a,b,departDate);
     let usingProvider=Array.isArray(providerOpts)&&providerOpts.length>0;
-    let opts=usingProvider?providerOpts:[];
-    let note=knownRoute?'Choose one flight to continue.':'No routable planning link is available for this pair yet.';
+    const usingPlanningFallback=!usingProvider&&Boolean(fareData)&&(!fareData.offers||!fareData.offers.length);
+    let opts=usingProvider?providerOpts:(usingPlanningFallback?planningOptions(a,b,departDate):[]);
+    let note=knownRoute?(usingPlanningFallback?'Choose a planning window to keep building the itinerary; verify the exact flight before booking.':'Choose one flight to continue.'):'No routable planning link is available for this pair yet.';
 
     if(!locked&&i>0&&plan&&plan.notBefore!=null){
       opts=opts.filter(o=>o.departMin>=plan.notBefore);
@@ -934,15 +967,15 @@
       const selected=state.selections[String(i)]===o.id;
       const arr=F.arrival(o,departDate);
       const bt=document.createElement('button');bt.type='button';bt.className=`flight${selected?' selected':''}`;bt.setAttribute('aria-pressed',String(selected));
-      const badge=o.liveMode?'Live flight':'Duffel flight';
+      const badge=o.planning?'Planning window':(o.liveMode?'Live flight':'Duffel flight');
       const fareChoices=(o.fareChoices||[]).filter(x=>Number.isFinite(Number(x.amount)));
-      const fareLabel=formatMoney(o.price,o.currency);
+      const fareLabel=Number.isFinite(Number(o.price))?formatMoney(o.price,o.currency):'';
       const price=usingProvider?(
         fareChoices.length>1
           ? `<div class="price">Lowest fare ${fareLabel}</div><div class="fare-choice-list" aria-label="Returned fare prices">${fareChoices.map((f,idx)=>`<span class="fare-choice${idx===0?' lowest':''}">${idx===0?'Lowest · ':''}${formatMoney(f.amount,f.currency||o.currency)}</span>`).join('')}</div><div class="small">${fareChoices.length} live fare prices returned for this flight</div>`
           : `<div class="price">${fareLabel}</div>`
       ):'';
-      bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${fmtDuration(o.duration)} · nonstop</div>${price}<span class="flight-badge">${badge}</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
+      bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${fmtDuration(o.duration)} · nonstop${o.planning?' · estimated':''}</div>${price}${o.planning?'<div class="small"><strong>Planning placeholder:</strong> use this time window to build the trip, then verify the exact airline flight and fare before booking.</div>':''}<span class="flight-badge">${badge}</span><div class="selectlabel">${selected?'✓ Selected':(o.planning?'Use this planning window':'Select this flight')}</div>`;
       bt.addEventListener('click',()=>chooseFlight(i,o.id));box.appendChild(bt);
     });
 
