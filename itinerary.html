@@ -15,7 +15,7 @@
     <a class="active" href="itinerary.html" aria-current="page">Itinerary</a>
   </nav>
 </header>
-<main class="wrap narrow">
+<main class="wrap itinerary-wrap">
   <div class="stepbar" aria-label="Trip planning steps">
     <span class="step">1. Choose places</span><span class="step active">2. Choose flights & stays</span>
   </div>
@@ -25,46 +25,52 @@
 
   <div id="routebar" class="routebar" aria-label="Trip route"></div>
 
-  <section id="toolbar" class="toolbar">
-    <div class="field start-date-field">
-      <label for="startDateButton">Trip starts</label>
-      <input id="startDate" type="hidden">
-      <button id="startDateButton" class="date-picker-button" type="button" aria-haspopup="dialog" aria-expanded="false">
-        <span id="startDateButtonText">Choose a start date</span><span aria-hidden="true">▾</span>
-      </button>
-      <div id="startDateCalendar" class="start-calendar" role="dialog" aria-label="Choose trip start date" hidden>
-        <div class="start-calendar-head">
-          <button id="calendarPrev" class="calendar-nav" type="button" aria-label="Previous month">‹</button>
-          <strong id="calendarMonth"></strong>
-          <button id="calendarNext" class="calendar-nav" type="button" aria-label="Next month">›</button>
+  <div class="itinerary-workspace">
+    <aside class="itinerary-sidebar">
+      <section id="toolbar" class="toolbar">
+        <div class="field start-date-field">
+          <label for="startDateButton">Trip starts</label>
+          <input id="startDate" type="hidden">
+          <button id="startDateButton" class="date-picker-button" type="button" aria-haspopup="dialog" aria-expanded="false">
+            <span id="startDateButtonText">Choose a start date</span><span aria-hidden="true">▾</span>
+          </button>
+          <div id="startDateCalendar" class="start-calendar" role="dialog" aria-label="Choose trip start date" hidden>
+            <div class="start-calendar-head">
+              <button id="calendarPrev" class="calendar-nav" type="button" aria-label="Previous month">‹</button>
+              <strong id="calendarMonth"></strong>
+              <button id="calendarNext" class="calendar-nav" type="button" aria-label="Next month">›</button>
+            </div>
+            <div class="calendar-weekdays" aria-hidden="true">
+              <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+            </div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+            <div id="calendarStatus" class="calendar-status" aria-live="polite"></div>
+            <div id="calendarKey" class="calendar-key">
+              <span><i class="calendar-key-dot available"></i>Published nonstop · live fare</span>
+              <span><i class="calendar-key-dot fallback"></i>Live fare check available</span>
+              <span><i class="calendar-key-dot unavailable"></i>No scheduled nonstop found</span>
+            </div>
+            <div id="calendarServiceKey" class="calendar-key" hidden>
+              <span><i class="calendar-key-dot available"></i>Nonstop service published</span>
+              <span><i class="calendar-key-dot unavailable"></i>No nonstop service published</span>
+            </div>
+          </div>
         </div>
-        <div class="calendar-weekdays" aria-hidden="true">
-          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+        <div class="data-badge" title="NexTownAir combines route data, published schedules when available, Duffel live fares where supported, and a live-search fallback where provider coverage is incomplete"><span class="data-dot"></span>Multi-source schedules · fares</div>
+        <div class="btnrow">
+          <a id="editRoute" class="btn secondary" href="index.html">Edit route on map</a>
+          <button id="printTrip" class="btn tertiary" type="button">Print itinerary</button>
         </div>
-        <div id="calendarGrid" class="calendar-grid"></div>
-        <div id="calendarStatus" class="calendar-status" aria-live="polite"></div>
-        <div id="calendarKey" class="calendar-key">
-          <span><i class="calendar-key-dot available"></i>Published nonstop · live fare</span>
-          <span><i class="calendar-key-dot fallback"></i>Live fare check available</span>
-          <span><i class="calendar-key-dot unavailable"></i>No scheduled nonstop found</span>
-        </div>
-        <div id="calendarServiceKey" class="calendar-key" hidden>
-          <span><i class="calendar-key-dot available"></i>Nonstop service published</span>
-          <span><i class="calendar-key-dot unavailable"></i>No nonstop service published</span>
-        </div>
-      </div>
-    </div>
-    <div class="data-badge" title="NexTownAir combines route data, published schedules when available, Duffel live fares where supported, and a live-search fallback where provider coverage is incomplete"><span class="data-dot"></span>Multi-source schedules · fares</div>
-    <div class="btnrow">
-      <a id="editRoute" class="btn secondary" href="index.html">Edit route on map</a>
-      <button id="printTrip" class="btn tertiary" type="button">Print itinerary</button>
-    </div>
-  </section>
+      </section>
 
-  <div class="notice"><strong>Schedules + fares:</strong> NexTownAir uses the verified route network first, published schedules when that feed is available, and Duffel live fares where its inventory covers the route. If repeated provider searches return no inventory, NexTownAir stops wasting requests and offers a live-search fallback instead. A published schedule is not a booking guarantee, and fares can sell out or change.</div>
+      <div class="notice"><strong>Schedules + fares:</strong> NexTownAir uses the verified route network first, published schedules when that feed is available, and Duffel live fares where its inventory covers the route. If repeated provider searches return no inventory, NexTownAir stops wasting requests and offers a live-search fallback instead. A published schedule is not a booking guarantee, and fares can sell out or change.</div>
+    </aside>
 
-  <div id="content" aria-live="polite"></div>
-  <section id="summary" class="summary" aria-label="Trip summary"></section>
+    <div class="itinerary-main">
+      <div id="content" aria-live="polite"></div>
+      <section id="summary" class="summary" aria-label="Trip summary"></section>
+    </div>
+  </div>
 </main>
 <footer class="footer">Need to change the places or their order? <a id="footerMap" href="index.html">Go back to the map</a>. Your trip is kept while you move between the two views.</footer>
 <script src="data.js"></script>
