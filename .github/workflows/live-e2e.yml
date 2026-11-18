@@ -52,10 +52,13 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install Playwright
+      - name: Install Playwright package
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
         run: |
           npm install --no-save playwright@1.55.0
-          npx playwright install --with-deps chromium
+          which google-chrome
+          google-chrome --version
 
       - name: Run live rendered itinerary test
         run: node e2e/live-itinerary.mjs
