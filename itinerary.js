@@ -39,10 +39,13 @@
   const fareNoOfferCounts=new Map();
   const fareCoverageBlockedLegs=new Set();
   const KNOWN_FARE_COVERAGE_GAPS=new Set([
+    'DTW|APN','APN|DTW',
     'DTW|CIU','CIU|DTW',
     'ORD|CMX','CMX|ORD'
   ]);
   const PUBLISHED_SERVICE_PATTERNS={
+    'DTW|APN':{days:[0,1,2,3,4,5,6],count:1,label:'Daily nonstop service',source:'Alpena County Regional Airport / Delta Connection published service'},
+    'APN|DTW':{days:[0,1,2,3,4,5,6],count:1,label:'Daily nonstop service',source:'Alpena County Regional Airport / Delta Connection published service'},
     'DTW|CIU':{days:[0,1,2,3,4,5,6],count:1,label:'Daily nonstop service',source:'Chippewa County International Airport / Delta published schedule'},
     'CIU|DTW':{days:[0,1,2,3,4,5,6],count:1,label:'Daily nonstop service',source:'Chippewa County International Airport / Delta published schedule'},
     'ORD|CMX':{days:[0,1,2,3,4,5,6],count:2,label:'Daily nonstop service',source:'Houghton County Memorial Airport / United published schedule'},
