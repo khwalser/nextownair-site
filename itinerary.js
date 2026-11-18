@@ -1023,6 +1023,7 @@
   function renderLeg(i,a,b,departDate,plan,priorSelected){
     const knownRoute=F.hasKnownRoute(a,b);
     const locked=i>0&&!priorSelected;
+    const autoConnector=(state.autoConnectorIndices||[]).includes(i);
     const key=fareKey(a,b,departDate);
     const fareData=liveFareData.get(key);
     let providerOpts=providerOptions(fareData,a,b,departDate);
@@ -1034,7 +1035,11 @@
 
     if(!locked&&i>0&&plan&&plan.notBefore!=null){
       opts=opts.filter(o=>o.departMin>=plan.notBefore);
-      if(opts.length===0){
+      if(opts.length===0&&usingPublishedFallback&&autoConnector&&plan.mode==='asap'){
+        departDate=window.NTA.addDays(departDate,1);
+        opts=planningOptions(a,b,departDate);
+        note='No same-day published connection remains. NexTownAir rolled this automatic connection to the next published service day.';
+      }else if(opts.length===0){
         note=usingProvider
           ?'No provider offer fits this connection window. Change the stay above or choose another departure date.'
           :'No live flight offer fits this connection window. Change the stay above or choose another departure date.';
