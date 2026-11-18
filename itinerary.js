@@ -21,7 +21,8 @@
     footerMap:document.getElementById('footerMap'),
     brandHome:document.getElementById('brandHome'),
     printTrip:document.getElementById('printTrip'),
-    toolbar:document.getElementById('toolbar')
+    toolbar:document.getElementById('toolbar'),
+    calendarKey:document.getElementById('calendarKey')
   };
 
   function by(code){return window.NTA.byCode(code);}
@@ -209,7 +210,7 @@
     return {status:'checking',label:'Checking'};
   }
   function calendarFareText(a,b,date,av){
-    if(fareCoverageBlockedLegs.has(fareLegKey(a,b))&&av.status!=='unavailable')return 'check live fare';
+    if(fareCoverageBlockedLegs.has(fareLegKey(a,b))&&av.status!=='unavailable')return '';
     const key=fareKey(a,b,date),data=liveFareData.get(key);
     if(data){
       if(data.error)return av.status==='fallback'||av.status==='checking'?'retry fare':'fare —';
@@ -257,7 +258,7 @@
     if(calendarScheduleCompleteKey!==key)return;
     const scheduleData=scheduleMonthData.get(key);
     if(fareCoverageBlockedLegs.has(fareLegKey(leg.a,leg.b))){
-      el.calendarStatus.textContent='Fare-provider coverage gap on this route. Dates stay selectable; use the planning windows below and “Check current fares” for live airline/market pricing.';
+      el.calendarStatus.textContent='Choose a departure date. Live fare pricing is not available in-app for this route; use “Check current fares” on the flight leg after selecting a date.';
       return;
     }
     if(scheduleData&&scheduleData.error&&isScheduleFallbackCode(scheduleData.code)){
@@ -361,7 +362,10 @@
       const fare=document.createElement('span');fare.className='calendar-fare';
       const av=calendarAvailability(date);
       const leg=firstLeg();
+      const coverageGap=leg&&fareCoverageBlockedLegs.has(fareLegKey(leg.a,leg.b));
+      if(coverageGap)btn.classList.add('coverage-gap');
       fare.textContent=date<today?'':leg?calendarFareText(leg.a,leg.b,date,av):(av.status==='unavailable'?'—':'…');
+      if(coverageGap)fare.setAttribute('aria-hidden','true');
       btn.append(n,fare);
       btn.addEventListener('click',()=>{
         if(btn.disabled)return;
@@ -502,6 +506,7 @@
     el.startDateButton.setAttribute('aria-expanded','true');
     const leg=firstLeg();
     if(!leg)return;
+    if(el.calendarKey)el.calendarKey.hidden=isKnownFareCoverageGap(leg.a,leg.b);
     const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
     const key=scheduleMonthKey(leg.a,leg.b,month);
     if(forceReload||calendarAutoLoadKey!==key){
