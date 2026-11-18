@@ -69,9 +69,22 @@
   function restoreFareSession(){
     try{
       const now=Date.now(),store=JSON.parse(sessionStorage.getItem(FARE_SESSION_KEY)||'{}');
+      const emptyByLeg=new Map();
       Object.entries(store).forEach(([key,entry])=>{
         if(!entry||!entry.data||!Number.isFinite(Number(entry.savedAt))||now-Number(entry.savedAt)>FARE_SESSION_TTL_MS)return;
         liveFareData.set(key,entry.data);liveFareCache.set(key,Promise.resolve(entry.data));
+        const [a,b]=key.split('|');
+        if(!a||!b)return;
+        const lk=fareLegKey(a,b),data=entry.data;
+        if(data.coverageLimited){
+          fareCoverageBlockedLegs.add(lk);
+          return;
+        }
+        if(!data.error&&Array.isArray(data.offers)&&data.offers.length===0){
+          const misses=(emptyByLeg.get(lk)||0)+1;
+          emptyByLeg.set(lk,misses);
+          if(misses>=3)fareCoverageBlockedLegs.add(lk);
+        }
       });
     }catch(_){/* session storage can be unavailable */}
   }
@@ -189,6 +202,7 @@
     return {status:'checking',label:'Checking'};
   }
   function calendarFareText(a,b,date,av){
+    if(fareCoverageBlockedLegs.has(fareLegKey(a,b))&&av.status!=='unavailable')return 'check live fare';
     const key=fareKey(a,b,date),data=liveFareData.get(key);
     if(data){
       if(data.error)return av.status==='fallback'||av.status==='checking'?'retry fare':'fare —';
@@ -236,7 +250,7 @@
     if(calendarScheduleCompleteKey!==key)return;
     const scheduleData=scheduleMonthData.get(key);
     if(fareCoverageBlockedLegs.has(fareLegKey(leg.a,leg.b))){
-      el.calendarStatus.textContent='The connected fare provider does not cover this route reliably. Dates stay selectable; use the live-search link on the flight leg for current airline/market fares.';
+      el.calendarStatus.textContent='Fare-provider coverage gap on this route. Dates stay selectable; use the planning windows below and “Check current fares” for live airline/market pricing.';
       return;
     }
     if(scheduleData&&scheduleData.error&&isScheduleFallbackCode(scheduleData.code)){
@@ -271,6 +285,10 @@
         :`Fare scan complete for scheduled dates: ${checked} of ${dates.length} checked. The connected provider returned no nonstop prices; airline fares may still exist.`;
   }
   function queueCalendarFarePricing(a,b,dates,token,limit=AUTO_PRICE_WINDOW){
+    if(fareCoverageBlockedLegs.has(fareLegKey(a,b))){
+      updateCalendarFareStatus();
+      return;
+    }
     const selected=state.startDate;
     const ordered=[...new Set(dates)].sort((x,y)=>{
       if(x===selected)return -1;
