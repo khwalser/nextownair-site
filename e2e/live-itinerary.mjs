@@ -204,6 +204,9 @@ try{
     assert(!/Loading live fares across the month|queued/i.test(statusText),'Known coverage-gap route does not begin a pointless month-long fare scan on first load',statusText);
     const initialFareLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
     assert(initialFareLabels.filter(x=>x.trim()==='check live fare').length>=3,'Known coverage-gap calendar immediately offers live-fare checks on first load',initialFareLabels.join(' | '));
+    await page.waitForTimeout(7000);
+    const stableGapStatus=await page.locator('#calendarStatus').innerText();
+    assert(!/rate limit reached|pricing resumes automatically/i.test(stableGapStatus),'Downstream provider rate limits do not overwrite the coverage-gap calendar status',stableGapStatus);
 
     // Prove the coverage-gap state survives a page reload and does not restart the month-long fare scan.
     await page.waitForFunction(()=>/coverage gap|does not cover this route reliably/i.test(document.querySelector('#calendarStatus')?.textContent||''),null,{timeout:30000});
