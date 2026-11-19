@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.25",
+  "mvpRevision": "2026-11-19.26",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
@@ -4549,6 +4549,66 @@ window.NTA_DATA = {
     }
   ],
   "servicePatterns": {
+    "ESC|DTW": {
+      "activeThrough": "2027-06-03",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Daily current nonstop service",
+      "sourceLabel": "Current ESC-DTW published schedule",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/ESC/DTW",
+      "checkedAsOf": "2026-11-19"
+    },
+    "DTW|ESC": {
+      "activeThrough": "2027-06-03",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Daily current nonstop service",
+      "sourceLabel": "Current ESC-DTW published schedule",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/ESC/DTW",
+      "checkedAsOf": "2026-11-19"
+    },
+    "IMT|DTW": {
+      "activeThrough": "2027-06-03",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Daily current nonstop service",
+      "sourceLabel": "Current IMT-DTW published schedule",
+      "sourceUrl": "https://www.directflights.com/IMT-DTW",
+      "checkedAsOf": "2026-11-19"
+    },
+    "DTW|IMT": {
+      "activeThrough": "2027-06-03",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Daily current nonstop service",
+      "sourceLabel": "Current IMT-DTW published schedule",
+      "sourceUrl": "https://www.directflights.com/IMT-DTW",
+      "checkedAsOf": "2026-11-19"
+    },
+    "PLN|DTW": {
+      "activeThrough": "2026-12-31",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Daily current nonstop service",
+      "sourceLabel": "Pellston Regional Airport daily Delta service to Detroit",
+      "sourceUrl": "https://pellstonregionalairport.com/daily-flights/",
+      "checkedAsOf": "2026-11-19"
+    },
+    "DTW|PLN": {
+      "activeThrough": "2026-12-31",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Daily current nonstop service",
+      "sourceLabel": "Pellston Regional Airport daily Delta service to Detroit",
+      "sourceUrl": "https://pellstonregionalairport.com/daily-flights/",
+      "checkedAsOf": "2026-11-19"
+    },
     "WFB|HYG": {
       "activeFrom": "2026-09-30",
       "activeThrough": "2026-12-31",
