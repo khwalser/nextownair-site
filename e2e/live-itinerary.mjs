@@ -154,13 +154,10 @@ try{
   const routeChips=await page.locator('#routebar .routechip').allTextContents();
   assert(routeChips.length===3&&routeChips[0].includes('DTW')&&routeChips[1].includes('ROC')&&routeChips[2].includes('DTW'),'Round-trip route survives map → itinerary navigation',routeChips.join(' | '));
   assert(routeChips[1].includes('stop'),'A user-chosen intermediate city is treated as a stop, not an automatic connector',routeChips[1]);
-  await page.waitForFunction(()=>document.querySelector('.stay-summary')?.textContent?.includes('Stay 2 nights'));
-  pass('Journey-first stay default is rendered','ROC defaults to a 2-night stop');
-  await page.locator('.stay').first().getByRole('button',{name:'1 night'}).click();
-  await page.waitForFunction(()=>document.querySelector('.stay-summary')?.textContent?.includes('Stay 1 night'));
-  pass('Stay duration can be changed directly in the itinerary');
-  await page.locator('.stay').first().getByRole('button',{name:'2 nights'}).click();
-  await page.waitForFunction(()=>document.querySelector('.stay-summary')?.textContent?.includes('Stay 2 nights'));
+  await page.waitForFunction(()=>document.querySelector('.stay-summary')?.textContent?.includes('Same-day departures'));
+  pass('Intermediate airport starts with a neutral same-day departure view instead of an assumed stay length');
+  assert(await page.locator('.stay').first().getByRole('button',{name:'Same day'}).count()===1,'Stay UI exposes same-day flight choices without an arbitrary “Later today” bucket');
+  assert(await page.locator('.stay').first().getByRole('button',{name:/1 night|2 nights|3 nights|4 nights/,exact:true}).count()===0,'Stay UI does not ask the user to choose an arbitrary 1–4 night duration');
 
   // 2) Calendar remains usable whether published schedules are available or the feed is exhausted.
   const scheduleResponse=await waitForAnySchedule();
@@ -303,7 +300,7 @@ try{
     const dialogs=[];
     const dialogHandler=d=>{dialogs.push(d.message());d.dismiss().catch(()=>{});};
     page.on('dialog',dialogHandler);
-    await page.locator('.stay').first().getByRole('button',{name:/Keep moving|Connect ASAP/i}).click();
+    await page.locator('.stay').first().getByRole('button',{name:'Same day'}).click();
     await page.waitForFunction(previous=>{
       const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
       return (s.selections?.['1']||'')!==previous;
@@ -440,7 +437,7 @@ try{
   assert(await page.locator('#routebar .connector').count()>0,'Connector identity survives navigation into itinerary');
   const connectorStay=page.locator('.stay.connector').first();
   await connectorStay.waitFor({state:'visible'});
-  assert((await connectorStay.innerText()).includes('Connect ASAP'),'Automatic connector defaults to a quick connection');
+  assert((await connectorStay.innerText()).includes('Same day'),'Automatic connector initially exposes same-day onward choices without assuming the user wants to stay or rush onward');
 
   await page.locator('#editRoute').click();
   await page.waitForURL(/index\.html/);

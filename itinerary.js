@@ -910,8 +910,7 @@
   }
   function defaultStay(i){
     const stored=state.stays[String(i)];if(stored)return stored;
-    const code=state.route[i],autoConnector=(state.autoConnectorIndices||[]).includes(i);
-    return autoConnector?{mode:'asap',nights:0,date:null}:{mode:'nights',nights:2,date:null};
+    return {mode:'asap',nights:0,date:null};
   }
   function save(){state=window.NTA.save(state);syncLinks();}
   function syncLinks(){
@@ -942,8 +941,8 @@
       const date=s.date||arrivalDate,diff=Math.max(0,window.NTA.diffDays(arrivalDate,date));
       return {date,notBefore:(diff===0&&hasExactArrival)?arrivalMin+60:null,mode:s.mode,summary:diff===0?`Same-day departure · ${window.NTA.fmtDate(date)}${hasExactArrival?' · after arrival':''}`:`Stay ${diff} night${diff===1?'':'s'} · depart ${window.NTA.fmtDate(date)}`};
     }
-    if(s.mode==='later')return {date:arrivalDate,notBefore:hasExactArrival?arrivalMin+240:null,mode:s.mode,summary:hasExactArrival?'Leave later today · at least 4 hours after arrival':'Leave later the same day · exact choices update after you pick the previous flight'};
-    return {date:arrivalDate,notBefore:hasExactArrival?arrivalMin+60:null,mode:'asap',summary:hasExactArrival?'Continue ASAP · allow at least 60 minutes between flights':'Continue ASAP · exact choices update after you pick the previous flight'};
+    if(s.mode==='later')return {date:arrivalDate,notBefore:hasExactArrival?arrivalMin+240:null,mode:s.mode,summary:hasExactArrival?'Same-day departures · after a 4-hour minimum ground interval':'Same-day departures · exact choices update after you pick the inbound flight'};
+    return {date:arrivalDate,notBefore:hasExactArrival?arrivalMin+60:null,mode:'asap',summary:hasExactArrival?`Same-day departures · after ${F.timeFrom((arrivalMin+60)%1440)}`:'Same-day departures · exact choices update after you pick the inbound flight'};
   }
   function renderRoutebar(){
     el.routebar.innerHTML='';
@@ -964,68 +963,64 @@
     wrap.className='stay-availability';
     if(!hasExactArrival||!nextCode){
       wrap.classList.add('pending');
-      const strong=document.createElement('strong');strong.textContent='Published outbound schedule';
-      const span=document.createElement('span');span.textContent='Select the inbound flight to compare 1–4 night stays.';
+      const strong=document.createElement('strong');strong.textContent='Available onward service dates';
+      const span=document.createElement('span');span.textContent='Select the inbound flight first; NexTownAir will then show the next service dates.';
       wrap.append(strong,span);
       section.querySelector('.stay-grid').insertAdjacentElement('afterend',wrap);
       return;
     }
     const head=document.createElement('div');head.className='stay-availability-head';
-    const title=document.createElement('strong');title.textContent='Published outbound schedule';
-    const sub=document.createElement('span');sub.textContent='Compare 1–4 nights from your actual arrival date. Duffel fares load after you choose.';
+    const title=document.createElement('strong');title.textContent='Available onward service dates';
+    const sub=document.createElement('span');sub.textContent='Choose a service date; the next leg will show the flights that fit your arrival and that date.';
     head.append(title,sub);wrap.appendChild(head);
     const grid=document.createElement('div');grid.className='stay-availability-grid';
     [1,2,3,4].forEach(n=>{
       const date=window.NTA.addDays(arrivalDate,n);
       const av=stayAvailabilityState(airport.code,nextCode,date);
-      const active=(s.mode==='nights'&&s.nights===n)||(s.mode==='date'&&s.date===date);
+      const active=(s.mode==='date'&&s.date===date)||(s.mode==='nights'&&s.nights===n);
       const btn=document.createElement('button');btn.type='button';
       btn.className='stay-av '+av.status+(active?' active':'');
       btn.dataset.stayAv=String(n);btn.dataset.origin=airport.code;btn.dataset.destination=nextCode;btn.dataset.date=date;
-      const nights=document.createElement('span');nights.className='stay-av-nights';nights.textContent=n+' night'+(n===1?'':'s');
-      const value=document.createElement('strong');value.textContent=av.label;
+      const nights=document.createElement('span');nights.className='stay-av-nights';nights.textContent=n+' night'+(n===1?'':'s')+' later';
+      const value=document.createElement('strong');value.textContent=window.NTA.fmtDate(date,{weekday:'short',month:'short',day:'numeric'});
       const meta=document.createElement('span');
-      meta.textContent=window.NTA.fmtDate(date,{weekday:'short',month:'short',day:'numeric'})+(av.detail?' · '+av.detail:'');
+      meta.textContent=av.label+(av.detail?' · '+av.detail:'');
       btn.append(nights,value,meta);
       btn.disabled=av.status==='none'||av.status==='loading'||av.status==='error';
-      btn.addEventListener('click',()=>{if(!btn.disabled)setStay(i,{mode:'nights',nights:n,date:null});});
+      btn.addEventListener('click',()=>{if(!btn.disabled)setStay(i,{mode:'date',nights:n,date});});
       grid.appendChild(btn);
     });
     wrap.appendChild(grid);
     const note=document.createElement('div');note.className='small';
-    note.textContent='Green means published nonstop service is scheduled. “No scheduled nonstop” means the schedule source found none for that date; live fares are checked separately with Duffel after you choose.';
+    note.textContent='Dates with confirmed service can be selected. The number of nights is shown only as the consequence of that departure date; flight choices and fares appear on the next leg.';
     wrap.appendChild(note);
     section.querySelector('.stay-grid').insertAdjacentElement('afterend',wrap);
   }
   function renderStay(i,airport,arrivalDate,arrivalMin,hasExactArrival){
     const s=defaultStay(i),plan=stayPlan(i,arrivalDate,arrivalMin,hasExactArrival);
-    const autoConnector=(state.autoConnectors||[]).includes(airport.code);
+    const autoConnector=(state.autoConnectorIndices||[]).includes(i);
     const section=document.createElement('section');section.className=`stay${autoConnector?' connector':''}`;
     const arriveText=hasExactArrival?`${window.NTA.fmtDate(arrivalDate)} · ${F.timeFrom(arrivalMin)}`:`${window.NTA.fmtDate(arrivalDate)} · choose the inbound flight to set the arrival time`;
     section.innerHTML=`
       <div class="eyebrow">At ${airport.city}, ${airport.state} · ${airport.code}${autoConnector?' · Automatic connection':''}</div>
-      <h3>${autoConnector?'Connect onward, or turn this into a stop?':'How long do you want to stay?'}</h3>
+      <h3>Choose when to continue from ${airport.city}</h3>
       <div class="small">Arrival: ${arriveText}</div>
       <div class="stay-grid">
         <div>
-          <div class="choices" role="group" aria-label="Stay duration at ${airport.city}">
-            <button type="button" class="choice ${s.mode==='asap'?'active':''}" data-mode="asap" ${hasExactArrival?'':'title="Pick the previous flight to calculate an exact connection"'}>${autoConnector?'Connect ASAP':'Keep moving'}</button>
-            <button type="button" class="choice ${s.mode==='later'?'active':''}" data-mode="later" ${hasExactArrival?'':'title="Pick the previous flight to calculate an exact connection"'}>Later today</button>
-            ${[1,2,3,4].map(n=>`<button type="button" class="choice ${s.mode==='nights'&&s.nights===n?'active':''}" data-nights="${n}">${n} night${n===1?'':'s'}</button>`).join('')}
+          <div class="choices" role="group" aria-label="Onward departure timing at ${airport.city}">
+            <button type="button" class="choice ${s.mode==='asap'?'active':''}" data-mode="asap" ${hasExactArrival?'':'title="Pick the inbound flight to calculate same-day choices"'}>Same day</button>
           </div>
           <div class="stay-summary">${plan.summary}</div>
         </div>
         <div class="field">
-          <label for="departDate-${i}">Or choose departure date</label>
+          <label for="departDate-${i}">Choose another departure date</label>
           <input id="departDate-${i}" class="dateinput" type="date" min="${arrivalDate}" value="${plan.date}">
         </div>
       </div>
-      ${autoConnector?`<div class="small" style="margin-top:8px"><strong>Automatic connection:</strong> NexTownAir inserted this airport to make the route work. Keep the quick connection or turn it into a stopover.</div>`:airport.note?`<div class="small" style="margin-top:8px">Why stop here? ${airport.note}.</div>`:''}
+      ${autoConnector?`<div class="small" style="margin-top:8px"><strong>Automatic connection:</strong> NexTownAir inserted this airport because the selected route requires it. Choose any available onward departure.</div>`:airport.note?`<div class="small" style="margin-top:8px"><strong>About ${airport.city}:</strong> ${airport.note}.</div>`:''}
       ${Array.isArray(airport.stay)&&airport.stay.length?`<div class="small" style="margin-top:5px"><strong>Ideas:</strong> ${airport.stay.join(' · ')}</div>`:''}`;
     appendStayAvailability(section,i,airport,arrivalDate,hasExactArrival,s);
     section.querySelector('[data-mode="asap"]').addEventListener('click',()=>setStay(i,{mode:'asap',nights:0,date:null}));
-    section.querySelector('[data-mode="later"]').addEventListener('click',()=>setStay(i,{mode:'later',nights:0,date:null}));
-    section.querySelectorAll('[data-nights]').forEach(btn=>btn.addEventListener('click',()=>setStay(i,{mode:'nights',nights:Number(btn.dataset.nights),date:null})));
     section.querySelector('.dateinput').addEventListener('change',ev=>setStayByDate(i,arrivalDate,ev.target.value));
     return {section,plan};
   }
