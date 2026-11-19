@@ -50,7 +50,11 @@
     'DTW|CIU':{days:[0,1,2,3,4,5,6],count:1,label:'Daily nonstop service',source:'Chippewa County International Airport / Delta published schedule'},
     'CIU|DTW':{days:[0,1,2,3,4,5,6],count:1,label:'Daily nonstop service',source:'Chippewa County International Airport / Delta published schedule'},
     'ORD|CMX':{days:[0,1,2,3,4,5,6],count:2,label:'Daily nonstop service',source:'Houghton County Memorial Airport / United published schedule'},
-    'CMX|ORD':{days:[0,1,2,3,4,5,6],count:2,label:'Daily nonstop service',source:'Houghton County Memorial Airport / United published schedule'}
+    'CMX|ORD':{days:[0,1,2,3,4,5,6],count:2,label:'Daily nonstop service',source:'Houghton County Memorial Airport / United published schedule'},
+    'FAI|MCG':{days:[1,4,6],count:1,label:'Monday, Thursday and Saturday nonstop service',source:'Wright Air Service current timetable, updated October 2026'},
+    'MCG|FAI':{days:[1,4,6],count:1,label:'Monday, Thursday and Saturday nonstop service',source:'Wright Air Service current timetable, updated October 2026'},
+    'FAI|TKJ':{days:[2,4,6],count:1,label:'Tuesday, Thursday and Saturday nonstop service',source:'Wright Air Service current timetable, updated October 2026'},
+    'TKJ|FAI':{days:[2,4,6],count:1,label:'Tuesday, Thursday and Saturday nonstop service',source:'Wright Air Service current timetable, updated October 2026'}
   };
   function isKnownFareCoverageGap(a,b){return KNOWN_FARE_COVERAGE_GAPS.has(fareLegKey(a,b));}
   function publishedServicePattern(a,b){return PUBLISHED_SERVICE_PATTERNS[fareLegKey(a,b)]||null;}

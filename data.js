@@ -7,13 +7,13 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.15",
+  "mvpRevision": "2026-11-19.16",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
     "easRoutePairs": 225,
     "connectorRoutePairs": 14,
-    "note": "The planner routes over explicit verified EAS/map edges plus a separate current commercial backbone. EAS pairs come from U.S. DOT May 2026 reports; additional small-airport nonstop pairs come from current airport-published service pages; backbone pairs come from current airport-published nonstop destination lists. Airport type never determines whether a route exists or whether a stop was user-selected.",
+    "note": "The planner routes over explicit verified EAS/map edges plus a separate current commercial backbone. EAS pairs come from U.S. DOT May 2026 reports; additional small-airport nonstop pairs come from current airport/airline-published service pages and timetables; backbone pairs come from current airport-published nonstop destination lists. Airport type never determines whether a route exists or whether a stop was user-selected.",
     "continuityChecks": [
       "BIL",
       "CLT",
@@ -71,16 +71,6 @@ window.NTA_DATA = {
     "unresolvedNetworkComponents": [
       {
         "airports": [
-          "NCN",
-          "MRI",
-          "MCG",
-          "SKW",
-          "TEK"
-        ],
-        "reason": "Regional Alaska cluster; connection to the national flight graph requires a verified flight edge or an explicit non-flight airport-transfer model."
-      },
-      {
-        "airports": [
           "KFP",
           "CDB",
           "KVC"
@@ -93,17 +83,10 @@ window.NTA_DATA = {
           "WFB",
           "MTM"
         ],
-        "reason": "Southeast Alaska regional cluster; no national-network bridge is modeled without verified current service."
-      },
-      {
-        "airports": [
-          "CZN",
-          "TKJ"
-        ],
-        "reason": "Regional Alaska pair; no national-network bridge is modeled without verified current service."
+        "reason": "Southeast Alaska regional cluster; Taquan currently serves Hydaburg/Metlakatla through its Ketchikan waterfront base, but a truthful WFB↔KTN airport-transfer leg is not yet modeled."
       }
     ],
-    "additionalSmallAirportRoutePairs": 5,
+    "additionalSmallAirportRoutePairs": 7,
     "additionalSmallAirportSources": [
       {
         "airport": "GRI",
@@ -134,6 +117,15 @@ window.NTA_DATA = {
           "COD-SLC"
         ],
         "note": "SLC is seasonal; DEN remains year-round."
+      },
+      {
+        "label": "Wright Air Service current timetable — updated October 2026",
+        "url": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+        "checkedAsOf": "2026-11-19",
+        "verifiedPairs": [
+          "FAI-MCG",
+          "FAI-TKJ"
+        ]
       }
     ],
     "endpointSources": [
@@ -4208,6 +4200,14 @@ window.NTA_DATA = {
     [
       "COD",
       "SLC"
+    ],
+    [
+      "FAI",
+      "MCG"
+    ],
+    [
+      "FAI",
+      "TKJ"
     ]
   ],
   "backboneRoutes": [
