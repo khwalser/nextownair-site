@@ -30,6 +30,7 @@ const diagnostics={
   startedAt:new Date().toISOString(),
   assertions:[],
   fareResponses:[],
+  requests:[],
   scheduleResponses:[],
   pageErrors:[],
   requestFailures:[],
@@ -46,6 +47,7 @@ function attachDiagnostics(p){
   p.on('requestfailed',req=>diagnostics.requestFailures.push({url:req.url(),error:req.failure()?.errorText||'request failed'}));
   p.on('response',async res=>{
     const url=res.url();
+    diagnostics.requests.push(url);
     if(!url.includes('/api/schedule-calendar')&&!url.includes('/api/flights'))return;
     let body=null;try{body=await res.json();}catch{}
     const row={url,status:res.status(),body,at:new Date().toISOString()};
@@ -362,6 +364,7 @@ try{
     priced?priced.origin+' → '+priced.destination+' '+priced.date:'No live offer returned from tested verified routes');
 
   assert(diagnostics.fareResponses.length>0,'Frontend requests fare data through the provider-neutral /api/flights contract');
+  assert(!diagnostics.requests.some(url=>url.includes('/.netlify/functions/flight-proxy')),'Browser no longer calls the legacy Duffel-specific flight proxy');
   const normalizedContract=diagnostics.fareResponses.find(row=>row?.status===200&&row.body?.contractVersion==='nta-flights-v1');
   assert(Boolean(normalizedContract),'Production /api/flights returns the nta-flights-v1 contract');
   const pricedRouteDates=new Set(diagnostics.fareResponses.filter(row=>{
