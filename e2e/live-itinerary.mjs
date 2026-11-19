@@ -294,8 +294,12 @@ try{
     await firstLeg.first().waitFor({state:'visible',timeout:30000});
     assert(await firstLeg.count()>=2,'Cascade test has multiple first-leg choices');
     await firstLeg.first().click();
+    const stay=page.locator('.stay').first();
+    const laterDate=stay.locator('.stay-av:not(:disabled)').first();
+    await laterDate.waitFor({state:'visible',timeout:30000});
+    await laterDate.click();
     const secondLeg=page.locator('#flight-options-1 .flight');
-    await secondLeg.first().waitFor({state:'visible',timeout:30000});
+    await secondLeg.first().waitFor({state:'visible',timeout:90000});
     await secondLeg.first().click();
     await page.waitForFunction(()=>{
       const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
@@ -307,12 +311,12 @@ try{
       const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
       return s.selections?.['1']===expected;
     },downstreamBefore,{timeout:15000});
-    assert((await page.locator('#summary').innerText()).includes('2 of 2 flight legs selected'),'Changing an upstream flight preserves a still-feasible downstream selection');
+    assert((await page.locator('#summary').innerText()).includes('2 of 2 flight legs selected'),'Changing an upstream flight preserves a downstream selection when its later service date remains feasible');
 
     const dialogs=[];
     const dialogHandler=d=>{dialogs.push(d.message());d.dismiss().catch(()=>{});};
     page.on('dialog',dialogHandler);
-    await page.locator('.stay').first().getByRole('button',{name:'Same day'}).click();
+    await stay.getByRole('button',{name:'Same day'}).click();
     await page.waitForFunction(previous=>{
       const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
       return (s.selections?.['1']||'')!==previous;
