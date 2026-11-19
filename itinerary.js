@@ -31,6 +31,7 @@
   const liveFareCache=new Map();
   const liveFareData=new Map();
   const liveFareByLeg=new Map();
+  const selectedFareByLeg=new Map();
   const scheduleMonthCache=new Map();
   const scheduleMonthData=new Map();
   const calendarFareJobs=new Set();
@@ -831,6 +832,18 @@
   function updateLiveTripFare(){
     const node=document.getElementById('liveTripFare');if(!node)return;
     const legs=Math.max(0,state.route.length-1);
+    const selected=[...selectedFareByLeg.values()].filter(x=>x&&Number.isFinite(Number(x.amount)));
+    if(selected.length){
+      const currency=selected[0].currency||'USD';
+      const same=selected.every(x=>(x.currency||'USD')===currency);
+      const hasPrototype=selected.some(x=>x.fareStatus==='prototype');
+      const sum=selected.reduce((total,x)=>total+Number(x.amount||0),0);
+      const total=same?(hasPrototype?prototypeFareText(sum):formatMoney(sum,currency)):'Multiple currencies';
+      const label=selected.length===legs?'Itinerary fare total':'Selected fare subtotal';
+      const status=hasPrototype?'Includes prototype fare values; the leading ? applies to the total.':'All selected fares are verified provider values.';
+      node.innerHTML=`<strong class="${hasPrototype?'prototype-value':''}">${label} ${total}</strong><span>${selected.length} of ${legs} selected fare${selected.length===1?'':'s'} · ${status}</span>`;
+      return;
+    }
     const rows=[...liveFareByLeg.values()];
     const live=rows.filter(x=>x&&x.liveMode&&x.offers&&x.offers.length);
     const test=rows.filter(x=>x&&!x.liveMode&&x.offers&&x.offers.length);
@@ -1308,6 +1321,7 @@
   function render(){
     const version=++renderVersion;
     liveFareByLeg.clear();
+    selectedFareByLeg.clear();
     syncLinks();el.startDate.value=state.startDate;el.startDateButtonText.textContent=formatStartDate(state.startDate);
     if(state.route.length<2){renderEmpty();return;}
     el.toolbar.hidden=false;renderRoutebar();showStartCalendar();el.content.innerHTML='';
@@ -1333,6 +1347,13 @@
       previousChosen=legRendered.chosen;
       departDate=legRendered.departDate;
       if(previousChosen){
+        if(Number.isFinite(Number(previousChosen.price))){
+          selectedFareByLeg.set(i,{
+            amount:Number(previousChosen.price),
+            currency:previousChosen.currency||'USD',
+            fareStatus:previousChosen.fareStatus||'prototype'
+          });
+        }
         const arr=F.arrival(previousChosen,departDate);
         const groundMin=i>0&&inboundArrivalMin!=null?minutesBetween(inboundArrivalDate,inboundArrivalMin,departDate,previousChosen.departMin):0;
         runningElapsed+=groundMin+previousChosen.duration;
@@ -1360,6 +1381,7 @@
       } else {previousArrivalDate=departDate;previousArrivalMin=null;}
     }
     renderSummary(rows,timeline);
+    updateLiveTripFare();
     hydrateLivePricing(version);
     hydrateScheduleAvailability(version);
   }

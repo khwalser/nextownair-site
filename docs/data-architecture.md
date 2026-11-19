@@ -42,7 +42,7 @@ Prototype fare example: `?148`
 
 Prototype values use a distinct visual color and a single legend. The UI does not repeat a "Prototype fare" or "Prototype time" label on every card.
 
-Prototype values are working MVP values. They participate in itinerary timing, downstream feasibility, and totals exactly like verified values, while retaining their provenance/status.
+Prototype values are working MVP values. They participate in itinerary timing, downstream feasibility, and totals exactly like verified values, while retaining their provenance/status. Selected itinerary totals sum verified and prototype fares alike; if any included fare is prototype, the total is also displayed as a prototype value with the leading `?` convention.
 
 Verified schedule fields are preserved independently of fare coverage. When a current schedule provider supplies exact departure/arrival times but the fare provider has no price, NexTownAir renders verified times normally and supplies only the fare as a `?prototype` value.
 

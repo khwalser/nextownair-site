@@ -301,6 +301,8 @@ try{
     assert(await bookingItems.count()===6,'Completed itinerary renders one booking checklist item per flight leg');
     const bookingLinks=page.locator('.booking-checklist .booking-link');
     assert(await bookingLinks.count()===6,'Completed itinerary renders one external booking handoff per flight leg');
+    const selectedFareTotal=(await page.locator('#liveTripFare').innerText()).replace(/\s+/g,' ');
+    assert(/Itinerary fare total\s+\?\d+/i.test(selectedFareTotal),'Completed mixed/prototype itinerary includes all selected leg fares in a prototype-marked total',selectedFareTotal);
     const bookingHrefs=await bookingLinks.evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')||''));
     assert(bookingHrefs.every(h=>/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(h)),'Every MVP booking handoff targets a route/date-specific flight search',bookingHrefs.join(' | '));
   }
