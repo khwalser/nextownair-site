@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.16",
+  "mvpRevision": "2026-11-19.17",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
@@ -71,14 +71,6 @@ window.NTA_DATA = {
     "unresolvedNetworkComponents": [
       {
         "airports": [
-          "KFP",
-          "CDB",
-          "KVC"
-        ],
-        "reason": "Regional Alaska cluster; no national-network bridge is modeled without verified current service."
-      },
-      {
-        "airports": [
           "HYG",
           "WFB",
           "MTM"
@@ -86,7 +78,7 @@ window.NTA_DATA = {
         "reason": "Southeast Alaska regional cluster; Taquan currently serves Hydaburg/Metlakatla through its Ketchikan waterfront base, but a truthful WFB↔KTN airport-transfer leg is not yet modeled."
       }
     ],
-    "additionalSmallAirportRoutePairs": 7,
+    "additionalSmallAirportRoutePairs": 8,
     "additionalSmallAirportSources": [
       {
         "airport": "GRI",
@@ -126,6 +118,16 @@ window.NTA_DATA = {
           "FAI-MCG",
           "FAI-TKJ"
         ]
+      },
+      {
+        "airport": "CDB",
+        "label": "Travel Alaska — Aleutian Airways scheduled service",
+        "url": "https://www.travelalaska.com/southwest/getting-around/fly/aleutian-airways",
+        "checkedAsOf": "2026-11-19",
+        "verifiedPairs": [
+          "CDB-ANC"
+        ],
+        "note": "Current state tourism listing describes Aleutian Airways scheduled Saab 2000 service to and from Anchorage including Cold Bay."
       }
     ],
     "endpointSources": [
@@ -4208,6 +4210,10 @@ window.NTA_DATA = {
     [
       "FAI",
       "TKJ"
+    ],
+    [
+      "CDB",
+      "ANC"
     ]
   ],
   "backboneRoutes": [

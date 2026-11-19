@@ -151,6 +151,7 @@ try{
     fairbanksToDenver:window.NTA.findFlightPath('FAI','DEN'),
     mcgrathToDenver:window.NTA.findFlightPath('MCG','DEN'),
     chisanaToDenver:window.NTA.findFlightPath('CZN','DEN'),
+    coldBayToDenver:window.NTA.findFlightPath('CDB','DEN'),
     grandIslandToLasVegas:window.NTA.findFlightPath('GRI','LAS'),
     grandIslandToMesa:window.NTA.findFlightPath('GRI','AZA'),
     moabToDenver:window.NTA.findFlightPath('CNY','DEN'),
@@ -168,6 +169,7 @@ try{
   assert(networkRegression.fairbanksToDenver?.includes('ANC')&&networkRegression.fairbanksToDenver?.at(-1)==='DEN','Fairbanks joins the national network through verified Anchorage service',JSON.stringify(networkRegression.fairbanksToDenver));
   assert(networkRegression.mcgrathToDenver?.includes('FAI')&&networkRegression.mcgrathToDenver?.at(-1)==='DEN','McGrath joins the national network through Wright Air Service to Fairbanks',JSON.stringify(networkRegression.mcgrathToDenver));
   assert(networkRegression.chisanaToDenver?.includes('TKJ')&&networkRegression.chisanaToDenver?.includes('FAI')&&networkRegression.chisanaToDenver?.at(-1)==='DEN','Chisana joins the national network through Tok and Wright Air Service to Fairbanks',JSON.stringify(networkRegression.chisanaToDenver));
+  assert(networkRegression.coldBayToDenver?.includes('ANC')&&networkRegression.coldBayToDenver?.at(-1)==='DEN','Cold Bay joins the national network through current scheduled Anchorage service',JSON.stringify(networkRegression.coldBayToDenver));
   assert(networkRegression.grandIslandToLasVegas?.join('>')==='GRI>LAS','Grand Island exposes airport-published nonstop Las Vegas service',JSON.stringify(networkRegression.grandIslandToLasVegas));
   assert(networkRegression.grandIslandToMesa?.join('>')==='GRI>AZA','Grand Island exposes airport-published nonstop Phoenix-Mesa service',JSON.stringify(networkRegression.grandIslandToMesa));
   assert(await page.evaluate(()=>Boolean(window.NTA.byCode('AZA'))),'Phoenix-Mesa Gateway exists as a selectable airport endpoint');
