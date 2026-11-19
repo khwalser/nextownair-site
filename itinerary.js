@@ -1032,6 +1032,11 @@
   function renderLeg(i,a,b,departDate,plan,priorSelected){
     const knownRoute=F.hasKnownRoute(a,b);
     const locked=i>0&&!priorSelected;
+    const storedSelection=state.selections[String(i)];
+    if(storedSelection&&!String(storedSelection).endsWith(`|${a}|${b}|${departDate}`)){
+      delete state.selections[String(i)];
+      save();
+    }
     const autoConnector=(state.autoConnectorIndices||[]).includes(i);
     const key=fareKey(a,b,departDate);
     const fareData=liveFareData.get(key);
