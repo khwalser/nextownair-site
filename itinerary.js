@@ -495,7 +495,6 @@
     const today=window.NTA.todayLocal();
     const monthDatesAll=Array.from({length:daysInMonth},(_,idx)=>ymd(y,m+1,idx+1)).filter(d=>d>=today);
 
-    if(patternLearned&&version===renderVersion){render();return;}
     if(scheduleProviderUnavailableCode){
       current={error:true,status:503,code:scheduleProviderUnavailableCode,message:'Published schedule feed unavailable for this session.',days:{}};
       scheduleMonthData.set(key,current);
@@ -963,6 +962,7 @@
     [...document.querySelectorAll('.leg[data-schedule-origin][data-schedule-destination][data-schedule-date]')].forEach(node=>{
       addRequest(node.dataset.scheduleOrigin,node.dataset.scheduleDestination,node.dataset.scheduleDate);
     });
+    if(patternLearned&&version===renderVersion){render();return;}
     if(scheduleProviderUnavailableCode){
       let changed=false;
       requests.forEach((req,key)=>{
