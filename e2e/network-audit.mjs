@@ -15,6 +15,7 @@ const D=JSON.parse(raw.slice(start+1,end).trim());
 const airports=D.airports||[];
 const mapRoutes=D.routes||[];
 const backboneRoutes=D.backboneRoutes||[];
+const transferEdges=D.transferEdges||[];
 const routes=[...mapRoutes,...backboneRoutes];
 const by=new Map();
 for(const a of airports){
@@ -23,7 +24,8 @@ for(const a of airports){
 }
 if(!process.exitCode) pass('Airport codes are unique');
 
-const adj=new Map(airports.map(a=>[a.code,new Set()]));
+const flightAdj=new Map(airports.map(a=>[a.code,new Set()]));
+const travelAdj=new Map(airports.map(a=>[a.code,new Set()]));
 const edgeKeys=new Set();
 for(const edge of routes){
   if(!Array.isArray(edge)||edge.length!==2){ fail('Malformed route '+JSON.stringify(edge)); continue; }
@@ -33,14 +35,30 @@ for(const edge of routes){
   const key=[a,b].sort().join('|');
   if(edgeKeys.has(key)) fail('Duplicate route '+a+' ↔ '+b);
   edgeKeys.add(key);
-  adj.get(a).add(b); adj.get(b).add(a);
+  flightAdj.get(a).add(b); flightAdj.get(b).add(a);
+  travelAdj.get(a).add(b); travelAdj.get(b).add(a);
 }
 if(!process.exitCode) pass('Route edges are valid and unique');
 
+const transferKeys=new Set();
+for(const edge of transferEdges){
+  const a=edge&&edge.from,b=edge&&edge.to;
+  if(!a||!b||!by.has(a)||!by.has(b)){fail('Transfer references unknown/missing airport '+JSON.stringify(edge));continue;}
+  const key=[a,b].sort().join('|');
+  if(edgeKeys.has(key))fail('Transfer duplicates a flight edge '+a+' ↔ '+b);
+  if(transferKeys.has(key))fail('Duplicate transfer '+a+' ↔ '+b);
+  transferKeys.add(key);
+  if(!Number.isFinite(Number(edge.durationMinutes))||Number(edge.durationMinutes)<=0)fail('Transfer has invalid duration '+a+' ↔ '+b);
+  if(!['prototype','verified'].includes(edge.durationStatus))fail('Transfer has invalid duration status '+a+' ↔ '+b);
+  travelAdj.get(a).add(b);travelAdj.get(b).add(a);
+}
+if(transferEdges.length)pass('Non-flight transfer edges are explicit and validated');
+const adj=travelAdj;
+
 for(const a of airports.filter(a=>a.type==='eas')){
-  if(!(adj.get(a.code)?.size)) fail('EAS airport has no route '+a.code);
+  if(!(flightAdj.get(a.code)?.size)) fail('EAS airport has no flight route '+a.code);
   for(const hub of (a.hubs||[])){
-    if(!adj.get(a.code)?.has(hub)) fail('Missing DOT/EAS edge '+a.code+' ↔ '+hub);
+    if(!flightAdj.get(a.code)?.has(hub)) fail('Missing DOT/EAS edge '+a.code+' ↔ '+hub);
   }
 }
 if(!process.exitCode) pass('All DOT/EAS hub relationships exist in the graph');
@@ -84,7 +102,7 @@ for(const code of by.keys()){
   components.push(comp);
 }
 components.sort((a,b)=>b.length-a.length);
-console.log('INFO: airports='+airports.length+' mapRoutes='+mapRoutes.length+' backboneRoutes='+backboneRoutes.length+' totalRoutingEdges='+routes.length+' components='+components.length+' largest='+components[0]?.length);
+console.log('INFO: airports='+airports.length+' mapRoutes='+mapRoutes.length+' backboneRoutes='+backboneRoutes.length+' transferEdges='+transferEdges.length+' flightEdges='+routes.length+' travelComponents='+components.length+' largest='+components[0]?.length);
 console.log('INFO: component sizes='+components.map(x=>x.length).join(','));
 
 const continuityWarnings=[];
@@ -101,7 +119,7 @@ if((D.routeVerification?.backboneRoutePairs||0)!==backboneRoutes.length)fail('ba
 const declaredAdditional=(D.routeVerification?.additionalSmallAirportSources||[]).flatMap(s=>s.verifiedPairs||[]);
 for(const pair of declaredAdditional){
   const [a,b]=String(pair).split('-');
-  if(!a||!b||!adj.get(a)?.has(b))fail('Declared additional small-airport route missing from graph: '+pair);
+  if(!a||!b||!flightAdj.get(a)?.has(b))fail('Declared additional small-airport route missing from flight graph: '+pair);
 }
 if(declaredAdditional.length!==(D.routeVerification?.additionalSmallAirportRoutePairs||0)){
   fail('additionalSmallAirportRoutePairs metadata does not match declared source pairs');
@@ -109,6 +127,7 @@ if(declaredAdditional.length!==(D.routeVerification?.additionalSmallAirportRoute
   pass('All source-declared additional small-airport nonstop routes exist in the graph');
 }
 if(backboneRoutes.length)pass('Commercial backbone edges are tracked separately from the default map layer');
+if((D.routeVerification?.transferEdgePairs||0)!==transferEdges.length)fail('transferEdgePairs metadata does not match transferEdges length');
 const expectedUnresolved=(D.routeVerification?.unresolvedNetworkComponents||[])
   .map(x=>(x.airports||[]).slice().sort().join('|'))
   .sort();

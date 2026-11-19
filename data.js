@@ -7,13 +7,13 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.17",
+  "mvpRevision": "2026-11-19.18",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
     "easRoutePairs": 225,
     "connectorRoutePairs": 14,
-    "note": "The planner routes over explicit verified EAS/map edges plus a separate current commercial backbone. EAS pairs come from U.S. DOT May 2026 reports; additional small-airport nonstop pairs come from current airport/airline-published service pages and timetables; backbone pairs come from current airport-published nonstop destination lists. Airport type never determines whether a route exists or whether a stop was user-selected.",
+    "note": "The planner routes over explicit verified flight edges plus explicit non-flight transfer edges where the real trip requires them. EAS pairs come from U.S. DOT May 2026 reports; additional small-airport nonstop pairs come from current airport/airline-published service pages and timetables; backbone pairs come from current airport-published nonstop destination lists. A transfer edge is never presented as a flight.",
     "continuityChecks": [
       "BIL",
       "CLT",
@@ -68,16 +68,7 @@ window.NTA_DATA = {
         ]
       }
     ],
-    "unresolvedNetworkComponents": [
-      {
-        "airports": [
-          "HYG",
-          "WFB",
-          "MTM"
-        ],
-        "reason": "Southeast Alaska regional cluster; Taquan currently serves Hydaburg/Metlakatla through its Ketchikan waterfront base, but a truthful WFB↔KTN airport-transfer leg is not yet modeled."
-      }
-    ],
+    "unresolvedNetworkComponents": [],
     "additionalSmallAirportRoutePairs": 8,
     "additionalSmallAirportSources": [
       {
@@ -137,6 +128,27 @@ window.NTA_DATA = {
         "label": "FAA Chart Supplement — Phoenix-Mesa Gateway",
         "url": "https://aeronav.faa.gov/afd/03SEP2026/sw_73_03SEP2026.pdf",
         "checkedAsOf": "2026-11-19"
+      }
+    ],
+    "transferEdgePairs": 1,
+    "transferSources": [
+      {
+        "label": "Taquan Air scheduled flights and Ketchikan Waterfront Base",
+        "url": "https://taquanair.com/flights/",
+        "checkedAsOf": "2026-11-19",
+        "supports": [
+          "HYG-WFB",
+          "MTM-WFB",
+          "WFB waterfront-base identity"
+        ]
+      },
+      {
+        "label": "Alaska DOT Gravina Access — airport ferry access",
+        "url": "https://dot.alaska.gov/sereg/projects/gravina_access/assets/Final_EIS/Purpose_Need.pdf",
+        "checkedAsOf": "2026-11-19",
+        "supports": [
+          "WFB-KTN mixed-mode transfer"
+        ]
       }
     ]
   },
@@ -4461,5 +4473,20 @@ window.NTA_DATA = {
       "PHX",
       "MEM"
     ]
+  ],
+  "transferEdges": [
+    {
+      "from": "WFB",
+      "to": "KTN",
+      "mode": "ground-ferry",
+      "label": "Ketchikan waterfront → Ketchikan International transfer",
+      "durationMinutes": 60,
+      "durationStatus": "prototype",
+      "fareStatus": "not-applicable",
+      "note": "Ground transfer from the Ketchikan waterfront floatplane base to the airport ferry, then ferry to Ketchikan International. The 60-minute allowance is a deterministic MVP prototype, not a published end-to-end transfer time.",
+      "sourceLabel": "Alaska DOT Gravina Access / airport ferry access",
+      "sourceUrl": "https://dot.alaska.gov/sereg/projects/gravina_access/assets/Final_EIS/Purpose_Need.pdf",
+      "checkedAsOf": "2026-11-19"
+    }
   ]
 };

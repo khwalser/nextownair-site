@@ -44,9 +44,10 @@
   function airportRegionName(a){return regionName(airportRegion(a));}
   function matchesFilter(a){return activeFilter==='all'||airportRegion(a)===activeFilter;}
   function hasKnownRoute(a,b){
-    return window.NTA.hasFlightLink?window.NTA.hasFlightLink(a,b):(D.routes||[]).some(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a));
+    return window.NTA.hasTravelLink?window.NTA.hasTravelLink(a,b):(D.routes||[]).some(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a));
   }
   function linkKind(a,b){
+    if(window.NTA.hasTransferLink&&window.NTA.hasTransferLink(a,b))return 'transfer';
     const A=by(a),B=by(b);
     if(!A||!B)return 'unknown';
     return A.type==='eas'||B.type==='eas'?'eas':'hub';
@@ -54,6 +55,7 @@
   function linkStyle(a,b,{selected=false,known=true}={}){
     if(!known)return {color:'#e7bd62',weight:selected?5:2,opacity:selected?.95:.5,dashArray:'3 7'};
     const kind=linkKind(a,b);
+    if(kind==='transfer')return {color:'#e7bd62',weight:selected?5:2.5,opacity:selected?.96:.7,dashArray:'8 7'};
     if(kind==='eas')return {color:selected?'#5eead4':'#2f8f86',weight:selected?5:2.5,opacity:selected?.96:.62,dashArray:selected?null:'5 6'};
     return {color:selected?'#c084fc':'#7255a1',weight:selected?5:2.5,opacity:selected?.96:.62,dashArray:selected?null:'2 7'};
   }
@@ -71,7 +73,7 @@
       const from=repaired[repaired.length-1],to=route[i];
       if(from===to)continue;
       if(hasKnownRoute(from,to)){repaired.push(to);continue;}
-      const path=window.NTA.findFlightPath?window.NTA.findFlightPath(from,to):null;
+      const path=window.NTA.findTravelPath?window.NTA.findTravelPath(from,to):(window.NTA.findFlightPath?window.NTA.findFlightPath(from,to):null);
       if(path&&path.length>1){
         const mids=path.slice(1,-1);
         mids.forEach((code,offset)=>inserted.push({code,from,to,index:repaired.length+offset}));
@@ -186,7 +188,7 @@
     let unsupported=0;
     if(n>1){
       el.legSummary.hidden=false;
-      el.legSummary.innerHTML='<b>Flight legs</b>'+state.route.slice(0,-1).map((code,i)=>{const known=hasKnownRoute(code,state.route[i+1]);if(!known)unsupported++;return `<div>Leg ${i+1}: ${code} → ${state.route[i+1]} ${known?'':'<span class="route-warning">· no verified route found</span>'}</div>`;}).join('');
+      el.legSummary.innerHTML='<b>Trip segments</b>'+state.route.slice(0,-1).map((code,i)=>{const next=state.route[i+1],known=hasKnownRoute(code,next),transfer=window.NTA.hasTransferLink&&window.NTA.hasTransferLink(code,next);if(!known)unsupported++;return `<div>${transfer?'Transfer':'Flight'} ${i+1}: ${code} → ${next} ${known?'':'<span class="route-warning">· no verified route found</span>'}</div>`;}).join('');
     } else {el.legSummary.hidden=true;el.legSummary.innerHTML='';}
 
     const ready=n>=2&&unsupported===0;
@@ -194,7 +196,9 @@
     el.plan.setAttribute('aria-disabled',String(!ready));
     el.returnStart.disabled=n<2 || state.route[n-1]===state.route[0];
     el.returnStart.textContent=(n>1&&state.route[n-1]===state.route[0])?'Round trip complete':'Return to start';
-    el.status.textContent=n<2?'Choose at least two places to create your first flight leg.':unsupported?`${unsupported} ${unsupported===1?'leg has':'legs have'} no verified path in the current network. Change that destination before continuing.`:`${n-1} flight leg${n-1===1?'':'s'} ready. Connector hubs are inserted automatically when needed.`;
+    const transferCount=state.route.slice(0,-1).filter((code,i)=>window.NTA.hasTransferLink&&window.NTA.hasTransferLink(code,state.route[i+1])).length;
+    const flightCount=Math.max(0,n-1-transferCount);
+    el.status.textContent=n<2?'Choose at least two places to create your first trip segment.':unsupported?`${unsupported} ${unsupported===1?'segment has':'segments have'} no verified path in the current network. Change that destination before continuing.`:`${flightCount} flight leg${flightCount===1?'':'s'}${transferCount?` · ${transferCount} transfer${transferCount===1?'':'s'}`:''} ready. Required connectors are inserted automatically when needed.`;
   }
   function render(){syncLinks();renderTrip();renderRouteLine();}
 

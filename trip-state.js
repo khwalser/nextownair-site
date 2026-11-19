@@ -4,12 +4,24 @@
   const D=window.NTA_DATA||{airports:[]};
   const airportCodes=new Set((D.airports||[]).map(a=>a.code));
   const listedAdj=new Map((D.airports||[]).map(a=>[a.code,new Set()]));
+  const travelAdj=new Map((D.airports||[]).map(a=>[a.code,new Set()]));
+  const transferByPair=new Map();
   const hubCodes=new Set();
   (D.airports||[]).forEach(a=>(a.hubs||[]).forEach(h=>hubCodes.add(h)));
   [...(D.routes||[]),...(D.backboneRoutes||[])].forEach(([a,b])=>{
     if(!listedAdj.has(a))listedAdj.set(a,new Set());
     if(!listedAdj.has(b))listedAdj.set(b,new Set());
+    if(!travelAdj.has(a))travelAdj.set(a,new Set());
+    if(!travelAdj.has(b))travelAdj.set(b,new Set());
     listedAdj.get(a).add(b);listedAdj.get(b).add(a);
+    travelAdj.get(a).add(b);travelAdj.get(b).add(a);
+  });
+  (D.transferEdges||[]).forEach(edge=>{
+    const a=edge&&edge.from,b=edge&&edge.to;if(!a||!b)return;
+    if(!travelAdj.has(a))travelAdj.set(a,new Set());
+    if(!travelAdj.has(b))travelAdj.set(b,new Set());
+    travelAdj.get(a).add(b);travelAdj.get(b).add(a);
+    transferByPair.set([a,b].sort().join('|'),edge);
   });
 
   function todayLocal(){
@@ -30,9 +42,11 @@
     if(!airportCodes.has(a)||!airportCodes.has(b)||a===b)return false;
     return hasListedRoute(a,b);
   }
-  function flightNeighbors(code){
-    return [...(listedAdj.get(code)||[])].filter(c=>airportCodes.has(c));
-  }
+  function getTransferLink(a,b){return transferByPair.get([a,b].sort().join('|'))||null;}
+  function hasTransferLink(a,b){return Boolean(getTransferLink(a,b));}
+  function hasTravelLink(a,b){return hasFlightLink(a,b)||hasTransferLink(a,b);}
+  function flightNeighbors(code){return [...(listedAdj.get(code)||[])].filter(c=>airportCodes.has(c));}
+  function travelNeighbors(code){return [...(travelAdj.get(code)||[])].filter(c=>airportCodes.has(c));}
   function findFlightPath(from,to){
     const a=String(from||'').toUpperCase(),b=String(to||'').toUpperCase();
     if(!airportCodes.has(a)||!airportCodes.has(b))return null;
@@ -41,6 +55,26 @@
     while(q.length){
       const cur=q.shift();
       for(const next of flightNeighbors(cur)){
+        if(seen.has(next))continue;
+        seen.add(next);prev.set(next,cur);
+        if(next===b){
+          const path=[b];let p=b;
+          while(prev.has(p)){p=prev.get(p);path.push(p);}
+          return path.reverse();
+        }
+        q.push(next);
+      }
+    }
+    return null;
+  }
+  function findTravelPath(from,to){
+    const a=String(from||'').toUpperCase(),b=String(to||'').toUpperCase();
+    if(!airportCodes.has(a)||!airportCodes.has(b))return null;
+    if(a===b)return [a];
+    const q=[a],seen=new Set([a]),prev=new Map();
+    while(q.length){
+      const cur=q.shift();
+      for(const next of travelNeighbors(cur)){
         if(seen.has(next))continue;
         seen.add(next);prev.set(next,cur);
         if(next===b){
@@ -163,5 +197,5 @@
     if(!validDate(s))return '';
     return parseDate(s).toLocaleDateString(undefined,Object.assign({month:'short',day:'numeric',timeZone:'UTC'},opts||{}));
   }
-  window.NTA={KEY,todayLocal,validDate,normalizeRoute,load,save,setRoute,clearTrip,clearSavedAppState,buildUrl,updateAddress,byCode,addDays,diffDays,fmtDate,hasListedRoute,isNetworkHub,hasFlightLink,findFlightPath};
+  window.NTA={KEY,todayLocal,validDate,normalizeRoute,load,save,setRoute,clearTrip,clearSavedAppState,buildUrl,updateAddress,byCode,addDays,diffDays,fmtDate,hasListedRoute,isNetworkHub,hasFlightLink,getTransferLink,hasTransferLink,hasTravelLink,findFlightPath,findTravelPath};
 })();

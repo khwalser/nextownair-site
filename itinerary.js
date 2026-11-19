@@ -28,6 +28,10 @@
 
   function by(code){return window.NTA.byCode(code);}
   const F=window.NTA_FLIGHTS;
+  function transferFor(a,b){return window.NTA.getTransferLink?window.NTA.getTransferLink(a,b):null;}
+  function isTransferLeg(a,b){return Boolean(transferFor(a,b));}
+  function flightLegCount(){let n=0;for(let i=0;i<state.route.length-1;i++)if(!isTransferLeg(state.route[i],state.route[i+1]))n++;return n;}
+  function transferLegCount(){let n=0;for(let i=0;i<state.route.length-1;i++)if(isTransferLeg(state.route[i],state.route[i+1]))n++;return n;}
   const liveFareCache=new Map();
   const liveFareData=new Map();
   const liveFareByLeg=new Map();
@@ -229,7 +233,11 @@
     return {status:'checking',label:'Checking…',detail:''};
   }
   function firstLeg(){
-    const leg=state.route.length>=2?{a:state.route[0],b:state.route[1]}:null;
+    let leg=null;
+    for(let i=0;i<state.route.length-1;i++){
+      const a=state.route[i],b=state.route[i+1];if(isTransferLeg(a,b))continue;
+      leg={a,b,index:i};break;
+    }
     if(leg&&isKnownFareCoverageGap(leg.a,leg.b))fareCoverageBlockedLegs.add(fareLegKey(leg.a,leg.b));
     return leg;
   }
@@ -1087,6 +1095,22 @@
     section.querySelector('.dateinput').addEventListener('change',ev=>setStayByDate(i,arrivalDate,ev.target.value));
     return {section,plan};
   }
+  function renderTransferLeg(i,a,b,departDate,inboundArrivalDate,inboundArrivalMin,priorSelected){
+    const transfer=transferFor(a,b),section=document.createElement('section');
+    section.className='leg transfer-leg';section.dataset.legIndex=String(i);
+    const locked=i>0&&!priorSelected,duration=Math.max(1,Number(transfer&&transfer.durationMinutes)||60);
+    if(locked){
+      section.innerHTML=`<div class="leghead"><div><div class="eyebrow">Transfer · ${a} → ${b}</div><h2>Ground + airport ferry transfer</h2><p class="small">Select the previous flight to place this transfer on the timeline.</p></div><span class="transfer-badge">Not a flight</span></div>`;
+      return {section,chosen:null,departDate,arrivalDate:departDate,arrivalMin:null,transfer};
+    }
+    const hasInbound=Number.isFinite(Number(inboundArrivalMin)),startMin=hasInbound?Number(inboundArrivalMin):null,total=startMin==null?null:startMin+duration;
+    const dayOffset=total==null?0:Math.floor(total/1440),arrivalMin=total==null?null:((total%1440)+1440)%1440;
+    const arrivalDate=hasInbound?window.NTA.addDays(inboundArrivalDate,dayOffset):departDate;
+    const durationText=duration>=60?`${Math.floor(duration/60)}h${duration%60?` ${duration%60}m`:''}`:`${duration}m`;
+    const timeText=hasInbound?`<span class="prototype-value">?${F.timeFrom(startMin)} → ?${F.timeFrom(arrivalMin)}</span>`:'<span class="prototype-value">Timing set around your first onward flight</span>';
+    section.innerHTML=`<div class="leghead"><div><div class="eyebrow">Transfer · ${a} → ${b}</div><h2>Ground + airport ferry transfer</h2><p class="small">${transfer&&transfer.label?transfer.label:'Required local transfer between airports.'}</p></div><span class="transfer-badge">Not a flight</span></div><div class="transfer-card"><div><strong>${timeText}</strong><span>Prototype transfer allowance · <span class="prototype-value">?${durationText}</span></span></div><div class="small">No airfare is attached to this segment. NexTownAir uses the transfer allowance only to keep downstream flight timing coherent.</div></div>`;
+    return {section,chosen:{transfer:true,duration,departMin:startMin,arrivalMin,arrivalDayOffset:dayOffset,timeStatus:'prototype',fareStatus:'not-applicable',flightNo:'Ground + airport ferry',carrier:'Ketchikan local transfer'},departDate:hasInbound?inboundArrivalDate:departDate,arrivalDate,arrivalMin,transfer};
+  }
   function renderLeg(i,a,b,departDate,plan,priorSelected){
     const knownRoute=F.hasKnownRoute(a,b);
     const locked=i>0&&!priorSelected;
@@ -1209,9 +1233,10 @@
   }
   function renderTravelChart(timeline){
     if(!timeline.length)return '';
-    const maxSegment=Math.max(...timeline.flatMap(x=>[x.flightMin,x.groundMin||0]),1);
-    const totalFlight=timeline.reduce((sum,x)=>sum+x.flightMin,0);
-    const totalGround=timeline.reduce((sum,x)=>sum+x.groundMin,0);
+    const maxSegment=Math.max(...timeline.flatMap(x=>[x.flightMin||0,x.transferMin||0,x.groundMin||0]),1);
+    const totalFlight=timeline.reduce((sum,x)=>sum+(x.transfer?0:(x.flightMin||0)),0);
+    const totalTransfer=timeline.reduce((sum,x)=>sum+(x.transfer?(x.transferMin||0):0),0);
+    const totalGround=timeline.reduce((sum,x)=>sum+(x.groundMin||0),0);
     const totalElapsed=timeline[timeline.length-1].elapsedMin;
     const stopoverGround=timeline.reduce((sum,x)=>sum+(x.groundKind==='Stopover'?x.groundMin:0),0);
     const connectionGround=Math.max(0,totalGround-stopoverGround);
@@ -1243,17 +1268,11 @@
             </div>
           </div>`);
       }
-      rows.push(`
-        <div class="travel-row flight-row" role="row">
-          <div class="travel-leg" role="cell"><strong>${x.fromCity} → ${x.toCity}</strong><span>${x.flightNo}</span></div>
-          <div class="travel-time" role="cell"><strong>${x.departTime}</strong><span>${window.NTA.fmtDate(x.departDate,{weekday:'short',month:'short',day:'numeric'})}</span></div>
-          <div class="travel-time" role="cell"><strong>${x.arrivalTime}</strong><span>${window.NTA.fmtDate(x.arrivalDate,{weekday:'short',month:'short',day:'numeric'})}</span></div>
-          <div class="travel-metric" role="cell">
-            <div class="metric-top"><strong>${fmtDuration(x.flightMin)}</strong><span>Flight</span></div>
-            <div class="metric-track" aria-hidden="true"><span class="metric-fill flight-fill" style="width:${Math.max(8,Math.round(x.flightMin/maxSegment*100))}%"></span></div>
-          </div>
-          <div class="travel-running" role="cell"><strong>${fmtDuration(x.elapsedMin)}</strong><span>from first departure</span></div>
-        </div>`);
+      if(x.transfer){
+        rows.push(`<div class="travel-row transfer-row" role="row"><div class="travel-leg" role="cell"><strong>${x.fromCity} → ${x.toCity}</strong><span>Ground + airport ferry transfer</span></div><div class="travel-time" role="cell"><strong class="prototype-value">${x.departTime}</strong><span>${window.NTA.fmtDate(x.departDate,{weekday:'short',month:'short',day:'numeric'})}</span></div><div class="travel-time" role="cell"><strong class="prototype-value">${x.arrivalTime}</strong><span>${window.NTA.fmtDate(x.arrivalDate,{weekday:'short',month:'short',day:'numeric'})}</span></div><div class="travel-metric" role="cell"><div class="metric-top"><strong class="prototype-value">?${fmtDuration(x.transferMin)}</strong><span>Transfer</span></div><div class="metric-track" aria-hidden="true"><span class="metric-fill transfer-fill" style="width:${Math.max(8,Math.round(x.transferMin/maxSegment*100))}%"></span></div></div><div class="travel-running" role="cell"><strong>${fmtDuration(x.elapsedMin)}</strong><span>from first departure</span></div></div>`);
+      }else{
+        rows.push(`<div class="travel-row flight-row" role="row"><div class="travel-leg" role="cell"><strong>${x.fromCity} → ${x.toCity}</strong><span>${x.flightNo}</span></div><div class="travel-time" role="cell"><strong>${x.departTime}</strong><span>${window.NTA.fmtDate(x.departDate,{weekday:'short',month:'short',day:'numeric'})}</span></div><div class="travel-time" role="cell"><strong>${x.arrivalTime}</strong><span>${window.NTA.fmtDate(x.arrivalDate,{weekday:'short',month:'short',day:'numeric'})}</span></div><div class="travel-metric" role="cell"><div class="metric-top"><strong>${fmtDuration(x.flightMin)}</strong><span>Flight</span></div><div class="metric-track" aria-hidden="true"><span class="metric-fill flight-fill" style="width:${Math.max(8,Math.round(x.flightMin/maxSegment*100))}%"></span></div></div><div class="travel-running" role="cell"><strong>${fmtDuration(x.elapsedMin)}</strong><span>from first departure</span></div></div>`);
+      }
     });
     return `
       <div class="travel-chart">
@@ -1261,10 +1280,11 @@
           <div>
             <div class="eyebrow">Travel-time breakdown</div>
             <h3>Your trip as a timeline</h3>
-            <p class="small">Flights and time on the ground are shown as separate chronological segments, so each connection or stopover sits between the flights it connects.</p>
+            <p class="small">Flights, required local transfers, and time on the ground are shown as separate chronological segments.</p>
           </div>
           <div class="travel-kpis" aria-label="Travel time totals">
             <div class="travel-kpi"><span>Air time</span><strong>${fmtDuration(totalFlight)}</strong></div>
+            ${totalTransfer?`<div class="travel-kpi"><span>Transfers</span><strong class="prototype-value">?${fmtDuration(totalTransfer)}</strong></div>`:''}
             <div class="travel-kpi"><span>Connections</span><strong>${fmtDuration(connectionGround)}</strong></div>
             ${stopoverGround? `<div class="travel-kpi"><span>Stopovers</span><strong>${fmtDuration(stopoverGround)}</strong></div>`:''}
             <div class="travel-kpi total-kpi"><span>Total elapsed</span><strong>${fmtDuration(totalElapsed)}</strong></div>
@@ -1283,8 +1303,9 @@
       </div>`;
   }
   function renderBookingChecklist(timeline){
-    if(!timeline.length)return '';
-    const items=timeline.map((x,i)=>{
+    const flights=timeline.filter(x=>!x.transfer);
+    if(!flights.length)return '';
+    const items=flights.map((x,i)=>{
       const fareClass=x.fareStatus==='prototype'?' prototype-value':'';
       const timeClass=x.timeStatus==='prototype'?' prototype-value':'';
       return `<li class="booking-item">
@@ -1314,8 +1335,9 @@
     </section>`;
   }
   function renderSummary(rows,timeline){
-    const legs=Math.max(0,state.route.length-1);const picked=rows.length;const complete=legs>0&&picked===legs;
-    el.summary.innerHTML=`<div class="summary-top"><div><div class="eyebrow">Trip summary</div><h3 style="margin:4px 0">${picked} of ${legs} flight leg${legs===1?'':'s'} selected</h3></div><div id="liveTripFare" class="live-trip-fare"><span class="small">Checking live fares…</span></div></div>${complete?'<div class="trip-complete">✓ Itinerary complete — your full travel-time breakdown is ready.</div>':''}${picked?rows.map(r=>`<div class="selectedline">${r}</div>`).join(''):'<div class="muted">Choose a flight tile when you are ready. Your route and stay choices are already saved.</div>'}${complete?renderTravelChart(timeline):''}${complete?renderBookingChecklist(timeline):''}<div class="btnrow" style="margin-top:12px"><a class="btn secondary" href="${window.NTA.buildUrl('index.html',state)}">Edit route on map</a><button id="summaryPrint" class="btn tertiary" type="button">Print itinerary</button></div>`;
+    const legs=flightLegCount(),transfers=transferLegCount(),picked=rows.filter(r=>r.type==='flight').length,completedTransfers=rows.filter(r=>r.type==='transfer').length;
+    const complete=(legs+transfers)>0&&picked===legs&&completedTransfers===transfers,transferLabel=transfers?` · ${transfers} transfer${transfers===1?'':'s'} included`:'';
+    el.summary.innerHTML=`<div class="summary-top"><div><div class="eyebrow">Trip summary</div><h3 style="margin:4px 0">${picked} of ${legs} flight leg${legs===1?'':'s'} selected${transferLabel}</h3></div><div id="liveTripFare" class="live-trip-fare"><span class="small">Checking live fares…</span></div></div>${complete?'<div class="trip-complete">✓ Itinerary complete — your full travel-time breakdown is ready.</div>':''}${rows.length?rows.map(r=>`<div class="selectedline ${r.type==='transfer'?'transfer-line':''}">${r.text}</div>`).join(''):'<div class="muted">Choose a flight tile when you are ready. Your route and stay choices are already saved.</div>'}${complete?renderTravelChart(timeline):''}${complete?renderBookingChecklist(timeline):''}<div class="btnrow" style="margin-top:12px"><a class="btn secondary" href="${window.NTA.buildUrl('index.html',state)}">Edit route on map</a><button id="summaryPrint" class="btn tertiary" type="button">Print itinerary</button></div>`;
     document.getElementById('summaryPrint').addEventListener('click',()=>window.print());
   }
   function renderEmpty(){
@@ -1340,11 +1362,24 @@
       let plan=null;
       const inboundArrivalDate=previousArrivalDate;
       const inboundArrivalMin=previousArrivalMin;
-      if(i>0){
-        const stayRendered=renderStay(i,by(state.route[i]),previousArrivalDate,previousArrivalMin,Boolean(previousChosen));
+      const a=state.route[i],b=state.route[i+1],transfer=transferFor(a,b);
+      if(i>0&&!transfer){
+        const stayRendered=renderStay(i,by(a),previousArrivalDate,previousArrivalMin,previousArrivalMin!=null);
         el.content.appendChild(stayRendered.section);plan=stayRendered.plan;departDate=plan.date;
       }
-      const legRendered=renderLeg(i,state.route[i],state.route[i+1],departDate,plan,previousChosen);
+      if(transfer){
+        const transferRendered=renderTransferLeg(i,a,b,departDate,inboundArrivalDate,inboundArrivalMin,previousChosen);
+        el.content.appendChild(transferRendered.section);previousChosen=transferRendered.chosen;departDate=transferRendered.departDate;
+        if(previousChosen){
+          runningElapsed+=previousChosen.duration;
+          const fromAirport=by(a),toAirport=by(b),startText=previousChosen.departMin==null?'Flexible':`?${F.timeFrom(previousChosen.departMin)}`,endText=previousChosen.arrivalMin==null?'Flexible':`?${F.timeFrom(previousChosen.arrivalMin)}`;
+          timeline.push({transfer:true,from:a,to:b,fromCity:fromAirport?fromAirport.city:a,toCity:toAirport?toAirport.city:b,departDate,departTime:startText,arrivalDate:transferRendered.arrivalDate,arrivalTime:endText,transferMin:previousChosen.duration,flightMin:0,groundMin:0,groundKind:'Transfer',elapsedMin:runningElapsed});
+          rows.push({type:'transfer',text:`Transfer · ${a} → ${b} · ground + airport ferry · <span class="prototype-value">?${fmtDuration(previousChosen.duration)}</span> · no airfare`});
+          previousArrivalDate=transferRendered.arrivalDate;previousArrivalMin=transferRendered.arrivalMin;
+        }else{previousArrivalDate=departDate;previousArrivalMin=null;}
+        continue;
+      }
+      const legRendered=renderLeg(i,a,b,departDate,plan,previousChosen);
       const currentFareData=liveFareData.get(fareKey(state.route[i],state.route[i+1],departDate));
       if(currentFareData)liveFareByLeg.set(i,currentFareData);
       el.content.appendChild(legRendered.section);
@@ -1381,7 +1416,7 @@
           groundKind:groundLabel(i,groundMin,inboundArrivalDate,departDate),elapsedMin
         });
         previousArrivalDate=arr.date;previousArrivalMin=arr.min;
-        rows.push(`Leg ${i+1} · ${state.route[i]} → ${state.route[i+1]} · ${window.NTA.fmtDate(departDate)} · ${optionTimeText(previousChosen,previousChosen.departMin)} → ${optionTimeText(previousChosen,arr.min)} · ${previousChosen.flightNo} · ${optionFareText(previousChosen)}`);
+        rows.push({type:'flight',text:`Flight · ${state.route[i]} → ${state.route[i+1]} · ${window.NTA.fmtDate(departDate)} · ${optionTimeText(previousChosen,previousChosen.departMin)} → ${optionTimeText(previousChosen,arr.min)} · ${previousChosen.flightNo} · ${optionFareText(previousChosen)}`});
       } else {previousArrivalDate=departDate;previousArrivalMin=null;}
     }
     renderSummary(rows,timeline);

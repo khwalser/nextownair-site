@@ -23,6 +23,19 @@ An airport automatically inserted by the routing engine is tracked explicitly as
 
 Regional-network gaps remain visible until a current route or an explicit non-flight transfer model is verified. NexTownAir must not invent an airport-to-airport flight merely to collapse graph components. Disconnected components are an explicit allowlist in `routeVerification.unresolvedNetworkComponents`; the graph audit fails if any new or different disconnected set appears.
 
+## Mixed-mode transfers
+
+A real trip may require a local non-flight movement between two aviation facilities. Those movements are modeled separately in `transferEdges`; they are never inserted into the flight graph or presented as flights.
+
+For MVP transfer segments:
+- route finding may traverse a verified transfer edge;
+- the itinerary renders the segment explicitly as a transfer;
+- no airfare or flight-booking link is attached;
+- a deterministic prototype duration may be used when a published end-to-end transfer time is unavailable, and it keeps the leading `?` prototype convention;
+- flight counts, fare totals, and booking-checklist counts exclude transfer segments.
+
+The first mixed-mode case is Ketchikan: Taquan's waterfront floatplane base (`WFB`) connects to Ketchikan International (`KTN`) through local ground travel plus the airport ferry. This is modeled as a transfer rather than an invented `WFB-KTN` flight.
+
 ## Flight existence, time, and fare are separate facts
 
 A selectable flight/service must first be known to exist. NexTownAir does not prototype the existence of a flight.

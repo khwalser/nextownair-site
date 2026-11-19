@@ -152,6 +152,9 @@ try{
     mcgrathToDenver:window.NTA.findFlightPath('MCG','DEN'),
     chisanaToDenver:window.NTA.findFlightPath('CZN','DEN'),
     coldBayToDenver:window.NTA.findFlightPath('CDB','DEN'),
+    hydaburgFlightOnly:window.NTA.findFlightPath('HYG','DEN'),
+    hydaburgTravelPath:window.NTA.findTravelPath('HYG','DEN'),
+    ketchikanTransfer:window.NTA.getTransferLink('WFB','KTN'),
     grandIslandToLasVegas:window.NTA.findFlightPath('GRI','LAS'),
     grandIslandToMesa:window.NTA.findFlightPath('GRI','AZA'),
     moabToDenver:window.NTA.findFlightPath('CNY','DEN'),
@@ -170,6 +173,9 @@ try{
   assert(networkRegression.mcgrathToDenver?.includes('FAI')&&networkRegression.mcgrathToDenver?.at(-1)==='DEN','McGrath joins the national network through Wright Air Service to Fairbanks',JSON.stringify(networkRegression.mcgrathToDenver));
   assert(networkRegression.chisanaToDenver?.includes('TKJ')&&networkRegression.chisanaToDenver?.includes('FAI')&&networkRegression.chisanaToDenver?.at(-1)==='DEN','Chisana joins the national network through Tok and Wright Air Service to Fairbanks',JSON.stringify(networkRegression.chisanaToDenver));
   assert(networkRegression.coldBayToDenver?.includes('ANC')&&networkRegression.coldBayToDenver?.at(-1)==='DEN','Cold Bay joins the national network through current scheduled Anchorage service',JSON.stringify(networkRegression.coldBayToDenver));
+  assert(networkRegression.hydaburgFlightOnly===null,'Hydaburg is not falsely connected to the national network by an invented flight',JSON.stringify(networkRegression.hydaburgFlightOnly));
+  assert(networkRegression.hydaburgTravelPath?.includes('WFB')&&networkRegression.hydaburgTravelPath?.includes('KTN')&&networkRegression.hydaburgTravelPath?.at(-1)==='DEN','Hydaburg reaches the national network through the explicit Ketchikan transfer edge',JSON.stringify(networkRegression.hydaburgTravelPath));
+  assert(networkRegression.ketchikanTransfer?.mode==='ground-ferry'&&networkRegression.ketchikanTransfer?.durationStatus==='prototype','Ketchikan waterfront-to-airport movement is a prototype-duration ground/ferry transfer, not a flight',JSON.stringify(networkRegression.ketchikanTransfer));
   assert(networkRegression.grandIslandToLasVegas?.join('>')==='GRI>LAS','Grand Island exposes airport-published nonstop Las Vegas service',JSON.stringify(networkRegression.grandIslandToLasVegas));
   assert(networkRegression.grandIslandToMesa?.join('>')==='GRI>AZA','Grand Island exposes airport-published nonstop Phoenix-Mesa service',JSON.stringify(networkRegression.grandIslandToMesa));
   assert(await page.evaluate(()=>Boolean(window.NTA.byCode('AZA'))),'Phoenix-Mesa Gateway exists as a selectable airport endpoint');
@@ -276,6 +282,22 @@ try{
     assert(!/Loading live fares across the month|queued/i.test(reloadedStatus),'Reload does not restart the pointless month-long fare scan',reloadedStatus);
     const visibleFareLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
     assert(visibleFareLabels.filter(x=>x.trim()==='nonstop').length>=3,'Reloaded published-service calendar preserves nonstop service markers',visibleFareLabels.join(' | '));
+  }
+
+  // 4) Mixed-mode Ketchikan routing renders the airport transfer as a transfer, never as a flight.
+  {
+    const target=BASE_URL+'/itinerary.html?route='+encodeURIComponent('WFB,KTN,ANC')+'&auto=1&date='+encodeURIComponent(tripDate);
+    await page.goto(target,{waitUntil:'domcontentloaded',timeout:60000});
+    const transfer=page.locator('.transfer-leg').first();
+    await transfer.waitFor({state:'visible',timeout:15000});
+    const transferText=(await transfer.innerText()).replace(/\s+/g,' ');
+    assert(/Ground \+ airport ferry transfer/i.test(transferText)&&/Not a flight/i.test(transferText),'Ketchikan waterfront-to-airport segment renders explicitly as a non-flight transfer',transferText);
+    assert(/\?1h/i.test(transferText),'Ketchikan transfer displays its deterministic prototype allowance with the ? convention',transferText);
+    assert(await transfer.locator('.live-fare').count()===0,'Transfer segment has no airfare widget');
+    const summaryText=(await page.locator('#summary').innerText()).replace(/\s+/g,' ');
+    assert(/0 of 1 flight leg selected · 1 transfer included/i.test(summaryText),'Trip summary excludes the transfer from the flight-selection denominator',summaryText);
+    assert(await page.locator('.booking-checklist .booking-item').count()===0,'Transfer does not create a flight booking checklist item before the actual flight is selected');
+    pass('Mixed-mode transfer is separated from flight selection, pricing, and booking');
   }
 
   // 4) Exact Alpena route from the live prototype shows published service days instead of fare-provider noise.
