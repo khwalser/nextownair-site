@@ -56,7 +56,7 @@ The value remains `prototype` until current data verifies it.
 
 ## Provider responsibilities
 
-The frontend consumes a provider-neutral NexTownAir flight contract rather than depending on a named vendor.
+The frontend consumes a provider-neutral NexTownAir flight contract rather than depending on a named vendor. The production browser endpoint is `/api/flights`, currently returning `contractVersion: nta-flights-v1`.
 
 Provider adapters are responsible for:
 
@@ -65,7 +65,7 @@ Provider adapters are responsible for:
 - fare;
 - booking handoff.
 
-Duffel may provide fares where supported. Other current or future providers may fill gaps. A future paid comprehensive provider must be swappable behind the normalized contract without rewriting the itinerary UI.
+Duffel may provide fares where supported. Other current or future providers may fill gaps. Provider adapters normalize into the `nta-flights-v1` boundary before data reaches itinerary rendering. A future paid comprehensive provider must be swappable behind that contract without rewriting the itinerary UI.
 
 An empty fare response is never evidence that a flight does not exist.
 

@@ -46,7 +46,7 @@ function attachDiagnostics(p){
   p.on('requestfailed',req=>diagnostics.requestFailures.push({url:req.url(),error:req.failure()?.errorText||'request failed'}));
   p.on('response',async res=>{
     const url=res.url();
-    if(!url.includes('/api/schedule-calendar')&&!url.includes('/.netlify/functions/flight-proxy'))return;
+    if(!url.includes('/api/schedule-calendar')&&!url.includes('/api/flights'))return;
     let body=null;try{body=await res.json();}catch{}
     const row={url,status:res.status(),body,at:new Date().toISOString()};
     if(url.includes('/api/schedule-calendar'))diagnostics.scheduleResponses.push(row);else diagnostics.fareResponses.push(row);
@@ -352,7 +352,7 @@ try{
       const target=BASE_URL+'/itinerary.html?route='+encodeURIComponent(origin+','+destination)+'&date='+encodeURIComponent(date);
       await page.goto(target,{waitUntil:'domcontentloaded',timeout:60000});
       const row=await waitForFare(origin,destination,date,90000);
-      if(row?.status===200&&row.body?.liveMode===true&&Array.isArray(row.body.offers)&&row.body.offers.length){
+      if(row?.status===200&&row.body?.contractVersion==='nta-flights-v1'&&Array.isArray(row.body.offers)&&row.body.offers.some(o=>o&&o.liveMode)){
         priced={origin,destination,date,row};
       }
     }
@@ -361,6 +361,9 @@ try{
   assert(Boolean(priced),'At least one verified route/date returns a real Duffel live offer',
     priced?priced.origin+' → '+priced.destination+' '+priced.date:'No live offer returned from tested verified routes');
 
+  assert(diagnostics.fareResponses.length>0,'Frontend requests fare data through the provider-neutral /api/flights contract');
+  const normalizedContract=diagnostics.fareResponses.find(row=>row?.status===200&&row.body?.contractVersion==='nta-flights-v1');
+  assert(Boolean(normalizedContract),'Production /api/flights returns the nta-flights-v1 contract');
   const pricedRouteDates=new Set(diagnostics.fareResponses.filter(row=>{
     try{
       const u=new URL(row.url);
@@ -381,8 +384,8 @@ try{
   }
   assert(pricedRouteDates.size>=3,'Calendar background scan advances across multiple dates automatically',[...pricedRouteDates].sort().join(', '));
 
-  const lowest=priced.row.body.offers.reduce((best,o)=>!best||Number(o.amount)<Number(best.amount)?o:best,null);
-  const expectedLow=money(lowest.amount,lowest.currency||'USD');
+  const lowest=priced.row.body.offers.reduce((best,o)=>!best||Number(o?.fare?.amount)<Number(best?.fare?.amount)?o:best,null);
+  const expectedLow=money(lowest.amount,lowest.fare.currency||'USD');
   await page.waitForFunction(({date,expected})=>{
     const cell=document.querySelector('[data-calendar-date="'+date+'"] .calendar-fare');
     return cell&&cell.textContent.includes(expected);

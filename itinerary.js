@@ -567,8 +567,8 @@
         carrier:o.operatingCarrier||o.operatingCarrierCode||'Carrier',
         flightNo:o.flightNumber||o.operatingCarrierCode||'Flight',
         sample:false,provider:data.provider||'provider',liveMode:Boolean(data.liveMode&&o.liveMode),
-        timeStatus:Boolean(data.liveMode&&o.liveMode)?'verified':'prototype',
-        fareStatus:Boolean(data.liveMode&&o.liveMode)?'verified':'prototype'
+        timeStatus:o.timeStatus||((data.liveMode&&o.liveMode)?'verified':'prototype'),
+        fareStatus:o.fareStatus||((data.liveMode&&o.liveMode)?'verified':'prototype')
       };
     }).filter(Boolean).sort((x,y)=>x.departMin-y.departMin);
   }
@@ -702,9 +702,42 @@
       fareActiveKeys.add(task.key);
       updateCalendarCell(task.date);
       lastFareStartAt=Date.now();
-      fetch(`/.netlify/functions/flight-proxy?origin=${encodeURIComponent(task.a)}&destination=${encodeURIComponent(task.b)}&date=${encodeURIComponent(task.date)}`,{headers:{Accept:'application/json'}})
+      fetch(`/api/flights?origin=${encodeURIComponent(task.a)}&destination=${encodeURIComponent(task.b)}&date=${encodeURIComponent(task.date)}`,{headers:{Accept:'application/json'}})
         .then(async res=>{
-          const data=await res.json().catch(()=>({}));
+          let data=await res.json().catch(()=>({}));
+          if(data&&data.contractVersion==='nta-flights-v1'&&Array.isArray(data.offers)){
+            data={
+              provider:data.sourceProvider||'provider',
+              liveMode:data.offers.some(o=>o&&o.liveMode),
+              checkedAt:data.checkedAt,
+              origin:data.origin,
+              destination:data.destination,
+              departureDate:data.departureDate,
+              offers:data.offers.map(o=>({
+                provider:data.sourceProvider||'provider',
+                liveMode:Boolean(o.liveMode),
+                offerId:o.id||null,
+                origin:o.origin,
+                destination:o.destination,
+                departureDate:o.departureDate,
+                departureTime:o.departureTime,
+                arrivalTime:o.arrivalTime,
+                durationMinutes:o.durationMinutes,
+                operatingCarrier:o.operatingCarrier,
+                operatingCarrierCode:o.operatingCarrierCode,
+                flightNumber:o.flightNumber,
+                amount:Number(o.fare&&o.fare.amount),
+                currency:o.fare&&o.fare.currency||'USD',
+                fareStatus:o.fare&&o.fare.status||'prototype',
+                timeStatus:o.timeStatus||'prototype',
+                expiresAt:o.expiresAt||null,
+                fareCount:Number(o.fareCount||1),
+                fareChoices:Array.isArray(o.fareChoices)?o.fareChoices.map(f=>({
+                  offerId:f.id||null,amount:Number(f.amount),currency:f.currency||'USD',expiresAt:f.expiresAt||null
+                })):[]
+              }))
+            };
+          }
           if(!res.ok){
             if(res.status===429&&Number(data.retryAfterMs)>0){
               fareBlockedUntil=Math.max(fareBlockedUntil,Date.now()+Number(data.retryAfterMs));
