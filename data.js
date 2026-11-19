@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.24",
+  "mvpRevision": "2026-11-19.25",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
@@ -197,6 +197,17 @@ window.NTA_DATA = {
           "ADQ-AKK"
         ],
         "note": "Current Island Air page states scheduled Akhiok service Tuesday/Thursday/Saturday. Exact segment times are not published on the current destination page, so MVP uses prototype times."
+      },
+      {
+        "carrier": "Cape Air",
+        "label": "Current Augusta and Lebanon winter service",
+        "url": "https://flights.capeair.com/",
+        "checkedAsOf": "2026-11-19",
+        "verifiedPairs": [
+          "AUG-BOS",
+          "LEB-BOS"
+        ],
+        "note": "Augusta's official airport page states three daily winter flights to Boston; Cape Air currently offers Augusta-Boston inventory across the active winter period. Cape Air's Lebanon essential-travel page states six daily round trips to Boston. Exact segment times are not encoded here, so MVP times remain prototype."
       }
     ]
   },
@@ -5050,6 +5061,78 @@ window.NTA_DATA = {
       "sourceLabel": "Island Air Service — Akhiok destination page",
       "sourceUrl": "https://www.flyadq.com/flight-information/destinations/akhiok/",
       "checkedAsOf": "2026-11-19"
+    },
+    "AUG|BOS": {
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "airline": "Cape Air",
+      "checkedAsOf": "2026-11-19",
+      "count": 3,
+      "label": "Daily winter service, three flights per day",
+      "sourceLabel": "Augusta State Airport / Cape Air current winter service",
+      "sourceUrl": "https://www.augustamaine.gov/192/Augusta-State-Airport"
+    },
+    "BOS|AUG": {
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "airline": "Cape Air",
+      "checkedAsOf": "2026-11-19",
+      "count": 3,
+      "label": "Daily winter service, three flights per day",
+      "sourceLabel": "Augusta State Airport / Cape Air current winter service",
+      "sourceUrl": "https://www.augustamaine.gov/192/Augusta-State-Airport"
+    },
+    "LEB|BOS": {
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "airline": "Cape Air",
+      "checkedAsOf": "2026-11-19",
+      "count": 6,
+      "label": "Daily service, six round trips per day",
+      "sourceLabel": "Cape Air essential travel — Lebanon to Boston",
+      "sourceUrl": "https://flights.capeair.com/en/essential-travel-lebanon"
+    },
+    "BOS|LEB": {
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "airline": "Cape Air",
+      "checkedAsOf": "2026-11-19",
+      "count": 6,
+      "label": "Daily service, six round trips per day",
+      "sourceLabel": "Cape Air essential travel — Lebanon to Boston",
+      "sourceUrl": "https://flights.capeair.com/en/essential-travel-lebanon"
     }
   }
 };

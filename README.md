@@ -9,7 +9,7 @@ Map-first flight discovery and itinerary planning focused on Essential Air Servi
 - **Netlify project:** `nextownair-site`
 - **Custom domain:** `nextownair.com`
 - **Hosting:** Netlify connected to GitHub
-- **Current MVP data revision:** `2026-11-19.24`
+- **Current MVP data revision:** `2026-11-19.25`
 
 ## Product behavior
 

@@ -58,5 +58,7 @@ console.log('INFO: largest provider-dependent hub groups '+top.map(([hub,codes])
 const alaskaUncovered=providerDependent.filter(([a,b])=>by.get(a)?.state==='AK'||by.get(b)?.state==='AK');
 console.log('INFO: Alaska provider-dependent EAS pairs '+alaskaUncovered.map(x=>x.join('-')).sort().join(','));
 
+if(coveredPairs.length<13)fail('Minimum source-backed EAS fallback coverage regressed below 13 pairs: '+coveredPairs.length);
+else pass('Minimum source-backed EAS fallback coverage is at least 13 pairs');
 if(coveredPairs.length===0)fail('No EAS source-backed schedule fallbacks remain');
 if(process.exitCode)process.exit(process.exitCode);
