@@ -13,7 +13,9 @@ if(start<0||end<=start) throw new Error('Unable to parse data.js');
 const D=JSON.parse(raw.slice(start+1,end).trim());
 
 const airports=D.airports||[];
-const routes=D.routes||[];
+const mapRoutes=D.routes||[];
+const backboneRoutes=D.backboneRoutes||[];
+const routes=[...mapRoutes,...backboneRoutes];
 const by=new Map();
 for(const a of airports){
   if(by.has(a.code)) fail('Duplicate airport code '+a.code);
@@ -82,7 +84,7 @@ for(const code of by.keys()){
   components.push(comp);
 }
 components.sort((a,b)=>b.length-a.length);
-console.log('INFO: airports='+airports.length+' routes='+routes.length+' components='+components.length+' largest='+components[0]?.length);
+console.log('INFO: airports='+airports.length+' mapRoutes='+mapRoutes.length+' backboneRoutes='+backboneRoutes.length+' totalRoutingEdges='+routes.length+' components='+components.length+' largest='+components[0]?.length);
 console.log('INFO: component sizes='+components.map(x=>x.length).join(','));
 
 const continuityWarnings=[];
@@ -92,5 +94,10 @@ for(const hub of usedHubs){
   if(!outward.length) continuityWarnings.push(hub);
 }
 if(continuityWarnings.length) console.log('WARN: hubs with no modeled non-EAS onward edge: '+continuityWarnings.join(', '));
+
+if((D.routeVerification?.backboneRoutePairs||0)!==backboneRoutes.length)fail('backboneRoutePairs metadata does not match backboneRoutes length');
+if(backboneRoutes.length)pass('Commercial backbone edges are tracked separately from the default map layer');
+if(components.length>=21)fail('Commercial backbone did not reduce the pre-backbone 21-component graph');
+if(components.length<21)pass('Commercial backbone reduces disconnected routing components to '+components.length);
 
 if(process.exitCode) process.exit(process.exitCode);

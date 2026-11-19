@@ -17,6 +17,7 @@ The planning graph represents verified nonstop service, not merely EAS community
 3. Major-airport connector service is represented by explicit verified edges. A pair is never inferred merely because both airports are called hubs.
 4. Airport `type` is metadata. It does not control whether an airport may be selected, routed through, or treated as part of the trip.
 5. The routing graph may be richer than the default map presentation. Map visibility and zoom policy are presentation concerns, not route-existence rules.
+6. Current commercial hub-to-hub edges may live in a separate `backboneRoutes` layer. Routing uses both `routes` and `backboneRoutes`; the default map may omit backbone edges until map-density rules are deliberately designed.
 
 An airport automatically inserted by the routing engine is tracked explicitly as an auto-connector. The application must never infer that the user did not choose an airport merely because it is a hub.
 
@@ -101,7 +102,7 @@ Saved trips, when implemented, are snapshots of user choices rather than frozen 
 Before the MVP is handed back for UAT:
 
 - every DOT-listed EAS hub relationship is represented by a valid graph edge;
-- graph audits identify isolated airports, invalid edges, duplicate edges, disconnected components, and connector continuity gaps;
+- graph audits identify isolated airports, invalid edges, duplicate edges, disconnected components, and connector continuity gaps across both map and commercial-backbone edges;
 - known connector regressions such as Billings have a verified onward path;
 - user-selected airports are never relabeled as automatic connectors based on airport type;
 - only services known to exist are selectable;

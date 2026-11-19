@@ -7,14 +7,40 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.02",
+  "mvpRevision": "2026-11-19.03",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-09-30",
     "easRoutePairs": 225,
     "connectorRoutePairs": 14,
-    "note": "The planner routes only over explicit verified airport pairs. EAS pairs are sourced from the U.S. DOT May 2026 status reports; additional nonstop pairs are separately checked against current airport/airline schedule sources. Airport type never determines whether a route exists or whether a stop was user-selected.",
-    "continuityChecks": ["BIL"]
+    "note": "The planner routes over explicit verified EAS/map edges plus a separate current commercial backbone. EAS pairs come from U.S. DOT May 2026 reports; backbone pairs come from current airport-published nonstop destination lists. Airport type never determines whether a route exists or whether a stop was user-selected.",
+    "continuityChecks": [
+      "BIL",
+      "CLT",
+      "BOS",
+      "PHX",
+      "ATL",
+      "OGG",
+      "SJU",
+      "PDX",
+      "BWI",
+      "OAK"
+    ],
+    "backboneRoutePairs": 51,
+    "backboneSources": [
+      {
+        "airport": "IAD",
+        "label": "Washington Dulles International Airport — Nonstop Destinations",
+        "url": "https://www.flydulles.com/nonstop-destinations",
+        "checkedAsOf": "2026-11-18"
+      },
+      {
+        "airport": "PHX",
+        "label": "Phoenix Sky Harbor International Airport — Where We Fly",
+        "url": "https://www.skyharbor.com/flights/where-we-fly",
+        "checkedAsOf": "2026-11-18"
+      }
+    ]
   },
   "airports": [
     {
@@ -4047,6 +4073,212 @@ window.NTA_DATA = {
     [
       "KZB",
       "ADQ"
+    ]
+  ],
+  "backboneRoutes": [
+    [
+      "IAD",
+      "ANC"
+    ],
+    [
+      "IAD",
+      "PHX"
+    ],
+    [
+      "IAD",
+      "LAX"
+    ],
+    [
+      "IAD",
+      "DEN"
+    ],
+    [
+      "IAD",
+      "ATL"
+    ],
+    [
+      "IAD",
+      "HNL"
+    ],
+    [
+      "IAD",
+      "ORD"
+    ],
+    [
+      "IAD",
+      "BOS"
+    ],
+    [
+      "IAD",
+      "DTW"
+    ],
+    [
+      "IAD",
+      "MSP"
+    ],
+    [
+      "IAD",
+      "STL"
+    ],
+    [
+      "IAD",
+      "LAS"
+    ],
+    [
+      "IAD",
+      "ABQ"
+    ],
+    [
+      "IAD",
+      "JFK"
+    ],
+    [
+      "IAD",
+      "ROC"
+    ],
+    [
+      "IAD",
+      "PBG"
+    ],
+    [
+      "IAD",
+      "CLT"
+    ],
+    [
+      "IAD",
+      "RDU"
+    ],
+    [
+      "IAD",
+      "PDX"
+    ],
+    [
+      "IAD",
+      "PIT"
+    ],
+    [
+      "IAD",
+      "PHL"
+    ],
+    [
+      "IAD",
+      "SJU"
+    ],
+    [
+      "IAD",
+      "BNA"
+    ],
+    [
+      "IAD",
+      "DFW"
+    ],
+    [
+      "IAD",
+      "IAH"
+    ],
+    [
+      "IAD",
+      "SLC"
+    ],
+    [
+      "IAD",
+      "CKB"
+    ],
+    [
+      "PHX",
+      "ABQ"
+    ],
+    [
+      "PHX",
+      "ANC"
+    ],
+    [
+      "PHX",
+      "ATL"
+    ],
+    [
+      "PHX",
+      "BWI"
+    ],
+    [
+      "PHX",
+      "BIL"
+    ],
+    [
+      "PHX",
+      "BOS"
+    ],
+    [
+      "PHX",
+      "CLT"
+    ],
+    [
+      "PHX",
+      "ORD"
+    ],
+    [
+      "PHX",
+      "DFW"
+    ],
+    [
+      "PHX",
+      "DEN"
+    ],
+    [
+      "PHX",
+      "DTW"
+    ],
+    [
+      "PHX",
+      "HHR"
+    ],
+    [
+      "PHX",
+      "HNL"
+    ],
+    [
+      "PHX",
+      "IAH"
+    ],
+    [
+      "PHX",
+      "BNA"
+    ],
+    [
+      "PHX",
+      "JFK"
+    ],
+    [
+      "PHX",
+      "OAK"
+    ],
+    [
+      "PHX",
+      "PHL"
+    ],
+    [
+      "PHX",
+      "PIT"
+    ],
+    [
+      "PHX",
+      "PDX"
+    ],
+    [
+      "PHX",
+      "RDU"
+    ],
+    [
+      "PHX",
+      "SLC"
+    ],
+    [
+      "PHX",
+      "STL"
+    ],
+    [
+      "PHX",
+      "OGG"
     ]
   ]
 };

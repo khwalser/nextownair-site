@@ -6,7 +6,7 @@
   const listedAdj=new Map((D.airports||[]).map(a=>[a.code,new Set()]));
   const hubCodes=new Set();
   (D.airports||[]).forEach(a=>(a.hubs||[]).forEach(h=>hubCodes.add(h)));
-  (D.routes||[]).forEach(([a,b])=>{
+  [...(D.routes||[]),...(D.backboneRoutes||[])].forEach(([a,b])=>{
     if(!listedAdj.has(a))listedAdj.set(a,new Set());
     if(!listedAdj.has(b))listedAdj.set(b,new Set());
     listedAdj.get(a).add(b);listedAdj.get(b).add(a);
