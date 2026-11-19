@@ -99,7 +99,22 @@ if(remainingComponents.length)console.log('WARN: remaining disconnected regional
 
 if((D.routeVerification?.backboneRoutePairs||0)!==backboneRoutes.length)fail('backboneRoutePairs metadata does not match backboneRoutes length');
 if(backboneRoutes.length)pass('Commercial backbone edges are tracked separately from the default map layer');
-if(components.length>5)fail('Verified commercial backbone still leaves more than five routing components: '+components.length);
-if(components.length<=5)pass('Verified commercial backbone reduces the graph to '+components.length+' routing components');
+const expectedUnresolved=(D.routeVerification?.unresolvedNetworkComponents||[])
+  .map(x=>(x.airports||[]).slice().sort().join('|'))
+  .sort();
+const actualUnresolved=components.slice(1)
+  .map(x=>x.slice().sort().join('|'))
+  .sort();
+if(JSON.stringify(actualUnresolved)!==JSON.stringify(expectedUnresolved)){
+  fail('Disconnected routing components changed. Expected '+JSON.stringify(expectedUnresolved)+' but found '+JSON.stringify(actualUnresolved));
+}else{
+  pass('Only explicitly documented unresolved regional components remain disconnected');
+}
+const unresolvedAirportCount=(D.routeVerification?.unresolvedNetworkComponents||[]).reduce((sum,x)=>sum+(x.airports||[]).length,0);
+if((components[0]?.length||0)!==airports.length-unresolvedAirportCount){
+  fail('Main connected component size does not match documented unresolved airports');
+}else{
+  pass('Main routing component contains every airport not explicitly documented as unresolved');
+}
 
 if(process.exitCode) process.exit(process.exitCode);

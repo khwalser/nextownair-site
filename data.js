@@ -7,10 +7,10 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.07",
+  "mvpRevision": "2026-11-19.08",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
-    "auditedAsOf": "2026-09-30",
+    "auditedAsOf": "2026-11-19",
     "easRoutePairs": 225,
     "connectorRoutePairs": 14,
     "note": "The planner routes over explicit verified EAS/map edges plus a separate current commercial backbone. EAS pairs come from U.S. DOT May 2026 reports; backbone pairs come from current airport-published nonstop destination lists. Airport type never determines whether a route exists or whether a stop was user-selected.",
@@ -66,6 +66,41 @@ window.NTA_DATA = {
           "ANC-KTN",
           "ANC-JNU"
         ]
+      }
+    ],
+    "unresolvedNetworkComponents": [
+      {
+        "airports": [
+          "NCN",
+          "MRI",
+          "MCG",
+          "SKW",
+          "TEK"
+        ],
+        "reason": "Regional Alaska cluster; connection to the national flight graph requires a verified flight edge or an explicit non-flight airport-transfer model."
+      },
+      {
+        "airports": [
+          "KFP",
+          "CDB",
+          "KVC"
+        ],
+        "reason": "Regional Alaska cluster; no national-network bridge is modeled without verified current service."
+      },
+      {
+        "airports": [
+          "HYG",
+          "WFB",
+          "MTM"
+        ],
+        "reason": "Southeast Alaska regional cluster; no national-network bridge is modeled without verified current service."
+      },
+      {
+        "airports": [
+          "CZN",
+          "TKJ"
+        ],
+        "reason": "Regional Alaska pair; no national-network bridge is modeled without verified current service."
       }
     ]
   },
