@@ -57,17 +57,24 @@ jobs:
       - name: Audit route graph
         run: node e2e/network-audit.mjs
 
-      - name: Wait for production deploy containing this network revision
+      - name: Wait for production deploy containing this exact MVP revision
         if: ${{ !inputs.base_url || inputs.base_url == 'https://nextownair.com' }}
         run: |
+          EXPECTED="$(grep -o '"mvpRevision": "[^"]*"' data.js | head -1 | cut -d'"' -f4)"
+          if [ -z "$EXPECTED" ]; then
+            echo "Local data.js has no mvpRevision marker."
+            exit 1
+          fi
+          echo "Waiting for production MVP revision $EXPECTED"
           for i in {1..48}; do
-            if curl -fsSL --max-time 15 https://nextownair.com/data.js | grep -q '"connectorRoutePairs": 14'; then
-              echo "Production network revision is live."
+            LIVE="$(curl -fsSL --max-time 15 https://nextownair.com/data.js | grep -o '"mvpRevision": "[^"]*"' | head -1 | cut -d'"' -f4 || true)"
+            if [ "$LIVE" = "$EXPECTED" ]; then
+              echo "Production MVP revision $LIVE is live."
               exit 0
             fi
             sleep 5
           done
-          echo "Production did not expose the expected network revision."
+          echo "Production did not expose expected MVP revision $EXPECTED."
           exit 1
 
       - name: Install Playwright package

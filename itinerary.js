@@ -1212,9 +1212,40 @@
         </div>
       </div>`;
   }
+  function renderBookingChecklist(timeline){
+    if(!timeline.length)return '';
+    const items=timeline.map((x,i)=>{
+      const fareClass=x.fareStatus==='prototype'?' prototype-value':'';
+      const timeClass=x.timeStatus==='prototype'?' prototype-value':'';
+      return `<li class="booking-item">
+        <label class="booking-check">
+          <input type="checkbox" aria-label="Mark leg ${i+1} booked">
+          <span>
+            <strong>Leg ${i+1} · ${x.from} → ${x.to}</strong>
+            <span>${window.NTA.fmtDate(x.departDate,{weekday:'short',month:'short',day:'numeric'})} · <span class="${timeClass.trim()}">${x.departTime} → ${x.arrivalTime}</span></span>
+            <span>${x.flightNo} · ${x.carrier}</span>
+          </span>
+        </label>
+        <div class="booking-action">
+          <strong class="${fareClass.trim()}">${x.fareText||'Fare pending'}</strong>
+          <a class="btn tertiary booking-link" href="${x.bookingUrl}" target="_blank" rel="noopener">Open booking search ↗</a>
+        </div>
+      </li>`;
+    }).join('');
+    return `<section class="booking-checklist" aria-labelledby="bookingChecklistTitle">
+      <div class="booking-checklist-head">
+        <div>
+          <div class="eyebrow">Booking checklist</div>
+          <h3 id="bookingChecklistTitle">Book each selected flight</h3>
+        </div>
+        <p class="small">NexTownAir organizes the itinerary; the airline or booking provider completes and services each purchase.</p>
+      </div>
+      <ol>${items}</ol>
+    </section>`;
+  }
   function renderSummary(rows,timeline){
     const legs=Math.max(0,state.route.length-1);const picked=rows.length;const complete=legs>0&&picked===legs;
-    el.summary.innerHTML=`<div class="summary-top"><div><div class="eyebrow">Trip summary</div><h3 style="margin:4px 0">${picked} of ${legs} flight leg${legs===1?'':'s'} selected</h3></div><div id="liveTripFare" class="live-trip-fare"><span class="small">Checking live fares…</span></div></div>${complete?'<div class="trip-complete">✓ Itinerary complete — your full travel-time breakdown is ready.</div>':''}${picked?rows.map(r=>`<div class="selectedline">${r}</div>`).join(''):'<div class="muted">Choose a flight tile when you are ready. Your route and stay choices are already saved.</div>'}${complete?renderTravelChart(timeline):''}<div class="btnrow" style="margin-top:12px"><a class="btn secondary" href="${window.NTA.buildUrl('index.html',state)}">Edit route on map</a><button id="summaryPrint" class="btn tertiary" type="button">Print itinerary</button></div>`;
+    el.summary.innerHTML=`<div class="summary-top"><div><div class="eyebrow">Trip summary</div><h3 style="margin:4px 0">${picked} of ${legs} flight leg${legs===1?'':'s'} selected</h3></div><div id="liveTripFare" class="live-trip-fare"><span class="small">Checking live fares…</span></div></div>${complete?'<div class="trip-complete">✓ Itinerary complete — your full travel-time breakdown is ready.</div>':''}${picked?rows.map(r=>`<div class="selectedline">${r}</div>`).join(''):'<div class="muted">Choose a flight tile when you are ready. Your route and stay choices are already saved.</div>'}${complete?renderTravelChart(timeline):''}${complete?renderBookingChecklist(timeline):''}<div class="btnrow" style="margin-top:12px"><a class="btn secondary" href="${window.NTA.buildUrl('index.html',state)}">Edit route on map</a><button id="summaryPrint" class="btn tertiary" type="button">Print itinerary</button></div>`;
     document.getElementById('summaryPrint').addEventListener('click',()=>window.print());
   }
   function renderEmpty(){
@@ -1259,10 +1290,15 @@
           fromCity:fromAirport?fromAirport.city:state.route[i],
           toCity:toAirport?toAirport.city:state.route[i+1],
           flightNo:previousChosen.flightNo,
+          carrier:previousChosen.carrier,
           departDate,
           departTime:optionTimeText(previousChosen,previousChosen.departMin),
           arrivalDate:arr.date,
           arrivalTime:optionTimeText(previousChosen,arr.min),
+          fareText:optionFareText(previousChosen),
+          fareStatus:previousChosen.fareStatus||'prototype',
+          timeStatus:previousChosen.timeStatus||'prototype',
+          bookingUrl:externalFareSearchUrl(state.route[i],state.route[i+1],departDate),
           flightMin:previousChosen.duration,groundMin,
           groundKind:groundLabel(i,groundMin,inboundArrivalDate,departDate),elapsedMin
         });

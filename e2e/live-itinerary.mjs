@@ -268,6 +268,12 @@ try{
     }
     await page.waitForFunction(()=>document.querySelector('#summary')?.textContent?.includes('6 of 6 flight legs selected'),null,{timeout:15000});
     pass('Exact Detroit-Alpena-Detroit-Chicago-Houghton-Chicago-Detroit route can be completed end to end');
+    const bookingItems=page.locator('.booking-checklist .booking-item');
+    assert(await bookingItems.count()===6,'Completed itinerary renders one booking checklist item per flight leg');
+    const bookingLinks=page.locator('.booking-checklist .booking-link');
+    assert(await bookingLinks.count()===6,'Completed itinerary renders one external booking handoff per flight leg');
+    const bookingHrefs=await bookingLinks.evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')||''));
+    assert(bookingHrefs.every(h=>/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(h)),'Every MVP booking handoff targets a route/date-specific flight search',bookingHrefs.join(' | '));
   }
 
   // 5) Upstream changes preserve feasible downstream choices and silently invalidate impossible ones.
