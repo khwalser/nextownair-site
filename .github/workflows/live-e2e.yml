@@ -15,6 +15,7 @@ on:
       - "netlify/functions/**"
       - "e2e/live-itinerary.mjs"
       - "e2e/network-audit.mjs"
+      - "e2e/schedule-coverage-audit.mjs"
       - "docs/data-architecture.md"
       - ".github/workflows/live-e2e.yml"
   workflow_dispatch:
@@ -56,6 +57,9 @@ jobs:
 
       - name: Audit route graph
         run: node e2e/network-audit.mjs
+
+      - name: Audit schedule fallback coverage
+        run: node e2e/schedule-coverage-audit.mjs
 
       - name: Wait for production deploy containing this exact MVP revision
         if: ${{ !inputs.base_url || inputs.base_url == 'https://nextownair.com' }}
