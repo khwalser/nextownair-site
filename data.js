@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.20",
+  "mvpRevision": "2026-11-19.21",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
@@ -176,7 +176,7 @@ window.NTA_DATA = {
           "FAI-MCG",
           "FAI-TKJ"
         ],
-        "note": "Operating days are authoritative for the current timetable. The PDF publishes Fairbanks departure times, but also states that departure times from villages change daily; because arrival times are not published in this table, MVP uses prototype trip times for these route options rather than overstating exact timing."
+        "note": "Operating days are authoritative for the current timetable. The PDF publishes Fairbanks departure times, but also states that departure times from villages change daily; because arrival times are not published in this table, MVP uses prototype trip times. Milk-run routings are labeled as through service with the timetable-listed intermediate airport rather than as nonstop."
       }
     ]
   },
@@ -4787,7 +4787,11 @@ window.NTA_DATA = {
       ],
       "count": 1,
       "label": "Monday through Friday current service",
-      "publishedDepartureFromFAI": "09:30"
+      "publishedDepartureFromFAI": "09:30",
+      "serviceType": "through",
+      "intermediateStops": [
+        "MNT"
+      ]
     },
     "MLY|FAI": {
       "activeThrough": "2026-12-31",
@@ -4803,7 +4807,11 @@ window.NTA_DATA = {
         5
       ],
       "count": 1,
-      "label": "Monday through Friday current service"
+      "label": "Monday through Friday current service",
+      "serviceType": "through",
+      "intermediateStops": [
+        "MNT"
+      ]
     },
     "FAI|MNT": {
       "activeThrough": "2026-12-31",
@@ -4936,7 +4944,11 @@ window.NTA_DATA = {
       ],
       "count": 1,
       "label": "Tuesday, Thursday and Saturday current service",
-      "publishedDepartureFromFAI": "11:00"
+      "publishedDepartureFromFAI": "11:00",
+      "serviceType": "through",
+      "intermediateStops": [
+        "HKB"
+      ]
     },
     "TKJ|FAI": {
       "activeThrough": "2026-12-31",
@@ -4950,7 +4962,11 @@ window.NTA_DATA = {
         6
       ],
       "count": 1,
-      "label": "Tuesday, Thursday and Saturday current service"
+      "label": "Tuesday, Thursday and Saturday current service",
+      "serviceType": "through",
+      "intermediateStops": [
+        "HKB"
+      ]
     }
   }
 };

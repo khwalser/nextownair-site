@@ -318,6 +318,8 @@ try{
     const wrightText=(await page.locator('#flight-options-0').innerText()).replace(/\s+/g,' ');
     assert(/Known service/i.test(wrightText),'Wright Air sourced operating-day pattern produces a selectable known-service option',wrightText);
     assert(/\?\d{1,2}:\d{2}\s+(?:AM|PM)/i.test(wrightText),'Wright Air option keeps trip timing prototype because the current timetable does not publish a complete exact segment time',wrightText);
+    assert(/1 stop via MNT/i.test(wrightText),'Fairbanks to Manley is labeled as Wright through service via Minto rather than falsely called nonstop',wrightText);
+    assert(!/· nonstop/i.test(wrightText),'Wright milk-run option is not labeled nonstop',wrightText);
     const tue=page.locator('.calendar-day[data-calendar-date="2026-12-08"]');
     const sat=page.locator('.calendar-day[data-calendar-date="2026-12-12"]');
     assert((await tue.getAttribute('class')||'').includes('available'),'Wright current Tuesday service is selectable in the calendar');

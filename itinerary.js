@@ -238,7 +238,7 @@
       const day=data.days&&data.days[date];
       if(day&&day.count>0)return {status:'yes',label:'Scheduled',detail:`${day.count} published flight${day.count===1?'':'s'}`};
       if(Array.isArray(data.unknownDates)&&data.unknownDates.includes(date))return {status:'error',label:'Schedule check incomplete',detail:'retry this date'};
-      if(Array.isArray(data.checkedDates)&&data.checkedDates.includes(date))return {status:'none',label:'No scheduled nonstop',detail:'no published nonstop service found'};
+      if(Array.isArray(data.checkedDates)&&data.checkedDates.includes(date))return {status:'none',label:'No scheduled service',detail:'no published service found'};
     }
     const pattern=publishedServicePattern(a,b);
     if(pattern){
@@ -248,7 +248,7 @@
         const operating=pattern.days.includes(dow);
         return operating
           ?{status:'yes',label:'Scheduled',detail:`${Math.max(1,Number(pattern.count)||1)} published flight${Number(pattern.count)===1?'':'s'}`}
-          :{status:'none',label:'No scheduled nonstop',detail:'published service pattern'};
+          :{status:'none',label:'No scheduled service',detail:'published service pattern'};
       }
     }
     if(!data)return {status:'checking',label:'Checking…',detail:''};
@@ -275,7 +275,7 @@
     if(lowestOffer(fareData))return {status:'available',label:'Live fare'};
     const stateForDate=scheduleState(leg.a,leg.b,date);
     if(stateForDate.status==='yes')return {status:'available',label:'Scheduled'};
-    if(stateForDate.status==='none')return {status:'unavailable',label:'No nonstop'};
+    if(stateForDate.status==='none')return {status:'unavailable',label:'No service'};
     if(stateForDate.status==='fallback')return {status:'fallback',label:'Live fare check'};
     if(stateForDate.status==='error')return {status:'retry',label:'Retry'};
     return {status:'checking',label:'Checking'};
@@ -359,7 +359,7 @@
     const dates=scheduledCalendarDates(leg.a,leg.b,month);
     const priced=dates.filter(date=>Boolean(lowestOffer(liveFareData.get(fareKey(leg.a,leg.b,date))))).length;
     if(!dates.length){
-      el.calendarStatus.textContent='Published schedule loaded. No nonstop service dates were found in this month.';
+      el.calendarStatus.textContent='Published schedule loaded. No service service dates were found in this month.';
       return;
     }
     const checked=dates.filter(date=>liveFareData.has(fareKey(leg.a,leg.b,date))).length;
@@ -624,6 +624,7 @@
         date,departMin,arrivalMin,arrivalDayOffset:dayOffset,duration:elapsed,
         price:Number(o.amount),currency:o.currency||'USD',
         fareCount:Number(o.fareCount||1),fareChoices:Array.isArray(o.fareChoices)?o.fareChoices:[],
+        intermediateStops:[],
         carrier:o.operatingCarrier||o.operatingCarrierCode||'Carrier',
         flightNo:o.flightNumber||o.operatingCarrierCode||'Flight',
         sample:false,provider:data.provider||'provider',liveMode:Boolean(data.liveMode&&o.liveMode),
@@ -688,6 +689,7 @@
         currency:'USD',
         fareCount:0,
         fareChoices:[],
+        intermediateStops:servicePatternStops(a,b),
         carrier:f.airline||'Scheduled carrier',
         flightNo:f.ident||`Flight ${idx+1}`,
         sample:false,
@@ -724,6 +726,7 @@
         currency:'USD',
         fareCount:0,
         fareChoices:[],
+        intermediateStops:servicePatternStops(a,b),
         carrier:'Service confirmed',
         flightNo:`Option ${idx+1}`,
         sample:false,
@@ -757,6 +760,16 @@
     if(!Number.isFinite(Number(option&&option.price)))return '';
     return option.fareStatus==='prototype'?prototypeFareText(option.price):formatMoney(option.price,option.currency);
   }
+  function servicePatternStops(a,b){
+    const p=publishedServicePattern(a,b);
+    return Array.isArray(p&&p.intermediateStops)?p.intermediateStops:[];
+  }
+  function optionServiceText(option){
+    const stops=Array.isArray(option&&option.intermediateStops)?option.intermediateStops:[];
+    if(stops.length===1)return `1 stop via ${stops[0]}`;
+    if(stops.length>1)return `${stops.length} stops via ${stops.join(' · ')}`;
+    return 'nonstop';
+  }
   function checkedTime(iso){
     const d=new Date(iso);if(Number.isNaN(d.getTime()))return '';
     return d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
@@ -764,7 +777,7 @@
   function stayAvailabilityState(a,b,date){
     const av=scheduleState(a,b,date);
     if(av.status==='yes')return {status:'yes',label:'Scheduled',detail:av.detail};
-    if(av.status==='none')return {status:'none',label:'No scheduled nonstop',detail:'published schedule'};
+    if(av.status==='none')return {status:'none',label:'No scheduled service',detail:'published schedule'};
     if(av.status==='fallback')return {status:'fallback',label:'Check live fare',detail:'schedule feed unavailable'};
     if(av.status==='error')return {status:'error',label:'Schedule unavailable',detail:''};
     return {status:'loading',label:'Checking schedule…',detail:''};
@@ -1253,7 +1266,7 @@
     }
 
     const optionHead=document.createElement('div');optionHead.className='flight-options-head';
-    optionHead.innerHTML=`<div><strong>Choose a flight</strong><span>${opts.length} nonstop option${opts.length===1?'':'s'} for ${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</span></div><span>Select one to continue</span>`;
+    optionHead.innerHTML=`<div><strong>Choose a flight</strong><span>${opts.length} flight option${opts.length===1?'':'s'} for ${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</span></div><span>Select one to continue</span>`;
     box.appendChild(optionHead);
 
     opts.forEach(o=>{
@@ -1270,7 +1283,7 @@
           ? `<div class="price${fareClass}">Lowest fare ${fareLabel}</div><div class="fare-choice-list" aria-label="Returned fare prices">${fareChoices.map((f,idx)=>`<span class="fare-choice${idx===0?' lowest':''}">${idx===0?'Lowest · ':''}${formatMoney(f.amount,f.currency||o.currency)}</span>`).join('')}</div><div class="small">${fareChoices.length} live fare prices returned for this flight</div>`
           : `<div class="price${fareClass}">${fareLabel}</div>`
       ):'';
-      bt.innerHTML=`<div class="times${timeClass}">${optionTimeText(o,o.departMin)} → ${optionTimeText(o,arr.min)}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${fmtDuration(o.duration)} · nonstop</div>${price}<span class="flight-badge">${badge}</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
+      bt.innerHTML=`<div class="times${timeClass}">${optionTimeText(o,o.departMin)} → ${optionTimeText(o,arr.min)}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${fmtDuration(o.duration)} · ${optionServiceText(o)}</div>${price}<span class="flight-badge">${badge}</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
       bt.addEventListener('click',()=>chooseFlight(i,o.id));box.appendChild(bt);
     });
 
