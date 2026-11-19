@@ -310,6 +310,21 @@ try{
     pass('Sourced bush schedule survives schedule-provider outages without inventing operating days');
   }
 
+  // 4) Wright Air current operating-day patterns keep Fairbanks bush service date-aware.
+  {
+    const wrightDate='2026-12-08'; // Tuesday
+    await page.goto(BASE_URL+'/itinerary.html?route='+encodeURIComponent('FAI,MLY')+'&date='+encodeURIComponent(wrightDate),{waitUntil:'domcontentloaded',timeout:60000});
+    await page.waitForFunction(()=>document.querySelectorAll('#flight-options-0 .flight').length>0,null,{timeout:15000});
+    const wrightText=(await page.locator('#flight-options-0').innerText()).replace(/\s+/g,' ');
+    assert(/Known service/i.test(wrightText),'Wright Air sourced operating-day pattern produces a selectable known-service option',wrightText);
+    assert(/\?\d{1,2}:\d{2}\s+(?:AM|PM)/i.test(wrightText),'Wright Air option keeps trip timing prototype because the current timetable does not publish a complete exact segment time',wrightText);
+    const tue=page.locator('.calendar-day[data-calendar-date="2026-12-08"]');
+    const sat=page.locator('.calendar-day[data-calendar-date="2026-12-12"]');
+    assert((await tue.getAttribute('class')||'').includes('available'),'Wright current Tuesday service is selectable in the calendar');
+    assert((await sat.getAttribute('class')||'').includes('unavailable'),'Wright current timetable does not invent Saturday service for Manley Hot Springs');
+    pass('Wright Air current operating-day pattern survives the inactive external schedule provider without overstating village times');
+  }
+
   // 4) Mixed-mode Ketchikan routing renders the airport transfer as a transfer, never as a flight.
   {
     const target=BASE_URL+'/itinerary.html?route='+encodeURIComponent('WFB,KTN,ANC')+'&auto=1&date='+encodeURIComponent(tripDate);

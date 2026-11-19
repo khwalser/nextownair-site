@@ -63,6 +63,8 @@ Route-specific published service patterns are not overwritten by an external sch
 
 Sourced service patterns may include effective-date bounds, weekday rules, explicit no-service dates, and published departure/arrival times. Exact operating days are never inferred from ambiguous DOT frequency fields. When a current carrier timetable supplies exact times, those times are treated as verified schedule fields while fare gaps remain prototype values.
 
+A timetable can be authoritative for operating days without being authoritative for a complete segment time. Wright Air's current timetable publishes Fairbanks departure times but explicitly says village departure times change daily and does not publish complete arrival times in the table. NexTownAir therefore uses those operating days to decide whether service exists on a date, while keeping the working itinerary times prototype rather than falsely marking them verified.
+
 ## Prototype-value fallback order
 
 When a service is known to exist but a required field is unavailable, generate an MVP prototype value using this precedence:

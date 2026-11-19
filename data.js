@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.19",
+  "mvpRevision": "2026-11-19.20",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
@@ -162,6 +162,21 @@ window.NTA_DATA = {
           "MTM-WFB"
         ],
         "note": "Published operating days/times are used through December 31, 2026 as a conservative MVP review horizon; listed 2026 no-service holidays are excluded."
+      },
+      {
+        "carrier": "Wright Air Service",
+        "label": "Current timetable — updated October 2026",
+        "url": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+        "checkedAsOf": "2026-11-19",
+        "verifiedPairs": [
+          "FAI-MLY",
+          "FAI-MNT",
+          "FAI-LMA",
+          "FAI-HKB",
+          "FAI-MCG",
+          "FAI-TKJ"
+        ],
+        "note": "Operating days are authoritative for the current timetable. The PDF publishes Fairbanks departure times, but also states that departure times from villages change daily; because arrival times are not published in this table, MVP uses prototype trip times for these route options rather than overstating exact timing."
       }
     ]
   },
@@ -4756,6 +4771,186 @@ window.NTA_DATA = {
         ]
       },
       "label": "Monday through Saturday published service"
+    },
+    "FAI|MLY": {
+      "activeThrough": "2026-12-31",
+      "airline": "Wright Air Service",
+      "sourceLabel": "Wright Air Service current timetable — updated October 2026",
+      "sourceUrl": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "count": 1,
+      "label": "Monday through Friday current service",
+      "publishedDepartureFromFAI": "09:30"
+    },
+    "MLY|FAI": {
+      "activeThrough": "2026-12-31",
+      "airline": "Wright Air Service",
+      "sourceLabel": "Wright Air Service current timetable — updated October 2026",
+      "sourceUrl": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "count": 1,
+      "label": "Monday through Friday current service"
+    },
+    "FAI|MNT": {
+      "activeThrough": "2026-12-31",
+      "airline": "Wright Air Service",
+      "sourceLabel": "Wright Air Service current timetable — updated October 2026",
+      "sourceUrl": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "count": 1,
+      "label": "Monday through Friday current service",
+      "publishedDepartureFromFAI": "09:30"
+    },
+    "MNT|FAI": {
+      "activeThrough": "2026-12-31",
+      "airline": "Wright Air Service",
+      "sourceLabel": "Wright Air Service current timetable — updated October 2026",
+      "sourceUrl": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "count": 1,
+      "label": "Monday through Friday current service"
+    },
+    "FAI|LMA": {
+      "activeThrough": "2026-12-31",
+      "airline": "Wright Air Service",
+      "sourceLabel": "Wright Air Service current timetable — updated October 2026",
+      "sourceUrl": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        1,
+        4
+      ],
+      "count": 1,
+      "label": "Monday and Thursday current service",
+      "publishedDepartureFromFAI": "14:00"
+    },
+    "LMA|FAI": {
+      "activeThrough": "2026-12-31",
+      "airline": "Wright Air Service",
+      "sourceLabel": "Wright Air Service current timetable — updated October 2026",
+      "sourceUrl": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        1,
+        4
+      ],
+      "count": 1,
+      "label": "Monday and Thursday current service"
+    },
+    "FAI|HKB": {
+      "activeThrough": "2026-12-31",
+      "airline": "Wright Air Service",
+      "sourceLabel": "Wright Air Service current timetable — updated October 2026",
+      "sourceUrl": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        2,
+        4,
+        6
+      ],
+      "count": 1,
+      "label": "Tuesday, Thursday and Saturday current service",
+      "publishedDepartureFromFAI": "11:00"
+    },
+    "HKB|FAI": {
+      "activeThrough": "2026-12-31",
+      "airline": "Wright Air Service",
+      "sourceLabel": "Wright Air Service current timetable — updated October 2026",
+      "sourceUrl": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        2,
+        4,
+        6
+      ],
+      "count": 1,
+      "label": "Tuesday, Thursday and Saturday current service"
+    },
+    "FAI|MCG": {
+      "activeThrough": "2026-12-31",
+      "airline": "Wright Air Service",
+      "sourceLabel": "Wright Air Service current timetable — updated October 2026",
+      "sourceUrl": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        1,
+        4,
+        6
+      ],
+      "count": 1,
+      "label": "Monday, Thursday and Saturday current service",
+      "publishedDepartureFromFAI": "08:45"
+    },
+    "MCG|FAI": {
+      "activeThrough": "2026-12-31",
+      "airline": "Wright Air Service",
+      "sourceLabel": "Wright Air Service current timetable — updated October 2026",
+      "sourceUrl": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        1,
+        4,
+        6
+      ],
+      "count": 1,
+      "label": "Monday, Thursday and Saturday current service"
+    },
+    "FAI|TKJ": {
+      "activeThrough": "2026-12-31",
+      "airline": "Wright Air Service",
+      "sourceLabel": "Wright Air Service current timetable — updated October 2026",
+      "sourceUrl": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        2,
+        4,
+        6
+      ],
+      "count": 1,
+      "label": "Tuesday, Thursday and Saturday current service",
+      "publishedDepartureFromFAI": "11:00"
+    },
+    "TKJ|FAI": {
+      "activeThrough": "2026-12-31",
+      "airline": "Wright Air Service",
+      "sourceLabel": "Wright Air Service current timetable — updated October 2026",
+      "sourceUrl": "https://wrightairservice.com/wp-content/uploads/2026/11/CURRENT-TIMETABLE-2026-10.pdf",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        2,
+        4,
+        6
+      ],
+      "count": 1,
+      "label": "Tuesday, Thursday and Saturday current service"
     }
   }
 };
