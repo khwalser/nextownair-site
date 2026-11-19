@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.26",
+  "mvpRevision": "2026-11-19.27",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
@@ -4549,6 +4549,82 @@ window.NTA_DATA = {
     }
   ],
   "servicePatterns": {
+    "AIA|DEN": {
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "Denver Air Connection",
+      "label": "Daily current nonstop service; conservative minimum one flight per day",
+      "sourceLabel": "Alliance Municipal Airport current Denver schedule",
+      "sourceUrl": "https://www.flyalliancene.com/",
+      "checkedAsOf": "2026-11-19"
+    },
+    "DEN|AIA": {
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "Denver Air Connection",
+      "label": "Daily current nonstop service; conservative minimum one flight per day",
+      "sourceLabel": "Alliance Municipal Airport current Denver schedule",
+      "sourceUrl": "https://www.flyalliancene.com/",
+      "checkedAsOf": "2026-11-19"
+    },
+    "CDR|DEN": {
+      "activeThrough": "2026-12-31",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "Denver Air Connection",
+      "label": "Current nonstop service; conservative minimum one flight per operating day",
+      "sourceLabel": "Current Chadron-Denver published schedule",
+      "sourceUrl": "https://www.directflights.com/DEN-CDR",
+      "checkedAsOf": "2026-11-19"
+    },
+    "DEN|CDR": {
+      "activeThrough": "2026-12-31",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "Denver Air Connection",
+      "label": "Current nonstop service; conservative minimum one flight per operating day",
+      "sourceLabel": "Current Denver-Chadron published schedule",
+      "sourceUrl": "https://www.directflights.com/DEN-CDR",
+      "checkedAsOf": "2026-11-19"
+    },
+    "LBF|DEN": {
+      "activeThrough": "2027-05-16",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Daily current nonstop service; conservative minimum one flight per day",
+      "sourceLabel": "Current North Platte-Denver published schedule",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/LBF/DEN",
+      "checkedAsOf": "2026-11-19"
+    },
+    "DEN|LBF": {
+      "activeThrough": "2027-05-16",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Daily current nonstop service; conservative minimum one flight per day",
+      "sourceLabel": "Current North Platte-Denver published schedule",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/LBF/DEN",
+      "checkedAsOf": "2026-11-19"
+    },
+    "BFF|DEN": {
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Daily current passenger service to Denver; conservative minimum one flight per day",
+      "sourceLabel": "Western Nebraska Regional Airport current United service",
+      "sourceUrl": "https://www.flyscottsbluff.com/united-airlines-operated-by-skywest",
+      "checkedAsOf": "2026-11-19"
+    },
+    "DEN|BFF": {
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Daily current passenger service from Denver; conservative minimum one flight per day",
+      "sourceLabel": "Western Nebraska Regional Airport current United service",
+      "sourceUrl": "https://www.flyscottsbluff.com/united-airlines-operated-by-skywest",
+      "checkedAsOf": "2026-11-19"
+    },
     "ESC|DTW": {
       "activeThrough": "2027-06-03",
       "days": [0, 1, 2, 3, 4, 5, 6],
