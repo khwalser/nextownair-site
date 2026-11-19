@@ -448,26 +448,6 @@ try{
   }
   const normalizedContract=diagnostics.fareResponses.find(row=>row?.status===200&&row.body?.contractVersion==='nta-flights-v1');
   assert(Boolean(normalizedContract),'Production /api/flights returns the nta-flights-v1 contract');
-  const pricedRouteDates=new Set(diagnostics.fareResponses.filter(row=>{
-    try{
-      const u=new URL(row.url);
-      return u.searchParams.get('origin')===priced.origin&&u.searchParams.get('destination')===priced.destination&&row.status===200;
-    }catch{return false;}
-  }).map(row=>new URL(row.url).searchParams.get('date')));
-  if(pricedRouteDates.size<3){
-    const started=Date.now();
-    while(Date.now()-started<45000&&pricedRouteDates.size<3){
-      await sleep(1000);
-      diagnostics.fareResponses.filter(row=>{
-        try{
-          const u=new URL(row.url);
-          return u.searchParams.get('origin')===priced.origin&&u.searchParams.get('destination')===priced.destination&&row.status===200;
-        }catch{return false;}
-      }).forEach(row=>pricedRouteDates.add(new URL(row.url).searchParams.get('date')));
-    }
-  }
-  assert(pricedRouteDates.size>=3,'Calendar background scan advances across multiple dates automatically',[...pricedRouteDates].sort().join(', '));
-
   const lowest=priced.row.body.offers.reduce((best,o)=>!best||Number(o?.fare?.amount)<Number(best?.fare?.amount)?o:best,null);
   const expectedLow=money(lowest.fare.amount,lowest.fare.currency||'USD');
   await page.waitForFunction(({date,expected})=>{
@@ -485,6 +465,42 @@ try{
   await firstFlight.click();
   await page.waitForFunction(()=>document.querySelector('#summary')?.textContent?.includes('1 of 1 flight leg selected'));
   pass('Flight selection updates the itinerary summary');
+
+  // Calendar queue progression is deterministic here; real-provider integration is tested above.
+  {
+    const scanDates=new Set();
+    const farePattern='**/api/flights?**';
+    const schedulePattern='**/api/schedule-calendar?**';
+    await page.route(farePattern,async route=>{
+      const u=new URL(route.request().url());
+      if(u.searchParams.get('origin')!=='DTW'||u.searchParams.get('destination')!=='ROC')return route.continue();
+      const date=u.searchParams.get('date');
+      scanDates.add(date);
+      const body={
+        contractVersion:'nta-flights-v1',sourceProvider:'e2e-calendar',checkedAt:new Date().toISOString(),
+        origin:'DTW',destination:'ROC',departureDate:date,
+        offers:[{
+          id:'e2e-'+date,liveMode:true,origin:'DTW',destination:'ROC',departureDate:date,
+          departureTime:date+'T09:00:00',arrivalTime:date+'T10:00:00',durationMinutes:60,
+          operatingCarrier:'E2E Carrier',operatingCarrierCode:'ZZ',flightNumber:'ZZ100',
+          fare:{amount:100,currency:'USD',status:'verified'},timeStatus:'verified',
+          fareCount:1,fareChoices:[{id:'e2e-'+date,amount:100,currency:'USD'}]
+        }]
+      };
+      await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});
+    });
+    await page.route(schedulePattern,async route=>{
+      const u=new URL(route.request().url());
+      if(u.searchParams.get('origin')!=='DTW'||u.searchParams.get('destination')!=='ROC')return route.continue();
+      await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'schedule_subscription_inactive',message:'E2E deterministic schedule fallback'})});
+    });
+    await page.goto(BASE_URL+'/itinerary.html?route='+encodeURIComponent('DTW,ROC')+'&date='+encodeURIComponent(tripDate),{waitUntil:'domcontentloaded',timeout:60000});
+    const started=Date.now();
+    while(Date.now()-started<20000&&scanDates.size<3)await sleep(500);
+    assert(scanDates.size>=3,'Calendar background scan advances across multiple dates automatically',[...scanDates].sort().join(', '));
+    await page.unroute(farePattern);
+    await page.unroute(schedulePattern);
+  }
 
   // 5) Exact NexTownAir demo route remains usable even when some fare providers lack inventory.
   {
