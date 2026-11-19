@@ -116,6 +116,15 @@ try{
   const easExplainer=page.locator('.eas-explainer');
   await easExplainer.waitFor({state:'visible'});
   assert(/Essential Air Service/i.test(await easExplainer.innerText())&&/Department of Transportation/i.test(await easExplainer.innerText()),'Start page explains Essential Air Service in plain language');
+  const networkRegression=await page.evaluate(()=>({
+    billingsToDenver:window.NTA.findFlightPath('BIL','DEN'),
+    wolfPointToDenver:window.NTA.findFlightPath('OLF','DEN'),
+    butteToDenver:window.NTA.findFlightPath('BTM','DEN'),
+    butteToSaltLake:window.NTA.findFlightPath('BTM','SLC')
+  }));
+  assert(networkRegression.billingsToDenver?.join('>')==='BIL>DEN','Billings has a verified onward path to Denver',JSON.stringify(networkRegression.billingsToDenver));
+  assert(networkRegression.wolfPointToDenver?.join('>')==='OLF>BIL>DEN','Billings-served EAS communities continue into the national network',JSON.stringify(networkRegression.wolfPointToDenver));
+  assert(networkRegression.butteToDenver?.join('>')==='BTM>DEN'&&networkRegression.butteToSaltLake?.join('>')==='BTM>SLC','Butte exposes both DOT-listed nonstop hub routes',JSON.stringify(networkRegression));
   await page.waitForFunction(()=>{
     const strokes=[...document.querySelectorAll('.leaflet-overlay-pane path')].map(p=>(p.getAttribute('stroke')||'').toLowerCase());
     return strokes.includes('#2f8f86')&&strokes.includes('#7255a1');
@@ -322,7 +331,7 @@ try{
   // 5) Exact NexTownAir demo route remains usable even when some fare providers lack inventory.
   {
     const exactRoute=['DTW','CIU','DTW','ORD','CMX','ORD','DTW'];
-    const qs='?route='+encodeURIComponent(exactRoute.join(','))+'&auto=5&date='+encodeURIComponent(tripDate);
+    const qs='?route='+encodeURIComponent(exactRoute.join(','))+'&auto='+encodeURIComponent('2,3,5')+'&date='+encodeURIComponent(tripDate);
 
     // Validate connector identity on the map screen itself (the user-facing route builder).
     await page.goto(BASE_URL+'/index.html'+qs,{waitUntil:'domcontentloaded',timeout:60000});

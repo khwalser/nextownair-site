@@ -11,8 +11,9 @@ window.NTA_DATA = {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-09-30",
     "easRoutePairs": 225,
-    "connectorRoutePairs": 8,
-    "note": "The planner routes only over explicit airport pairs. EAS pairs are sourced from the U.S. DOT May 2026 status reports; connector pairs are separately checked against current nonstop schedule sources. Hub-to-hub routes are never inferred merely because both airports are hubs."
+    "connectorRoutePairs": 14,
+    "note": "The planner routes only over explicit verified airport pairs. EAS pairs are sourced from the U.S. DOT May 2026 status reports; additional nonstop pairs are separately checked against current airport/airline schedule sources. Airport type never determines whether a route exists or whether a stop was user-selected.",
+    "continuityChecks": ["BIL"]
   },
   "airports": [
     {
@@ -3689,6 +3690,30 @@ window.NTA_DATA = {
     [
       "OLF",
       "BIL"
+    ],
+    [
+      "BIL",
+      "DEN"
+    ],
+    [
+      "BIL",
+      "DFW"
+    ],
+    [
+      "BIL",
+      "MSP"
+    ],
+    [
+      "BIL",
+      "SLC"
+    ],
+    [
+      "BIL",
+      "LAS"
+    ],
+    [
+      "BIL",
+      "ORD"
     ],
     [
       "ROC",

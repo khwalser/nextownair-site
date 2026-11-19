@@ -14,13 +14,15 @@ on:
       - "styles.css"
       - "netlify/functions/**"
       - "e2e/live-itinerary.mjs"
+      - "e2e/network-audit.mjs"
+      - "docs/data-architecture.md"
       - ".github/workflows/live-e2e.yml"
   workflow_dispatch:
     inputs:
       base_url:
         description: "Immutable Netlify deploy URL or production URL to test"
         required: false
-        default: "https://6afe0a0f8d71a7d0046e1baa--nextownair-site.netlify.app"
+        default: "https://nextownair.com"
       route:
         description: "Comma-separated airport route"
         required: false
@@ -38,7 +40,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     env:
-      E2E_BASE_URL: ${{ inputs.base_url || 'https://6afe0a0f8d71a7d0046e1baa--nextownair-site.netlify.app' }}
+      E2E_BASE_URL: ${{ inputs.base_url || 'https://nextownair.com' }}
       E2E_ROUTE: ${{ inputs.route || 'DTW,ROC,DTW' }}
       E2E_DATE: ${{ inputs.date || '' }}
       E2E_OUT_DIR: artifacts
@@ -51,6 +53,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+
+      - name: Audit route graph
+        run: node e2e/network-audit.mjs
+
+      - name: Wait for production deploy containing this network revision
+        if: ${{ !inputs.base_url || inputs.base_url == 'https://nextownair.com' }}
+        run: |
+          for i in {1..48}; do
+            if curl -fsSL --max-time 15 https://nextownair.com/data.js | grep -q '"connectorRoutePairs": 14'; then
+              echo "Production network revision is live."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Production did not expose the expected network revision."
+          exit 1
 
       - name: Install Playwright package
         env:
