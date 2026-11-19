@@ -602,6 +602,41 @@
     const raw=92+(stableHash(`${a}|${b}|${date}|${index}|fare`)%227);
     return Math.max(75,Math.round(raw/5)*5);
   }
+  function scheduleOptions(a,b,date){
+    const data=scheduleMonthData.get(scheduleMonthKey(a,b,monthKeyFromDate(date)));
+    const day=data&&data.days&&data.days[date];
+    const flights=day&&Array.isArray(day.flights)?day.flights:[];
+    return flights.map((f,idx)=>{
+      const departMin=isoMinutes(f.scheduledOut),arrivalMin=isoMinutes(f.scheduledIn);
+      if(departMin==null||arrivalMin==null)return null;
+      const departDay=isoDate(f.scheduledOut)||date;
+      const arrivalDay=isoDate(f.scheduledIn)||departDay;
+      const dayOffset=Math.max(0,window.NTA.diffDays(departDay,arrivalDay));
+      const elapsed=Math.max(1,dayOffset*1440+(arrivalMin-departMin));
+      return {
+        id:`schedule|${String(f.ident||idx).replace(/\|/g,'-')}|${a}|${b}|${date}`,
+        date,
+        departMin,
+        arrivalMin,
+        arrivalDayOffset:dayOffset,
+        duration:elapsed,
+        price:deterministicPrototypeFare(a,b,date,idx),
+        currency:'USD',
+        fareCount:0,
+        fareChoices:[],
+        carrier:f.airline||'Scheduled carrier',
+        flightNo:f.ident||`Flight ${idx+1}`,
+        sample:false,
+        provider:data.provider||'schedule-provider',
+        liveMode:false,
+        planning:false,
+        prototype:false,
+        scheduleVerified:true,
+        timeStatus:'verified',
+        fareStatus:'prototype'
+      };
+    }).filter(Boolean).sort((x,y)=>x.departMin-y.departMin);
+  }
   function prototypeOptions(a,b,date){
     const count=Math.min(4,serviceCountForDate(a,b,date));
     if(!count)return [];
@@ -829,13 +864,18 @@
     updateLiveTripFare();
   }
   async function hydrateScheduleAvailability(version){
-    const nodes=[...document.querySelectorAll('.stay-av[data-origin][data-destination][data-date]')];
     const requests=new Map();
-    nodes.forEach(node=>{
-      const a=node.dataset.origin,b=node.dataset.destination,date=node.dataset.date,month=monthKeyFromDate(date);
-      const key=scheduleMonthKey(a,b,month);
+    const addRequest=(a,b,date)=>{
+      if(!a||!b||!date)return;
+      const month=monthKeyFromDate(date),key=scheduleMonthKey(a,b,month);
       if(!requests.has(key))requests.set(key,{a,b,month,dates:[]});
       requests.get(key).dates.push(date);
+    };
+    [...document.querySelectorAll('.stay-av[data-origin][data-destination][data-date]')].forEach(node=>{
+      addRequest(node.dataset.origin,node.dataset.destination,node.dataset.date);
+    });
+    [...document.querySelectorAll('.leg[data-schedule-origin][data-schedule-destination][data-schedule-date]')].forEach(node=>{
+      addRequest(node.dataset.scheduleOrigin,node.dataset.scheduleDestination,node.dataset.scheduleDate);
     });
     if(scheduleProviderUnavailableCode){
       let changed=false;
@@ -1030,31 +1070,42 @@
     let providerOpts=providerOptions(fareData,a,b,departDate);
     let usingProvider=Array.isArray(providerOpts)&&providerOpts.length>0;
     const providerMissing=Boolean(fareData)&&(fareData.error||!fareData.offers||!fareData.offers.length);
-    let opts=usingProvider?providerOpts:(providerMissing?prototypeOptions(a,b,departDate):[]);
+    let verifiedScheduleOpts=providerMissing?scheduleOptions(a,b,departDate):[];
+    let usingVerifiedSchedule=verifiedScheduleOpts.length>0;
+    let opts=usingProvider?providerOpts:(usingVerifiedSchedule?verifiedScheduleOpts:(providerMissing?prototypeOptions(a,b,departDate):[]));
     let usingPrototype=opts.some(o=>o.prototype);
-    let note=knownRoute?(usingPrototype?'Choose an available service. Values beginning with ? are prototype values used to complete the MVP itinerary.':(usingProvider?'Choose one flight to continue.':'Waiting for verified service availability for this date.')):'No verified route is available for this pair.';
+    let hasPrototypeFields=opts.some(o=>o.timeStatus==='prototype'||o.fareStatus==='prototype');
+    let note=knownRoute?(usingVerifiedSchedule?'Choose an available published flight. Times are verified; fares beginning with ? are prototype values.':(usingPrototype?'Choose an available service. Values beginning with ? are prototype values used to complete the MVP itinerary.':(usingProvider?'Choose one flight to continue.':'Waiting for verified service availability for this date.'))):'No verified route is available for this pair.';
 
     if(!locked&&i>0&&plan&&plan.notBefore!=null){
       opts=opts.filter(o=>o.departMin>=plan.notBefore);
       if(opts.length===0&&usingPrototype&&autoConnector&&plan.mode==='asap'){
         const nextDate=window.NTA.addDays(departDate,1);
-        const nextOpts=prototypeOptions(a,b,nextDate);
-        if(nextOpts.length){
+        const nextOpts=scheduleOptions(a,b,nextDate);
+        const fallbackNextOpts=nextOpts.length?nextOpts:prototypeOptions(a,b,nextDate);
+        if(fallbackNextOpts.length){
           departDate=nextDate;
-          opts=nextOpts;
+          opts=fallbackNextOpts;
           note='No same-day service option remains for this automatic connection, so the itinerary continues on the next known service day.';
         }
       }
       if(opts.length===0){
         note=usingProvider
           ?'No provider offer fits this connection window. Change the stay above or choose another departure date.'
-          :'No live flight offer fits this connection window. Change the stay above or choose another departure date.';
+          :usingVerifiedSchedule
+            ?'No published flight fits this connection window. Change the stay above or choose another departure date.'
+            :'No known flight option fits this connection window. Change the stay above or choose another departure date.';
       }
     }else if(locked){
       note='Choose the inbound flight first. NexTownAir will then show only departures that leave after you arrive and clear the connection buffer.';
     }
 
     const A=by(a),B=by(b),leg=document.createElement('section');leg.className=`leg${locked?' leg-locked':''}`;
+    if(knownRoute){
+      leg.dataset.scheduleOrigin=a;
+      leg.dataset.scheduleDestination=b;
+      leg.dataset.scheduleDate=departDate;
+    }
     let fareMarkup='';
     if(knownRoute){
       const previewNote=locked?' · planned-date preview':'';
@@ -1065,7 +1116,8 @@
       }else if(!fareData.offers||!fareData.offers.length){
         const searchUrl=fareData.externalSearchUrl||externalFareSearchUrl(a,b,departDate);
         const limited=fareData.coverageLimited||fareCoverageBlockedLegs.has(fareLegKey(a,b));
-        const proto=prototypeOptions(a,b,departDate);
+        const fallbackForFare=scheduleOptions(a,b,departDate);
+        const proto=fallbackForFare.length?fallbackForFare:prototypeOptions(a,b,departDate);
         const protoFare=proto[0]&&optionFareText(proto[0]);
         fareMarkup=`<div class="live-fare prototype" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value ${protoFare?'prototype-value':''}">${protoFare?`Prototype fare ${protoFare}`:(limited?'Provider coverage gap':'No provider fare returned')}</div><div class="small">${protoFare?'A real service is known for this date; live fare coverage is unavailable, so the MVP uses a clearly marked prototype fare.':(limited?'The connected fare provider does not reliably cover this route.':'The route is verified, but the connected provider returned no nonstop inventory for this date.')} </div><a class="btn tertiary" href="${searchUrl}" target="_blank" rel="noopener">Check current fares ↗</a></div>`;
       }else{
@@ -1106,7 +1158,7 @@
       const selected=state.selections[String(i)]===o.id;
       const arr=F.arrival(o,departDate);
       const bt=document.createElement('button');bt.type='button';bt.className=`flight${selected?' selected':''}`;bt.setAttribute('aria-pressed',String(selected));
-      const badge=o.prototype?'Known service':(o.liveMode?'Live flight':'Provider flight');
+      const badge=o.scheduleVerified?'Published flight':(o.prototype?'Known service':(o.liveMode?'Live flight':'Provider flight'));
       const fareChoices=(o.fareChoices||[]).filter(x=>Number.isFinite(Number(x.amount)));
       const fareLabel=optionFareText(o);
       const timeClass=o.timeStatus==='prototype'?' prototype-value':'';

@@ -282,9 +282,9 @@ try{
     assert(desktopLayout.w<1000||((desktopLayout.legTop??99999)<desktopLayout.h),'Desktop layout shows Leg 1 without requiring a scroll past the calendar',JSON.stringify(desktopLayout));
     await page.waitForFunction(()=>document.querySelectorAll('#flight-options-0 .flight').length>0,null,{timeout:30000});
     const firstLegText=(await page.locator('#flight-options-0').innerText()).replace(/\s+/g,' ');
-    assert(/\?\d{1,2}:\d{2}\s+(?:AM|PM)/i.test(firstLegText),'Alpena first leg marks prototype times with a leading ?',firstLegText);
+    assert(/(?:\?|\b)\d{1,2}:\d{2}\s+(?:AM|PM)/i.test(firstLegText),'Alpena first leg shows a usable departure time',firstLegText);
     assert(/\?\d{2,4}\b/.test(firstLegText),'Alpena first leg includes a prototype fare without a dollar sign',firstLegText);
-    assert(await page.locator('#flight-options-0 .prototype-value').count()>=2,'Prototype time and fare use the prototype visual class');
+    assert(await page.locator('#flight-options-0 .price.prototype-value').count()>=1,'Prototype fare uses the prototype visual class');
     assert(!/Published timetable fallback|Morning planning window|Midday planning window|Evening planning window/i.test(firstLegText),'Alpena first leg no longer presents fallback values as published or generic planning windows',firstLegText);
     pass('Exact Detroit-Alpena-Detroit-Chicago-Houghton-Chicago-Detroit route has a useful service-day calendar');
 
@@ -365,6 +365,12 @@ try{
 
   assert(diagnostics.fareResponses.length>0,'Frontend requests fare data through the provider-neutral /api/flights contract');
   assert(!diagnostics.requests.some(url=>url.includes('/.netlify/functions/flight-proxy')),'Browser no longer calls the legacy Duffel-specific flight proxy');
+  const exactScheduleResponse=diagnostics.scheduleResponses.find(row=>row?.status===200&&Object.values(row.body?.days||{}).some(day=>Array.isArray(day?.flights)&&day.flights.some(f=>f?.scheduledOut&&f?.scheduledIn)));
+  if(exactScheduleResponse){
+    pass('Published schedule provider returned exact flight times for at least one tested route/date');
+  }else{
+    pass('Published schedule exact-time assertion skipped because the current schedule provider returned no exact flight rows in this run');
+  }
   const normalizedContract=diagnostics.fareResponses.find(row=>row?.status===200&&row.body?.contractVersion==='nta-flights-v1');
   assert(Boolean(normalizedContract),'Production /api/flights returns the nta-flights-v1 contract');
   const pricedRouteDates=new Set(diagnostics.fareResponses.filter(row=>{
@@ -432,8 +438,14 @@ try{
     }
     await page.waitForFunction(()=>document.querySelector('#summary')?.textContent?.includes('6 of 6 flight legs selected'),null,{timeout:15000});
     pass('Exact DTW-CIU-DTW-ORD-CMX-ORD-DTW route can be completed end to end');
-    const fallbackCount=await page.locator('.flight-badge',{hasText:/Known service/}).count();
-    assert(fallbackCount>=1,'Coverage-gap route uses selectable known-service prototype values where live inventory is absent',String(fallbackCount));
+    const publishedScheduleCards=page.locator('.flight',{has:page.locator('.flight-badge',{hasText:'Published flight'})});
+    if(await publishedScheduleCards.count()){
+      const card=publishedScheduleCards.first();
+      assert(await card.locator('.times.prototype-value').count()===0,'Published schedule flight time is rendered as verified, not prototype');
+      assert(await card.locator('.price.prototype-value').count()===1,'Published schedule flight keeps a prototype fare when live fare is unavailable');
+    }
+    const fallbackCount=await page.locator('.flight-badge',{hasText:/Known service|Published flight/}).count();
+    assert(fallbackCount>=1,'Coverage-gap route uses selectable published-schedule or known-service values where live inventory is absent',String(fallbackCount));
   }
 
   // 6) Map ↔ itinerary navigation preserves the trip and automatic-connector semantics.

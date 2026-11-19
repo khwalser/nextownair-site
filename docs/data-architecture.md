@@ -44,6 +44,8 @@ Prototype values use a distinct visual color and a single legend. The UI does no
 
 Prototype values are working MVP values. They participate in itinerary timing, downstream feasibility, and totals exactly like verified values, while retaining their provenance/status.
 
+Verified schedule fields are preserved independently of fare coverage. When a current schedule provider supplies exact departure/arrival times but the fare provider has no price, NexTownAir renders verified times normally and supplies only the fare as a `?prototype` value.
+
 ## Prototype-value fallback order
 
 When a service is known to exist but a required field is unavailable, generate an MVP prototype value using this precedence:
