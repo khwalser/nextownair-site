@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.22",
+  "mvpRevision": "2026-11-19.23",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
@@ -177,6 +177,26 @@ window.NTA_DATA = {
           "FAI-TKJ"
         ],
         "note": "Operating days are authoritative for the current timetable. The PDF publishes Fairbanks departure times, but also states that departure times from villages change daily; because arrival times are not published in this table, MVP uses prototype trip times. Milk-run routings are labeled as through service with the timetable-listed intermediate airport rather than as nonstop."
+      },
+      {
+        "carrier": "Ryan Air",
+        "label": "Current schedules — Nome",
+        "url": "https://ryanalaska.com/schedules/",
+        "checkedAsOf": "2026-11-19",
+        "verifiedPairs": [
+          "OME-DIO"
+        ],
+        "note": "Current Nome schedule lists seasonal Diomede service Tuesday/Thursday/Saturday, flight 1440, departing Nome 13:00 and arriving Diomede 14:00. The return exact time is not published on this schedule page, so DIO→OME timing remains prototype."
+      },
+      {
+        "carrier": "Island Air Service",
+        "label": "Akhiok destination page",
+        "url": "https://www.flyadq.com/flight-information/destinations/akhiok/",
+        "checkedAsOf": "2026-11-19",
+        "verifiedPairs": [
+          "ADQ-AKK"
+        ],
+        "note": "Current Island Air page states scheduled Akhiok service Tuesday/Thursday/Saturday. Exact segment times are not published on the current destination page, so MVP uses prototype times."
       }
     ]
   },
@@ -4967,6 +4987,69 @@ window.NTA_DATA = {
       "intermediateStops": [
         "HKB"
       ]
+    },
+    "OME|DIO": {
+      "activeThrough": "2026-12-31",
+      "days": [
+        2,
+        4,
+        6
+      ],
+      "airline": "Ryan Air",
+      "label": "Tuesday, Thursday and Saturday current seasonal service",
+      "sourceLabel": "Ryan Air current schedules — Nome",
+      "sourceUrl": "https://ryanalaska.com/schedules/",
+      "checkedAsOf": "2026-11-19",
+      "departures": [
+        {
+          "depart": "13:00",
+          "arrive": "14:00",
+          "ident": "1440",
+          "airline": "Ryan Air"
+        }
+      ]
+    },
+    "DIO|OME": {
+      "activeThrough": "2026-12-31",
+      "days": [
+        2,
+        4,
+        6
+      ],
+      "airline": "Ryan Air",
+      "label": "Tuesday, Thursday and Saturday current seasonal service",
+      "sourceLabel": "Ryan Air current schedules — Nome",
+      "sourceUrl": "https://ryanalaska.com/schedules/",
+      "checkedAsOf": "2026-11-19",
+      "count": 1
+    },
+    "ADQ|AKK": {
+      "activeThrough": "2026-12-31",
+      "days": [
+        2,
+        4,
+        6
+      ],
+      "count": 1,
+      "airline": "Island Air Service",
+      "label": "Tuesday, Thursday and Saturday current scheduled service",
+      "sourceLabel": "Island Air Service — Akhiok destination page",
+      "sourceUrl": "https://www.flyadq.com/flight-information/destinations/akhiok/",
+      "checkedAsOf": "2026-11-19"
+    },
+    "AKK|ADQ": {
+      "activeThrough": "2026-12-31",
+      "days": [
+        2,
+        4,
+        6
+      ],
+      "count": 1,
+      "airline": "Island Air Service",
+      "label": "Tuesday, Thursday and Saturday current scheduled service",
+      "sourceLabel": "Island Air Service — Akhiok destination page",
+      "sourceUrl": "https://www.flyadq.com/flight-information/destinations/akhiok/",
+      "checkedAsOf": "2026-11-19"
     }
   }
 };

@@ -327,6 +327,28 @@ try{
     pass('Wright Air current operating-day pattern survives the inactive external schedule provider without overstating village times');
   }
 
+  // 4) Current Ryan Air and Island Air patterns cover additional Alaska EAS edges.
+  {
+    const tue='2026-12-01',wed='2026-12-02';
+
+    await page.goto(BASE_URL+'/itinerary.html?route='+encodeURIComponent('OME,DIO')+'&date='+encodeURIComponent(tue),{waitUntil:'domcontentloaded',timeout:60000});
+    await page.waitForFunction(()=>document.querySelectorAll('#flight-options-0 .flight').length>0,null,{timeout:15000});
+    const ryanText=(await page.locator('#flight-options-0').innerText()).replace(/\s+/g,' ');
+    assert(/1:00\s+PM\s+→\s+2:00\s+PM/i.test(ryanText),'Ryan Air current Nome→Diomede published time renders from the source-backed schedule',ryanText);
+    assert(await page.locator('#flight-options-0 .times.prototype-value').count()===0,'Ryan Air published outbound time is verified');
+    assert((await page.locator('.calendar-day[data-calendar-date="'+tue+'"]').getAttribute('class')||'').includes('available'),'Ryan Air current Tuesday Diomede service is selectable');
+    assert((await page.locator('.calendar-day[data-calendar-date="'+wed+'"]').getAttribute('class')||'').includes('unavailable'),'Ryan Air current schedule does not invent Wednesday Diomede service');
+
+    await page.goto(BASE_URL+'/itinerary.html?route='+encodeURIComponent('AKK,ADQ')+'&date='+encodeURIComponent(tue),{waitUntil:'domcontentloaded',timeout:60000});
+    await page.waitForFunction(()=>document.querySelectorAll('#flight-options-0 .flight').length>0,null,{timeout:15000});
+    const islandText=(await page.locator('#flight-options-0').innerText()).replace(/\s+/g,' ');
+    assert(/Known service/i.test(islandText),'Island Air current Akhiok service produces a selectable known-service option',islandText);
+    assert(/\?\d{1,2}:\d{2}\s+(?:AM|PM)/i.test(islandText),'Island Air Akhiok times remain prototype because the current first-party page publishes days but not exact segment times',islandText);
+    assert((await page.locator('.calendar-day[data-calendar-date="'+tue+'"]').getAttribute('class')||'').includes('available'),'Island Air current Tuesday Akhiok service is selectable');
+    assert((await page.locator('.calendar-day[data-calendar-date="'+wed+'"]').getAttribute('class')||'').includes('unavailable'),'Island Air current schedule does not invent Wednesday Akhiok service');
+    pass('Current Ryan Air and Island Air schedule patterns cover two additional Alaska EAS pairs');
+  }
+
   // 4) Mixed-mode Ketchikan routing renders the airport transfer as a transfer, never as a flight.
   {
     const target=BASE_URL+'/itinerary.html?route='+encodeURIComponent('WFB,KTN,ANC')+'&auto=1&date='+encodeURIComponent(tripDate);
