@@ -533,22 +533,18 @@ try{
   await page.waitForURL(/index\.html/);
   assert(await page.locator('#trip .auto-inserted').count()>0,'Connector highlighting survives itinerary → map navigation');
 
-  // 7) Unroutable choices fail safely instead of sending the user into a broken itinerary.
+  // 7) Nationwide travel routing can cross an explicit non-flight transfer without inventing a flight.
   await clearTrip();
-  const disconnected=await page.evaluate(()=>{
-    const codes=(window.NTA_DATA?.airports||[]).map(a=>a.code);
-    for(let i=0;i<codes.length;i+=Math.max(1,Math.floor(codes.length/40))){
-      for(let j=codes.length-1;j>=0;j-=Math.max(1,Math.floor(codes.length/40))){
-        if(codes[i]!==codes[j]&&!window.NTA.findFlightPath(codes[i],codes[j]))return {a:codes[i],b:codes[j]};
-      }
-    }
-    return null;
-  });
-  assert(Boolean(disconnected),'Test network exposes a disconnected-pair boundary case');
-  await addAirport(disconnected.a);
-  await addAirport(disconnected.b);
-  assert(await page.locator('#plan').getAttribute('aria-disabled')==='true','Unroutable route cannot continue into itinerary');
-  assert(/no verified path/i.test(await page.locator('#status').innerText()),'Unroutable route explains what must change');
+  await addAirport('HYG');
+  await addAirport('DEN');
+  const mixedStops=await page.locator('#trip .stop strong').allTextContents();
+  assert(mixedStops.some(x=>x.includes('WFB'))&&mixedStops.some(x=>x.includes('KTN')),'Automatic route repair inserts both sides of the Ketchikan transfer',mixedStops.join(' | '));
+  const mixedSegments=(await page.locator('#legSummary').innerText()).replace(/\s+/g,' ');
+  assert(/Transfer\s+\d+:\s+WFB\s+→\s+KTN/i.test(mixedSegments),'Map trip summary labels WFB → KTN as a transfer rather than a flight',mixedSegments);
+  assert(await page.locator('#plan').getAttribute('aria-disabled')==='false','Mixed-mode route remains plannable');
+  assert(!/no verified path/i.test(await page.locator('#status').innerText()),'Nationwide mixed-mode route has no false disconnected warning');
+  await page.waitForFunction(()=>[...document.querySelectorAll('.leaflet-overlay-pane path')].some(p=>(p.getAttribute('stroke')||'').toLowerCase()==='#e7bd62'));
+  pass('Selected mixed-mode route visibly distinguishes the Ketchikan transfer');
 
   // 8) Legacy navigation does not dead-end.
   await page.goto(BASE_URL+'/route-builder.html?route=DTW,ROC',{waitUntil:'domcontentloaded'});
