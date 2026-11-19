@@ -1377,7 +1377,7 @@
           groundKind:groundLabel(i,groundMin,inboundArrivalDate,departDate),elapsedMin
         });
         previousArrivalDate=arr.date;previousArrivalMin=arr.min;
-        rows.push(`Leg ${i+1} · ${state.route[i]} → ${state.route[i+1]} · ${window.NTA.fmtDate(departDate)} · ${optionTimeText(previousChosen,previousChosen.departMin)} → ${optionTimeText(previousChosen,arr.min)} · ${previousChosen.flightNo} · ${optionFareText(previousChosen)||'fare pending'}`);
+        rows.push(`Leg ${i+1} · ${state.route[i]} → ${state.route[i+1]} · ${window.NTA.fmtDate(departDate)} · ${optionTimeText(previousChosen,previousChosen.departMin)} → ${optionTimeText(previousChosen,arr.min)} · ${previousChosen.flightNo} · ${optionFareText(previousChosen)}`);
       } else {previousArrivalDate=departDate;previousArrivalMin=null;}
     }
     renderSummary(rows,timeline);

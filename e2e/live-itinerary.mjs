@@ -303,6 +303,9 @@ try{
     assert(await bookingLinks.count()===6,'Completed itinerary renders one external booking handoff per flight leg');
     const selectedFareTotal=(await page.locator('#liveTripFare').innerText()).replace(/\s+/g,' ');
     assert(/Itinerary fare total\s+\?\d+/i.test(selectedFareTotal),'Completed mixed/prototype itinerary includes all selected leg fares in a prototype-marked total',selectedFareTotal);
+    const selectedLines=(await page.locator('#summary').innerText()).replace(/\s+/g,' ');
+    assert(!/fare pending/i.test(selectedLines),'Completed itinerary contains no fare-pending escape hatch');
+    assert((selectedLines.match(/(?:\$|\?)\d+/g)||[]).length>=6,'Every completed selected leg displays a verified or prototype fare',selectedLines);
     const bookingHrefs=await bookingLinks.evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')||''));
     assert(bookingHrefs.every(h=>/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(h)),'Every MVP booking handoff targets a route/date-specific flight search',bookingHrefs.join(' | '));
   }
