@@ -566,7 +566,9 @@
         fareCount:Number(o.fareCount||1),fareChoices:Array.isArray(o.fareChoices)?o.fareChoices:[],
         carrier:o.operatingCarrier||o.operatingCarrierCode||'Carrier',
         flightNo:o.flightNumber||o.operatingCarrierCode||'Flight',
-        sample:false,provider:data.provider||'provider',liveMode:Boolean(data.liveMode&&o.liveMode)
+        sample:false,provider:data.provider||'provider',liveMode:Boolean(data.liveMode&&o.liveMode),
+        timeStatus:Boolean(data.liveMode&&o.liveMode)?'verified':'prototype',
+        fareStatus:Boolean(data.liveMode&&o.liveMode)?'verified':'prototype'
       };
     }).filter(Boolean).sort((x,y)=>x.departMin-y.departMin);
   }
@@ -580,71 +582,67 @@
     const miles=3958.8*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
     return Math.max(45,Math.min(240,Math.round((miles/430)*60+35)));
   }
-  const PUBLISHED_TIMETABLE_FALLBACKS={
-    'DTW|APN':[
-      {departMin:8*60+30,arrivalMin:9*60+40,carrier:'Delta Connection',flightNo:'Published morning service'},
-      {departMin:16*60,arrivalMin:17*60+12,carrier:'Delta Connection',flightNo:'Published afternoon service'}
-    ],
-    'APN|DTW':[
-      {departMin:10*60+30,arrivalMin:11*60+43,carrier:'Delta Connection',flightNo:'DL 4274 · published timetable'},
-      {departMin:17*60+47,arrivalMin:18*60+56,carrier:'Delta Connection',flightNo:'DL 4252 · published timetable'}
-    ],
-    'DTW|CIU':[
-      {departMin:14*60+10,arrivalMin:15*60+30,carrier:'Delta',flightNo:'Published daily service'},
-      {departMin:18*60+21,arrivalMin:19*60+47,carrier:'Delta',flightNo:'Published daily service'}
-    ],
-    'CIU|DTW':[
-      {departMin:16*60+3,arrivalMin:17*60+29,carrier:'Delta',flightNo:'DL 4231 · published timetable'}
-    ],
-    'ORD|CMX':[
-      {departMin:10*60+25,arrivalMin:13*60+1,carrier:'United',flightNo:'Published daytime service'},
-      {departMin:22*60+12,arrivalMin:45,arrivalDayOffset:1,carrier:'United',flightNo:'Published evening service'}
-    ],
-    'CMX|ORD':[
-      {departMin:5*60+13,arrivalMin:6*60+10,carrier:'United',flightNo:'Published morning service'},
-      {departMin:15*60+11,arrivalMin:16*60+8,carrier:'United',flightNo:'Published afternoon service'}
-    ]
-  };
-  function planningOptions(a,b,date){
-    const published=PUBLISHED_TIMETABLE_FALLBACKS[fareLegKey(a,b)];
-    if(Array.isArray(published)&&published.length){
-      return published.map((slot,idx)=>{
-        const offset=Number(slot.arrivalDayOffset||0);
-        const duration=Math.max(1,(slot.arrivalMin+offset*1440)-slot.departMin);
-        return {
-          id:`published|${idx}|${a}|${b}|${date}`,
-          date,
-          departMin:slot.departMin,
-          arrivalMin:slot.arrivalMin,
-          arrivalDayOffset:offset,
-          duration,
-          price:null,currency:'USD',fareCount:0,fareChoices:[],
-          carrier:slot.carrier,
-          flightNo:slot.flightNo,
-          sample:false,provider:'published-timetable-fallback',liveMode:false,planning:false,publishedSchedule:true
-        };
-      });
+  function stableHash(value){
+    let h=2166136261;
+    for(const ch of String(value||'')){
+      h^=ch.charCodeAt(0);
+      h=Math.imul(h,16777619);
     }
+    return h>>>0;
+  }
+  function serviceCountForDate(a,b,date){
+    const pattern=publishedServicePattern(a,b);
+    if(pattern){
+      const p=parseYmd(date);
+      if(p){
+        const dow=new Date(Date.UTC(p.y,p.m-1,p.d,12)).getUTCDay();
+        if(pattern.days.includes(dow))return Math.max(1,Number(pattern.count)||1);
+        return 0;
+      }
+    }
+    const data=scheduleMonthData.get(scheduleMonthKey(a,b,monthKeyFromDate(date)));
+    const day=data&&data.days&&data.days[date];
+    if(day&&Number(day.count)>0)return Math.max(1,Number(day.count));
+    return 0;
+  }
+  function deterministicPrototypeFare(a,b,date,index){
+    const raw=92+(stableHash(`${a}|${b}|${date}|${index}|fare`)%227);
+    return Math.max(75,Math.round(raw/5)*5);
+  }
+  function prototypeOptions(a,b,date){
+    const count=Math.min(4,serviceCountForDate(a,b,date));
+    if(!count)return [];
     const duration=estimatedFlightMinutes(a,b);
-    return [
-      {label:'Morning',departMin:8*60},
-      {label:'Midday',departMin:13*60},
-      {label:'Evening',departMin:18*60}
-    ].map((slot,idx)=>{
-      const total=slot.departMin+duration;
+    const routeSeed=stableHash(`${a}|${b}|time`);
+    const windowStart=6*60+30+(routeSeed%91);
+    const windowEnd=20*60+30;
+    const spacing=count===1?0:Math.floor((windowEnd-windowStart)/Math.max(1,count-1));
+    return Array.from({length:count},(_,idx)=>{
+      const jitter=count===1?(routeSeed%360):((stableHash(`${a}|${b}|${idx}`)%31)-15);
+      const departMin=Math.max(5*60+30,Math.min(22*60,windowStart+idx*spacing+jitter));
+      const total=departMin+duration;
       return {
-        id:`planning|${idx}|${a}|${b}|${date}`,
+        id:`prototype|${idx}|${a}|${b}|${date}`,
         date,
-        departMin:slot.departMin,
+        departMin,
         arrivalMin:total%1440,
         arrivalDayOffset:Math.floor(total/1440),
         duration,
-        price:null,currency:'USD',fareCount:0,fareChoices:[],
-        carrier:'Verify with airline',
-        flightNo:`${slot.label} planning window`,
-        sample:false,provider:'planning-fallback',liveMode:false,planning:true
+        price:deterministicPrototypeFare(a,b,date,idx),
+        currency:'USD',
+        fareCount:0,
+        fareChoices:[],
+        carrier:'Service confirmed',
+        flightNo:`Option ${idx+1}`,
+        sample:false,
+        provider:'nta-prototype',
+        liveMode:false,
+        planning:false,
+        prototype:true,
+        timeStatus:'prototype',
+        fareStatus:'prototype'
       };
-    });
+    }).sort((x,y)=>x.departMin-y.departMin);
   }
   function fareKey(a,b,date){return `${a}|${b}|${date}`;}
   function fareLegKey(a,b){return `${a}|${b}`;}
@@ -657,6 +655,15 @@
   function formatMoney(amount,currency){
     try{return new Intl.NumberFormat(undefined,{style:'currency',currency:currency||'USD',maximumFractionDigits:0}).format(amount);}
     catch(_){return `${currency||'USD'} ${Number(amount).toFixed(0)}`;}
+  }
+  function prototypeFareText(amount){return `?${Math.round(Number(amount)||0)}`;}
+  function optionTimeText(option,min){
+    const value=F.timeFrom(min);
+    return option&&option.timeStatus==='prototype'?`?${value}`:value;
+  }
+  function optionFareText(option){
+    if(!Number.isFinite(Number(option&&option.price)))return '';
+    return option.fareStatus==='prototype'?prototypeFareText(option.price):formatMoney(option.price,option.currency);
   }
   function checkedTime(iso){
     const d=new Date(iso);if(Number.isNaN(d.getTime()))return '';
@@ -1028,18 +1035,23 @@
     const fareData=liveFareData.get(key);
     let providerOpts=providerOptions(fareData,a,b,departDate);
     let usingProvider=Array.isArray(providerOpts)&&providerOpts.length>0;
-    const usingPlanningFallback=!usingProvider&&Boolean(fareData)&&(fareData.error||!fareData.offers||!fareData.offers.length);
-    let opts=usingProvider?providerOpts:(usingPlanningFallback?planningOptions(a,b,departDate):[]);
-    const usingPublishedFallback=opts.some(o=>o.publishedSchedule);
-    let note=knownRoute?(usingPlanningFallback?(usingPublishedFallback?'Choose a published timetable option to continue; verify the exact flight time with the airline before booking.':'Choose a planning window to keep building the itinerary; verify the exact flight before booking.'):'Choose one flight to continue.'):'No routable planning link is available for this pair yet.';
+    const providerMissing=Boolean(fareData)&&(fareData.error||!fareData.offers||!fareData.offers.length);
+    let opts=usingProvider?providerOpts:(providerMissing?prototypeOptions(a,b,departDate):[]);
+    let usingPrototype=opts.some(o=>o.prototype);
+    let note=knownRoute?(usingPrototype?'Choose an available service. Values beginning with ? are prototype values used to complete the MVP itinerary.':(usingProvider?'Choose one flight to continue.':'Waiting for verified service availability for this date.')):'No verified route is available for this pair.';
 
     if(!locked&&i>0&&plan&&plan.notBefore!=null){
       opts=opts.filter(o=>o.departMin>=plan.notBefore);
-      if(opts.length===0&&usingPublishedFallback&&autoConnector&&plan.mode==='asap'){
-        departDate=window.NTA.addDays(departDate,1);
-        opts=planningOptions(a,b,departDate);
-        note='No same-day published connection remains. NexTownAir rolled this automatic connection to the next published service day.';
-      }else if(opts.length===0){
+      if(opts.length===0&&usingPrototype&&autoConnector&&plan.mode==='asap'){
+        const nextDate=window.NTA.addDays(departDate,1);
+        const nextOpts=prototypeOptions(a,b,nextDate);
+        if(nextOpts.length){
+          departDate=nextDate;
+          opts=nextOpts;
+          note='No same-day service option remains for this automatic connection, so the itinerary continues on the next known service day.';
+        }
+      }
+      if(opts.length===0){
         note=usingProvider
           ?'No provider offer fits this connection window. Change the stay above or choose another departure date.'
           :'No live flight offer fits this connection window. Change the stay above or choose another departure date.';
@@ -1059,7 +1071,9 @@
       }else if(!fareData.offers||!fareData.offers.length){
         const searchUrl=fareData.externalSearchUrl||externalFareSearchUrl(a,b,departDate);
         const limited=fareData.coverageLimited||fareCoverageBlockedLegs.has(fareLegKey(a,b));
-        fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value">${limited?'Provider coverage gap':'No provider fare returned'}</div><div class="small">${limited?'The connected fare provider does not reliably cover this route.':'The route is verified, but the connected provider returned no nonstop inventory for this date.'} Airline fares may still exist.</div><a class="btn tertiary" href="${searchUrl}" target="_blank" rel="noopener">Check current fares ↗</a></div>`;
+        const proto=prototypeOptions(a,b,departDate);
+        const protoFare=proto[0]&&optionFareText(proto[0]);
+        fareMarkup=`<div class="live-fare prototype" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value ${protoFare?'prototype-value':''}">${protoFare?`Prototype fare ${protoFare}`:(limited?'Provider coverage gap':'No provider fare returned')}</div><div class="small">${protoFare?'A real service is known for this date; live fare coverage is unavailable, so the MVP uses a clearly marked prototype fare.':(limited?'The connected fare provider does not reliably cover this route.':'The route is verified, but the connected provider returned no nonstop inventory for this date.')} </div><a class="btn tertiary" href="${searchUrl}" target="_blank" rel="noopener">Check current fares ↗</a></div>`;
       }else{
         const best=lowestOffer(fareData),isLive=Boolean(fareData.liveMode&&best&&best.liveMode);
         fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?(locked?'Live fare preview':'Live flights'):'Duffel test flights'} · nonstop economy${previewNote}</div><div class="live-fare-value">Lowest fare ${best?formatMoney(best.amount,best.currency):'—'}</div><div class="small">${fareData.offers.length} flight${fareData.offers.length===1?'':'s'} · exact returned fare prices shown below · checked ${checkedTime(fareData.checkedAt)}${locked?' · exact choices unlock after inbound flight selection':''}</div>${locked?'':`<button class="view-flight-options" type="button" data-view-flight-options>View ${fareData.offers.length} flight option${fareData.offers.length===1?'':'s'} ↓</button>`}</div>`;
@@ -1098,15 +1112,17 @@
       const selected=state.selections[String(i)]===o.id;
       const arr=F.arrival(o,departDate);
       const bt=document.createElement('button');bt.type='button';bt.className=`flight${selected?' selected':''}`;bt.setAttribute('aria-pressed',String(selected));
-      const badge=o.publishedSchedule?'Published schedule':(o.planning?'Planning window':(o.liveMode?'Live flight':'Duffel flight'));
+      const badge=o.prototype?'Known service':(o.liveMode?'Live flight':'Provider flight');
       const fareChoices=(o.fareChoices||[]).filter(x=>Number.isFinite(Number(x.amount)));
-      const fareLabel=Number.isFinite(Number(o.price))?formatMoney(o.price,o.currency):'';
-      const price=usingProvider?(
-        fareChoices.length>1
-          ? `<div class="price">Lowest fare ${fareLabel}</div><div class="fare-choice-list" aria-label="Returned fare prices">${fareChoices.map((f,idx)=>`<span class="fare-choice${idx===0?' lowest':''}">${idx===0?'Lowest · ':''}${formatMoney(f.amount,f.currency||o.currency)}</span>`).join('')}</div><div class="small">${fareChoices.length} live fare prices returned for this flight</div>`
-          : `<div class="price">${fareLabel}</div>`
+      const fareLabel=optionFareText(o);
+      const timeClass=o.timeStatus==='prototype'?' prototype-value':'';
+      const fareClass=o.fareStatus==='prototype'?' prototype-value':'';
+      const price=Number.isFinite(Number(o.price))?(
+        usingProvider&&fareChoices.length>1&&o.fareStatus==='verified'
+          ? `<div class="price${fareClass}">Lowest fare ${fareLabel}</div><div class="fare-choice-list" aria-label="Returned fare prices">${fareChoices.map((f,idx)=>`<span class="fare-choice${idx===0?' lowest':''}">${idx===0?'Lowest · ':''}${formatMoney(f.amount,f.currency||o.currency)}</span>`).join('')}</div><div class="small">${fareChoices.length} live fare prices returned for this flight</div>`
+          : `<div class="price${fareClass}">${fareLabel}</div>`
       ):'';
-      bt.innerHTML=`<div class="times">${F.timeFrom(o.departMin)} → ${arr.time}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${fmtDuration(o.duration)} · nonstop${o.planning?' · estimated':''}</div>${price}${o.publishedSchedule?'<div class="small"><strong>Published timetable fallback:</strong> schedule data is used because the fare provider does not cover this route reliably. Verify the exact flight time and fare with the airline before booking.</div>':o.planning?'<div class="small"><strong>Planning placeholder:</strong> use this time window to build the trip, then verify the exact airline flight and fare before booking.</div>':''}<span class="flight-badge">${badge}</span><div class="selectlabel">${selected?'✓ Selected':(o.publishedSchedule?'Use this published schedule':(o.planning?'Use this planning window':'Select this flight'))}</div>`;
+      bt.innerHTML=`<div class="times${timeClass}">${optionTimeText(o,o.departMin)} → ${optionTimeText(o,arr.min)}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${fmtDuration(o.duration)} · nonstop</div>${price}<span class="flight-badge">${badge}</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
       bt.addEventListener('click',()=>chooseFlight(i,o.id));box.appendChild(bt);
     });
 
@@ -1237,14 +1253,14 @@
           toCity:toAirport?toAirport.city:state.route[i+1],
           flightNo:previousChosen.flightNo,
           departDate,
-          departTime:F.timeFrom(previousChosen.departMin),
+          departTime:optionTimeText(previousChosen,previousChosen.departMin),
           arrivalDate:arr.date,
-          arrivalTime:arr.time,
+          arrivalTime:optionTimeText(previousChosen,arr.min),
           flightMin:previousChosen.duration,groundMin,
           groundKind:groundLabel(i,groundMin,inboundArrivalDate,departDate),elapsedMin
         });
         previousArrivalDate=arr.date;previousArrivalMin=arr.min;
-        rows.push(`Leg ${i+1} · ${state.route[i]} → ${state.route[i+1]} · ${window.NTA.fmtDate(departDate)} · ${F.timeFrom(previousChosen.departMin)} → ${arr.time} · ${previousChosen.flightNo}`);
+        rows.push(`Leg ${i+1} · ${state.route[i]} → ${state.route[i+1]} · ${window.NTA.fmtDate(departDate)} · ${optionTimeText(previousChosen,previousChosen.departMin)} → ${optionTimeText(previousChosen,arr.min)} · ${previousChosen.flightNo} · ${optionFareText(previousChosen)||'fare pending'}`);
       } else {previousArrivalDate=departDate;previousArrivalMin=null;}
     }
     renderSummary(rows,timeline);

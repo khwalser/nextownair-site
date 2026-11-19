@@ -28,7 +28,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #fff}
 .itinerary-sidebar{min-width:0}
 .itinerary-sidebar .toolbar{margin:0;display:grid;gap:12px}
 .itinerary-sidebar .start-date-field{min-width:0;max-width:none;width:100%}
-.itinerary-sidebar .data-badge{justify-self:start}
+.itinerary-sidebar .prototype-legend{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--border2);border-radius:10px;background:#151d29;color:var(--muted);font-size:12px;font-weight:800}.prototype-value{color:#f0c66f!important}.live-fare.prototype{border-color:#795f2f;background:#221e13}.live-fare.prototype .live-fare-label{color:#f0c66f}
+.data-badge{justify-self:start}
 .itinerary-sidebar .btnrow{width:100%}
 .itinerary-sidebar .btnrow .btn{flex:1}
 .itinerary-main{min-width:0}

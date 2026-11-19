@@ -240,6 +240,7 @@ try{
     const fares=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
     assert(fares.filter(x=>x.trim()==='nonstop').length>=3,'Alpena calendar marks future operating dates as nonstop',fares.join(' | '));
     assert(await page.locator('#calendarServiceKey').isVisible(),'Alpena calendar shows the service-day legend');
+    assert(await page.locator('.prototype-legend').isVisible(),'Prototype time/fare legend is visible once for the itinerary');
     assert(await page.locator('#calendarKey').isHidden(),'Alpena calendar hides the fare-status legend');
     assert(!/no provider fare|queued|rate limit/i.test((await page.locator('#startDateCalendar').innerText())),'Alpena calendar does not expose provider-fare noise');
     const desktopLayout=await page.evaluate(()=>{
@@ -248,10 +249,12 @@ try{
       return {w:innerWidth,h:innerHeight,calTop:cal?.top,legTop:leg?.top,legBottom:leg?.bottom};
     });
     assert(desktopLayout.w<1000||((desktopLayout.legTop??99999)<desktopLayout.h),'Desktop layout shows Leg 1 without requiring a scroll past the calendar',JSON.stringify(desktopLayout));
-    await page.waitForFunction(()=>/Published schedule/i.test(document.querySelector('#flight-options-0')?.textContent||''),null,{timeout:30000});
+    await page.waitForFunction(()=>document.querySelectorAll('#flight-options-0 .flight').length>0,null,{timeout:30000});
     const firstLegText=(await page.locator('#flight-options-0').innerText()).replace(/\s+/g,' ');
-    assert(/Published schedule/i.test(firstLegText),'Alpena first leg uses published timetable choices instead of fake planning windows',firstLegText);
-    assert(!/Morning planning window|Midday planning window|Evening planning window/i.test(firstLegText),'Alpena first leg contains no generic planning-window placeholders',firstLegText);
+    assert(/\?\d{1,2}:\d{2}\s+(?:AM|PM)/i.test(firstLegText),'Alpena first leg marks prototype times with a leading ?',firstLegText);
+    assert(/\?\d{2,4}\b/.test(firstLegText),'Alpena first leg includes a prototype fare without a dollar sign',firstLegText);
+    assert(await page.locator('#flight-options-0 .prototype-value').count()>=2,'Prototype time and fare use the prototype visual class');
+    assert(!/Published timetable fallback|Morning planning window|Midday planning window|Evening planning window/i.test(firstLegText),'Alpena first leg no longer presents fallback values as published or generic planning windows',firstLegText);
     pass('Exact Detroit-Alpena-Detroit-Chicago-Houghton-Chicago-Detroit route has a useful service-day calendar');
 
     for(let i=0;i<6;i++){
@@ -351,7 +354,7 @@ try{
       const options=page.locator('#flight-options-'+i+' .flight');
       await options.first().waitFor({state:'visible',timeout:90000});
       const text=(await options.first().innerText()).replace(/\s+/g,' ');
-      assert(/Live flight|Duffel flight|Planning window|Published schedule/i.test(text),'Leg '+(i+1)+' exposes a selectable live, published-schedule, or planning option',text);
+      assert(/Live flight|Provider flight|Known service/i.test(text),'Leg '+(i+1)+' exposes a selectable provider or known-service option',text);
       await options.first().click();
       await page.waitForFunction(({index})=>{
         const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
@@ -360,8 +363,8 @@ try{
     }
     await page.waitForFunction(()=>document.querySelector('#summary')?.textContent?.includes('6 of 6 flight legs selected'),null,{timeout:15000});
     pass('Exact DTW-CIU-DTW-ORD-CMX-ORD-DTW route can be completed end to end');
-    const fallbackCount=await page.locator('.flight-badge',{hasText:/Published schedule|Planning window/}).count();
-    assert(fallbackCount>=1,'Coverage-gap route uses clearly labeled published-schedule or planning fallback where live inventory is absent',String(fallbackCount));
+    const fallbackCount=await page.locator('.flight-badge',{hasText:/Known service/}).count();
+    assert(fallbackCount>=1,'Coverage-gap route uses selectable known-service prototype values where live inventory is absent',String(fallbackCount));
   }
 
   // 6) Map ↔ itinerary navigation preserves the trip and automatic-connector semantics.
