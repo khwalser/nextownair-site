@@ -167,7 +167,7 @@
       ...(next.unknownDates||[])
     ])];
     const merged={
-      provider:next.provider||base?.provider||'aerodatabox-apimarket',
+      provider:next.provider||base?.provider||'schedule-provider',
       sourceType:next.sourceType||base?.sourceType||'published-schedule',
       origin:next.origin||base?.origin,
       destination:next.destination||base?.destination,
@@ -185,15 +185,8 @@
     const normalizedDates=Array.isArray(dates)?[...new Set(dates)].sort():[];
     const requestKey=scheduleMonthKey(a,b,month)+'|'+(normalizedDates.length?normalizedDates.join(','):'all');
     if(scheduleMonthCache.has(requestKey))return scheduleMonthCache.get(requestKey);
-    const query=new URLSearchParams({origin:a,destination:b,month});
-    if(normalizedDates.length)query.set('dates',normalizedDates.join(','));
-    const p=fetch(`/api/schedule-calendar?${query}`,{headers:{Accept:'application/json'}})
-      .then(async res=>{
-        const data=await res.json().catch(()=>({}));
-        if(!res.ok){
-          const err=new Error(data.message||data.error||'Schedule lookup failed');
-          err.status=res.status;err.code=data.error||'';throw err;
-        }
+    const p=F.fetchScheduleMonth(a,b,month,normalizedDates)
+      .then(data=>{
         if(data&&data.partial)scheduleMonthCache.delete(requestKey);
         return data;
       })
@@ -263,10 +256,10 @@
       return 'Published nonstop service · live fare is loading';
     }
     if(av.status==='fallback'){
-      if(best)return `Schedule provider unavailable · live Duffel fare ${formatMoney(best.amount,best.currency)}`;
+      if(best)return `Schedule provider unavailable · live fare ${formatMoney(best.amount,best.currency)}`;
       if(data&&!data.error)return 'Schedule provider unavailable · connected fare provider returned no nonstop price; the airline may still sell this flight';
       if(data?.error)return 'Schedule provider unavailable · live fare lookup will retry when possible';
-      return 'Schedule provider unavailable · checking Duffel live fares';
+      return 'Schedule provider unavailable · checking live fares';
     }
     if(av.status==='unavailable')return 'No published nonstop service found for this date';
     return 'Checking published schedule';
@@ -1077,7 +1070,7 @@
         fareMarkup=`<div class="live-fare prototype" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value ${protoFare?'prototype-value':''}">${protoFare?`Prototype fare ${protoFare}`:(limited?'Provider coverage gap':'No provider fare returned')}</div><div class="small">${protoFare?'A real service is known for this date; live fare coverage is unavailable, so the MVP uses a clearly marked prototype fare.':(limited?'The connected fare provider does not reliably cover this route.':'The route is verified, but the connected provider returned no nonstop inventory for this date.')} </div><a class="btn tertiary" href="${searchUrl}" target="_blank" rel="noopener">Check current fares ↗</a></div>`;
       }else{
         const best=lowestOffer(fareData),isLive=Boolean(fareData.liveMode&&best&&best.liveMode);
-        fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?(locked?'Live fare preview':'Live flights'):'Duffel test flights'} · nonstop economy${previewNote}</div><div class="live-fare-value">Lowest fare ${best?formatMoney(best.amount,best.currency):'—'}</div><div class="small">${fareData.offers.length} flight${fareData.offers.length===1?'':'s'} · exact returned fare prices shown below · checked ${checkedTime(fareData.checkedAt)}${locked?' · exact choices unlock after inbound flight selection':''}</div>${locked?'':`<button class="view-flight-options" type="button" data-view-flight-options>View ${fareData.offers.length} flight option${fareData.offers.length===1?'':'s'} ↓</button>`}</div>`;
+        fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?(locked?'Live fare preview':'Live flights') :'Provider test flights'} · nonstop economy${previewNote}</div><div class="live-fare-value">Lowest fare ${best?formatMoney(best.amount,best.currency):'—'}</div><div class="small">${fareData.offers.length} flight${fareData.offers.length===1?'':'s'} · exact returned fare prices shown below · checked ${checkedTime(fareData.checkedAt)}${locked?' · exact choices unlock after inbound flight selection':''}</div>${locked?'':`<button class="view-flight-options" type="button" data-view-flight-options>View ${fareData.offers.length} flight option${fareData.offers.length===1?'':'s'} ↓</button>`}</div>`;
       }
     }
 

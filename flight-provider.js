@@ -59,12 +59,27 @@
     const data=normalizeFlightsContract(payload);
     return {ok:res.ok,status:res.status,data};
   }
+  async function fetchScheduleMonth(origin,destination,month,dates=[]){
+    const normalizedDates=Array.isArray(dates)?[...new Set(dates)].sort():[];
+    const query=new URLSearchParams({origin,destination,month});
+    if(normalizedDates.length)query.set('dates',normalizedDates.join(','));
+    const res=await fetch('/api/schedule-calendar?'+query.toString(),{headers:{Accept:'application/json'}});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok){
+      const err=new Error(data.message||data.error||'Schedule lookup failed');
+      err.status=res.status;
+      err.code=data.error||'';
+      throw err;
+    }
+    return data;
+  }
   window.NTA_FLIGHTS={
     mode:'nta-flights-v1',
     timeFrom,
     arrival,
     hasKnownRoute,
     normalizeFlightsContract,
-    fetchOffers
+    fetchOffers,
+    fetchScheduleMonth
   };
 })();

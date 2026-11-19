@@ -360,7 +360,7 @@ try{
     }
     if(priced)break;
   }
-  assert(Boolean(priced),'At least one verified route/date returns a real Duffel live offer',
+  assert(Boolean(priced),'At least one verified route/date returns a real live provider offer',
     priced?priced.origin+' → '+priced.destination+' '+priced.date:'No live offer returned from tested verified routes');
 
   assert(diagnostics.fareResponses.length>0,'Frontend requests fare data through the provider-neutral /api/flights contract');
@@ -393,7 +393,7 @@ try{
     const cell=document.querySelector('[data-calendar-date="'+date+'"] .calendar-fare');
     return cell&&cell.textContent.includes(expected);
   },{date:priced.date,expected:expectedLow},{timeout:30000});
-  pass('Lowest real Duffel fare renders on the selected calendar date',expectedLow);
+  pass('Lowest real provider fare renders on the selected calendar date',expectedLow);
 
   await page.waitForFunction(()=>document.querySelectorAll('#flight-options-0 .flight').length>0,null,{timeout:15000});
   const cardText=await page.locator('#flight-options-0').innerText();

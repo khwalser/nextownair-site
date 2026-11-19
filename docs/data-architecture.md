@@ -58,7 +58,7 @@ The value remains `prototype` until current data verifies it.
 
 The frontend consumes a provider-neutral NexTownAir flight contract rather than depending on a named vendor. The production browser endpoint is `/api/flights`, currently returning `contractVersion: nta-flights-v1`.
 
-`flight-provider.js` owns the browser-side `/api/flights` request and normalization boundary. Itinerary rendering consumes normalized flight data and must not parse provider-contract payloads or call provider-specific endpoints directly.
+`flight-provider.js` owns browser-side flight and schedule request boundaries. Itinerary rendering consumes normalized data and must not parse provider-contract payloads, build provider URLs, or call provider-specific endpoints directly.
 
 Provider adapters are responsible for:
 
