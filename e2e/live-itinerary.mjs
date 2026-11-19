@@ -247,7 +247,7 @@ try{
     assert(autoState.some(t=>t&&t!=='check fare')||/does not cover this route reliably/i.test(statusText),'Fare fallback progresses or switches to coverage-gap mode',statusText);
     assert(/Loading live fares across the month|does not cover this route reliably|Fare scan/i.test(statusText),'Calendar explains live-pricing or coverage-gap state',statusText);
   }else{
-    pass('Published schedule path is usable','schedule response '+scheduleResponse.status);
+    pass('Published schedule path is usable','schedule response '+scheduleResponse.status+(scheduleResponse.body?.error?' · '+scheduleResponse.body.error:''));
   }
 
   // 3) Unsupported-provider coverage degrades to a usable live-search fallback instead of burning the month.
@@ -282,6 +282,32 @@ try{
     assert(!/Loading live fares across the month|queued/i.test(reloadedStatus),'Reload does not restart the pointless month-long fare scan',reloadedStatus);
     const visibleFareLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
     assert(visibleFareLabels.filter(x=>x.trim()==='nonstop').length>=3,'Reloaded published-service calendar preserves nonstop service markers',visibleFareLabels.join(' | '));
+  }
+
+  // 4) Sourced bush-carrier patterns remain date-aware when the live schedule provider is unavailable.
+  {
+    const bushDate='2026-12-07'; // Monday, within Taquan's current winter schedule.
+    await page.goto(BASE_URL+'/index.html',{waitUntil:'domcontentloaded',timeout:60000});
+    await page.evaluate(({bushDate})=>{
+      const key='HYG|WFB|'+bushDate;
+      sessionStorage.setItem('nextownair.liveFares.v1',JSON.stringify({
+        [key]:{savedAt:Date.now(),data:{provider:'external-search',liveMode:false,checkedAt:new Date().toISOString(),origin:'HYG',destination:'WFB',departureDate:bushDate,offers:[],coverageLimited:true,externalSearchUrl:'https://www.google.com/travel/flights'}}
+      }));
+    },{bushDate});
+    await page.goto(BASE_URL+'/itinerary.html?route='+encodeURIComponent('HYG,WFB')+'&date='+encodeURIComponent(bushDate),{waitUntil:'domcontentloaded',timeout:60000});
+    await page.waitForFunction(()=>document.querySelectorAll('#flight-options-0 .flight').length>0,null,{timeout:15000});
+    const bushText=(await page.locator('#flight-options-0').innerText()).replace(/\s+/g,' ');
+    assert(/10:15\s+AM\s+→\s+11:00\s+AM/i.test(bushText),'Hydaburg current published return time renders from the sourced Taquan schedule',bushText);
+    assert(/Published flight/i.test(bushText),'Hydaburg sourced schedule is treated as a published flight, not a guessed service placeholder',bushText);
+    assert(await page.locator('#flight-options-0 .times.prototype-value').count()===0,'Published Taquan times are verified rather than prototype');
+    assert(await page.locator('#flight-options-0 .price.prototype-value').count()>=1,'Published Taquan flight retains a prototype fare when live fare coverage is absent');
+    const monday=page.locator('.calendar-day[data-calendar-date="2026-12-07"]');
+    const tuesday=page.locator('.calendar-day[data-calendar-date="2026-12-08"]');
+    const christmas=page.locator('.calendar-day[data-calendar-date="2026-12-25"]');
+    assert((await monday.getAttribute('class')||'').includes('available'),'Published Hydaburg Monday is selectable in the calendar');
+    assert((await tuesday.getAttribute('class')||'').includes('unavailable'),'Hydaburg Tuesday is not invented as a service day');
+    assert((await christmas.getAttribute('class')||'').includes('unavailable'),'Taquan published Christmas no-service date is excluded');
+    pass('Sourced bush schedule survives schedule-provider outages without inventing operating days');
   }
 
   // 4) Mixed-mode Ketchikan routing renders the airport transfer as a transfer, never as a flight.

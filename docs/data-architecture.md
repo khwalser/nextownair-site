@@ -61,6 +61,8 @@ Verified schedule fields are preserved independently of fare coverage. When a cu
 
 Route-specific published service patterns are not overwritten by an external schedule-provider outage. A provider failure can reduce field detail, but it cannot erase a service fact already established by a higher-confidence route source. Published service patterns also answer downstream date availability directly, so a provider outage cannot strand a known-service itinerary in a permanent “checking” state.
 
+Sourced service patterns may include effective-date bounds, weekday rules, explicit no-service dates, and published departure/arrival times. Exact operating days are never inferred from ambiguous DOT frequency fields. When a current carrier timetable supplies exact times, those times are treated as verified schedule fields while fare gaps remain prototype values.
+
 ## Prototype-value fallback order
 
 When a service is known to exist but a required field is unavailable, generate an MVP prototype value using this precedence:

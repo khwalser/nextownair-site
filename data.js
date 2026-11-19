@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.18",
+  "mvpRevision": "2026-11-19.19",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
@@ -149,6 +149,19 @@ window.NTA_DATA = {
         "supports": [
           "WFB-KTN mixed-mode transfer"
         ]
+      }
+    ],
+    "schedulePatternSources": [
+      {
+        "carrier": "Taquan Air",
+        "label": "2026 Passenger Flight Schedule — effective September 30, 2026",
+        "url": "https://taquanair.com/wp-content/uploads/2026/10/Winter-Flight-Schedule-scaled.png",
+        "checkedAsOf": "2026-11-19",
+        "verifiedPairs": [
+          "HYG-WFB",
+          "MTM-WFB"
+        ],
+        "note": "Published operating days/times are used through December 31, 2026 as a conservative MVP review horizon; listed 2026 no-service holidays are excluded."
       }
     ]
   },
@@ -4488,5 +4501,261 @@ window.NTA_DATA = {
       "sourceUrl": "https://dot.alaska.gov/sereg/projects/gravina_access/assets/Final_EIS/Purpose_Need.pdf",
       "checkedAsOf": "2026-11-19"
     }
-  ]
+  ],
+  "servicePatterns": {
+    "WFB|HYG": {
+      "activeFrom": "2026-09-30",
+      "activeThrough": "2026-12-31",
+      "excludeDates": [
+        "2026-11-11",
+        "2026-11-26",
+        "2026-12-25"
+      ],
+      "airline": "Taquan Air",
+      "sourceLabel": "Taquan Air 2026 Passenger Flight Schedule — effective September 30, 2026",
+      "sourceUrl": "https://taquanair.com/wp-content/uploads/2026/10/Winter-Flight-Schedule-scaled.png",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        1,
+        3,
+        5
+      ],
+      "departures": [
+        {
+          "depart": "09:30",
+          "arrive": "10:10"
+        }
+      ],
+      "label": "Monday, Wednesday and Friday published service"
+    },
+    "HYG|WFB": {
+      "activeFrom": "2026-09-30",
+      "activeThrough": "2026-12-31",
+      "excludeDates": [
+        "2026-11-11",
+        "2026-11-26",
+        "2026-12-25"
+      ],
+      "airline": "Taquan Air",
+      "sourceLabel": "Taquan Air 2026 Passenger Flight Schedule — effective September 30, 2026",
+      "sourceUrl": "https://taquanair.com/wp-content/uploads/2026/10/Winter-Flight-Schedule-scaled.png",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        1,
+        3,
+        5
+      ],
+      "departures": [
+        {
+          "depart": "10:15",
+          "arrive": "11:00"
+        }
+      ],
+      "label": "Monday, Wednesday and Friday published service"
+    },
+    "WFB|MTM": {
+      "activeFrom": "2026-09-30",
+      "activeThrough": "2026-12-31",
+      "excludeDates": [
+        "2026-11-11",
+        "2026-11-26",
+        "2026-12-25"
+      ],
+      "airline": "Taquan Air",
+      "sourceLabel": "Taquan Air 2026 Passenger Flight Schedule — effective September 30, 2026",
+      "sourceUrl": "https://taquanair.com/wp-content/uploads/2026/10/Winter-Flight-Schedule-scaled.png",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departuresByDow": {
+        "1": [
+          {
+            "depart": "08:00",
+            "arrive": "08:12"
+          },
+          {
+            "depart": "09:30",
+            "arrive": "09:42"
+          },
+          {
+            "depart": "14:30",
+            "arrive": "14:42"
+          }
+        ],
+        "2": [
+          {
+            "depart": "08:00",
+            "arrive": "08:12"
+          },
+          {
+            "depart": "14:30",
+            "arrive": "14:42"
+          }
+        ],
+        "3": [
+          {
+            "depart": "08:00",
+            "arrive": "08:12"
+          },
+          {
+            "depart": "09:30",
+            "arrive": "09:42"
+          },
+          {
+            "depart": "14:30",
+            "arrive": "14:42"
+          }
+        ],
+        "4": [
+          {
+            "depart": "08:00",
+            "arrive": "08:12"
+          },
+          {
+            "depart": "14:30",
+            "arrive": "14:42"
+          }
+        ],
+        "5": [
+          {
+            "depart": "08:00",
+            "arrive": "08:12"
+          },
+          {
+            "depart": "09:30",
+            "arrive": "09:42"
+          },
+          {
+            "depart": "14:30",
+            "arrive": "14:42"
+          }
+        ],
+        "6": [
+          {
+            "depart": "08:00",
+            "arrive": "08:12"
+          },
+          {
+            "depart": "14:30",
+            "arrive": "14:42"
+          }
+        ]
+      },
+      "label": "Monday through Saturday published service"
+    },
+    "MTM|WFB": {
+      "activeFrom": "2026-09-30",
+      "activeThrough": "2026-12-31",
+      "excludeDates": [
+        "2026-11-11",
+        "2026-11-26",
+        "2026-12-25"
+      ],
+      "airline": "Taquan Air",
+      "sourceLabel": "Taquan Air 2026 Passenger Flight Schedule — effective September 30, 2026",
+      "sourceUrl": "https://taquanair.com/wp-content/uploads/2026/10/Winter-Flight-Schedule-scaled.png",
+      "checkedAsOf": "2026-11-19",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departuresByDow": {
+        "1": [
+          {
+            "depart": "08:18",
+            "arrive": "08:30"
+          },
+          {
+            "depart": "09:48",
+            "arrive": "10:00"
+          },
+          {
+            "depart": "14:48",
+            "arrive": "15:00"
+          }
+        ],
+        "2": [
+          {
+            "depart": "08:18",
+            "arrive": "08:30"
+          },
+          {
+            "depart": "11:48",
+            "arrive": "12:00"
+          },
+          {
+            "depart": "14:48",
+            "arrive": "15:00"
+          }
+        ],
+        "3": [
+          {
+            "depart": "08:18",
+            "arrive": "08:30"
+          },
+          {
+            "depart": "09:48",
+            "arrive": "10:00"
+          },
+          {
+            "depart": "14:48",
+            "arrive": "15:00"
+          }
+        ],
+        "4": [
+          {
+            "depart": "08:18",
+            "arrive": "08:30"
+          },
+          {
+            "depart": "11:48",
+            "arrive": "12:00"
+          },
+          {
+            "depart": "14:48",
+            "arrive": "15:00"
+          }
+        ],
+        "5": [
+          {
+            "depart": "08:18",
+            "arrive": "08:30"
+          },
+          {
+            "depart": "09:48",
+            "arrive": "10:00"
+          },
+          {
+            "depart": "14:48",
+            "arrive": "15:00"
+          }
+        ],
+        "6": [
+          {
+            "depart": "08:18",
+            "arrive": "08:30"
+          },
+          {
+            "depart": "11:48",
+            "arrive": "12:00"
+          },
+          {
+            "depart": "14:48",
+            "arrive": "15:00"
+          }
+        ]
+      },
+      "label": "Monday through Saturday published service"
+    }
+  }
 };

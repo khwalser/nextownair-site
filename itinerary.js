@@ -61,19 +61,47 @@
     'TKJ|FAI':{days:[2,4,6],count:1,label:'Tuesday, Thursday and Saturday nonstop service',source:'Wright Air Service current timetable, updated October 2026'}
   };
   function isKnownFareCoverageGap(a,b){return KNOWN_FARE_COVERAGE_GAPS.has(fareLegKey(a,b));}
-  function publishedServicePattern(a,b){return PUBLISHED_SERVICE_PATTERNS[fareLegKey(a,b)]||null;}
+  function publishedServicePattern(a,b){return (D.servicePatterns&&D.servicePatterns[fareLegKey(a,b)])||PUBLISHED_SERVICE_PATTERNS[fareLegKey(a,b)]||null;}
+  function patternAppliesOnDate(pattern,date){
+    if(!pattern||!date)return false;
+    if(pattern.activeFrom&&date<pattern.activeFrom)return false;
+    if(pattern.activeThrough&&date>pattern.activeThrough)return false;
+    if(Array.isArray(pattern.excludeDates)&&pattern.excludeDates.includes(date))return false;
+    const p=parseYmd(date);if(!p)return false;
+    const dow=new Date(Date.UTC(p.y,p.m-1,p.d,12)).getUTCDay();
+    return Array.isArray(pattern.days)&&pattern.days.includes(dow);
+  }
+  function patternDeparturesForDate(pattern,date){
+    if(!patternAppliesOnDate(pattern,date))return [];
+    const p=parseYmd(date),dow=new Date(Date.UTC(p.y,p.m-1,p.d,12)).getUTCDay();
+    const rows=(pattern.departuresByDow&&pattern.departuresByDow[String(dow)])||pattern.departures||[];
+    return Array.isArray(rows)?rows:[];
+  }
   function publishedScheduleMonth(a,b,month){
     const pattern=publishedServicePattern(a,b);if(!pattern)return null;
     const [year,mon]=month.split('-').map(Number);
     const daysInMonth=new Date(year,mon,0,12).getDate();
-    const days={},checkedDates=[];
+    const days={},checkedDates=[],unknownDates=[];
     for(let d=1;d<=daysInMonth;d++){
       const date=`${year}-${String(mon).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      if((pattern.activeFrom&&date<pattern.activeFrom)||(pattern.activeThrough&&date>pattern.activeThrough)){unknownDates.push(date);continue;}
       checkedDates.push(date);
-      const dow=new Date(Date.UTC(year,mon-1,d,12)).getUTCDay();
-      if(pattern.days.includes(dow))days[date]={count:pattern.count,source:'published-pattern'};
+      if(!patternAppliesOnDate(pattern,date))continue;
+      const departures=patternDeparturesForDate(pattern,date);
+      const count=departures.length||Math.max(1,Number(pattern.count)||1);
+      const flights=departures.map((row,idx)=>{
+        const arriveNext=String(row.arrive||'')<String(row.depart||'');
+        const arrivalDate=arriveNext?window.NTA.addDays(date,1):date;
+        return {
+          ident:row.ident||pattern.ident||`Published ${idx+1}`,
+          airline:row.airline||pattern.airline||'Published carrier',
+          scheduledOut:`${date}T${row.depart}:00`,
+          scheduledIn:`${arrivalDate}T${row.arrive}:00`
+        };
+      });
+      days[date]={count,source:'published-pattern',...(flights.length?{flights}: {})};
     }
-    return {provider:'published-pattern',sourceType:'published-schedule',origin:a,destination:b,month,days,checkedDates,unknownDates:[],patternLabel:pattern.label,sourceLabel:pattern.source,publishedPattern:true};
+    return {provider:'published-pattern',sourceType:'published-schedule',origin:a,destination:b,month,days,checkedDates,unknownDates,patternLabel:pattern.label,sourceLabel:pattern.source||pattern.sourceLabel,publishedPattern:true};
   }
   const FARE_MAX_CONCURRENT=1;
   const FARE_START_GAP_MS=5000;
@@ -434,6 +462,18 @@
   async function loadStartCalendarMonth(){
     const leg=firstLeg();
     if(!leg){el.calendarStatus.textContent='Choose a route first.';return;}
+    const localMonth=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
+    const localPublished=publishedScheduleMonth(leg.a,leg.b,localMonth);
+    if(localPublished){
+      const token=++calendarLoadVersion;
+      const key=scheduleMonthKey(leg.a,leg.b,localMonth);
+      scheduleMonthData.set(key,localPublished);
+      calendarScheduleCompleteKey=key;
+      renderStartCalendar();
+      queueCalendarFarePricing(leg.a,leg.b,scheduledCalendarDates(leg.a,leg.b,localMonth),token);
+      updateCalendarFareStatus();
+      return;
+    }
     if(isKnownFareCoverageGap(leg.a,leg.b)){
       fareCoverageBlockedLegs.add(fareLegKey(leg.a,leg.b));
       const token=++calendarLoadVersion;
@@ -455,6 +495,7 @@
     const today=window.NTA.todayLocal();
     const monthDatesAll=Array.from({length:daysInMonth},(_,idx)=>ymd(y,m+1,idx+1)).filter(d=>d>=today);
 
+    if(patternLearned&&version===renderVersion){render();return;}
     if(scheduleProviderUnavailableCode){
       current={error:true,status:503,code:scheduleProviderUnavailableCode,message:'Published schedule feed unavailable for this session.',days:{}};
       scheduleMonthData.set(key,current);
@@ -558,8 +599,9 @@
     const leg=firstLeg();
     if(!leg)return;
     const gap=isKnownFareCoverageGap(leg.a,leg.b);
-    if(el.calendarKey)el.calendarKey.hidden=gap;
-    if(el.calendarServiceKey)el.calendarServiceKey.hidden=!gap;
+    const sourcedPattern=Boolean(publishedServicePattern(leg.a,leg.b));
+    if(el.calendarKey)el.calendarKey.hidden=gap||sourcedPattern;
+    if(el.calendarServiceKey)el.calendarServiceKey.hidden=!(gap||sourcedPattern);
     const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
     const key=scheduleMonthKey(leg.a,leg.b,month);
     if(forceReload||calendarAutoLoadKey!==key){
@@ -612,12 +654,9 @@
   function serviceCountForDate(a,b,date){
     const pattern=publishedServicePattern(a,b);
     if(pattern){
-      const p=parseYmd(date);
-      if(p){
-        const dow=new Date(Date.UTC(p.y,p.m-1,p.d,12)).getUTCDay();
-        if(pattern.days.includes(dow))return Math.max(1,Number(pattern.count)||1);
-        return 0;
-      }
+      if(!patternAppliesOnDate(pattern,date))return 0;
+      const departures=patternDeparturesForDate(pattern,date);
+      return Math.max(1,departures.length||Number(pattern.count)||1);
     }
     const data=scheduleMonthData.get(scheduleMonthKey(a,b,monthKeyFromDate(date)));
     const day=data&&data.days&&data.days[date];
@@ -903,10 +942,18 @@
   }
   async function hydrateScheduleAvailability(version){
     const requests=new Map();
+    let patternLearned=false;
     const addRequest=(a,b,date)=>{
       if(!a||!b||!date)return;
-      if(publishedServicePattern(a,b))return;
       const month=monthKeyFromDate(date),key=scheduleMonthKey(a,b,month);
+      if(publishedServicePattern(a,b)){
+        const existing=scheduleMonthData.get(key);
+        if(!existing||!existing.publishedPattern){
+          const local=publishedScheduleMonth(a,b,month);
+          if(local){scheduleMonthData.set(key,local);patternLearned=true;}
+        }
+        return;
+      }
       if(!requests.has(key))requests.set(key,{a,b,month,dates:[]});
       requests.get(key).dates.push(date);
     };
