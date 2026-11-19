@@ -385,7 +385,7 @@ try{
   assert(pricedRouteDates.size>=3,'Calendar background scan advances across multiple dates automatically',[...pricedRouteDates].sort().join(', '));
 
   const lowest=priced.row.body.offers.reduce((best,o)=>!best||Number(o?.fare?.amount)<Number(best?.fare?.amount)?o:best,null);
-  const expectedLow=money(lowest.amount,lowest.fare.currency||'USD');
+  const expectedLow=money(lowest.fare.amount,lowest.fare.currency||'USD');
   await page.waitForFunction(({date,expected})=>{
     const cell=document.querySelector('[data-calendar-date="'+date+'"] .calendar-fare');
     return cell&&cell.textContent.includes(expected);
