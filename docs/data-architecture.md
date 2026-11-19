@@ -21,6 +21,8 @@ The planning graph represents verified nonstop service, not merely EAS community
 
 An airport automatically inserted by the routing engine is tracked explicitly as an auto-connector. The application must never infer that the user did not choose an airport merely because it is a hub.
 
+Regional-network gaps remain visible until a current route or an explicit non-flight transfer model is verified. NexTownAir must not invent an airport-to-airport flight merely to collapse graph components.
+
 ## Flight existence, time, and fare are separate facts
 
 A selectable flight/service must first be known to exist. NexTownAir does not prototype the existence of a flight.

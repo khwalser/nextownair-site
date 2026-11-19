@@ -94,10 +94,12 @@ for(const hub of usedHubs){
   if(!outward.length) continuityWarnings.push(hub);
 }
 if(continuityWarnings.length) console.log('WARN: hubs with no modeled non-EAS onward edge: '+continuityWarnings.join(', '));
+const remainingComponents=components.slice(1);
+if(remainingComponents.length)console.log('WARN: remaining disconnected regional components: '+remainingComponents.map(c=>'['+c.join(',')+']').join(' '));
 
 if((D.routeVerification?.backboneRoutePairs||0)!==backboneRoutes.length)fail('backboneRoutePairs metadata does not match backboneRoutes length');
 if(backboneRoutes.length)pass('Commercial backbone edges are tracked separately from the default map layer');
-if(components.length>=21)fail('Commercial backbone did not reduce the pre-backbone 21-component graph');
-if(components.length<21)pass('Commercial backbone reduces disconnected routing components to '+components.length);
+if(components.length>5)fail('Verified commercial backbone still leaves more than five routing components: '+components.length);
+if(components.length<=5)pass('Verified commercial backbone reduces the graph to '+components.length+' routing components');
 
 if(process.exitCode) process.exit(process.exitCode);

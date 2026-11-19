@@ -143,7 +143,10 @@ try{
     butteToSaltLake:window.NTA.findFlightPath('BTM','SLC'),
     beckleyToDenver:window.NTA.findFlightPath('BKW','DEN'),
     hanaToDenver:window.NTA.findFlightPath('HNM','DEN'),
-    mayaguezToDenver:window.NTA.findFlightPath('MAZ','DEN')
+    mayaguezToDenver:window.NTA.findFlightPath('MAZ','DEN'),
+    kodiakToDenver:window.NTA.findFlightPath('ADQ','DEN'),
+    nomeToDenver:window.NTA.findFlightPath('OME','DEN'),
+    fairbanksToDenver:window.NTA.findFlightPath('FAI','DEN')
   }));
   assert(networkRegression.billingsToDenver?.join('>')==='BIL>DEN','Billings has a verified onward path to Denver',JSON.stringify(networkRegression.billingsToDenver));
   assert(networkRegression.wolfPointToDenver?.join('>')==='OLF>BIL>DEN','Billings-served EAS communities continue into the national network',JSON.stringify(networkRegression.wolfPointToDenver));
@@ -151,6 +154,9 @@ try{
   assert(networkRegression.beckleyToDenver?.includes('CLT')&&networkRegression.beckleyToDenver?.at(-1)==='DEN','A CLT-served EAS community can continue through the commercial backbone to Denver',JSON.stringify(networkRegression.beckleyToDenver));
   assert(networkRegression.hanaToDenver?.includes('OGG')&&networkRegression.hanaToDenver?.at(-1)==='DEN','A Maui-served EAS community can continue through PHX backbone service',JSON.stringify(networkRegression.hanaToDenver));
   assert(networkRegression.mayaguezToDenver?.includes('SJU')&&networkRegression.mayaguezToDenver?.at(-1)==='DEN','A San Juan-served EAS community can continue through the national backbone',JSON.stringify(networkRegression.mayaguezToDenver));
+  assert(networkRegression.kodiakToDenver?.join('>')==='ADQ>ANC>PHX>DEN','Kodiak joins the national network through verified Anchorage service',JSON.stringify(networkRegression.kodiakToDenver));
+  assert(networkRegression.nomeToDenver?.includes('ANC')&&networkRegression.nomeToDenver?.at(-1)==='DEN','Nome joins the national network through verified Anchorage service',JSON.stringify(networkRegression.nomeToDenver));
+  assert(networkRegression.fairbanksToDenver?.includes('ANC')&&networkRegression.fairbanksToDenver?.at(-1)==='DEN','Fairbanks joins the national network through verified Anchorage service',JSON.stringify(networkRegression.fairbanksToDenver));
   await page.waitForFunction(()=>{
     const strokes=[...document.querySelectorAll('.leaflet-overlay-pane path')].map(p=>(p.getAttribute('stroke')||'').toLowerCase());
     return strokes.includes('#2f8f86')&&strokes.includes('#7255a1');

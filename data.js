@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.03",
+  "mvpRevision": "2026-11-19.04",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-09-30",
@@ -24,9 +24,19 @@ window.NTA_DATA = {
       "SJU",
       "PDX",
       "BWI",
-      "OAK"
+      "OAK",
+      "ADQ",
+      "DLG",
+      "FAI",
+      "SIT",
+      "AKN",
+      "DUT",
+      "OME",
+      "KTN",
+      "JNU",
+      "MEM"
     ],
-    "backboneRoutePairs": 51,
+    "backboneRoutePairs": 61,
     "backboneSources": [
       {
         "airport": "IAD",
@@ -39,6 +49,23 @@ window.NTA_DATA = {
         "label": "Phoenix Sky Harbor International Airport — Where We Fly",
         "url": "https://www.skyharbor.com/flights/where-we-fly",
         "checkedAsOf": "2026-11-18"
+      },
+      {
+        "airport": "ANC",
+        "label": "Alaska Airlines current Anchorage route/flight status pages",
+        "url": "https://www.alaskaair.com/",
+        "checkedAsOf": "2026-11-19",
+        "verifiedPairs": [
+          "ANC-ADQ",
+          "ANC-DLG",
+          "ANC-FAI",
+          "ANC-SIT",
+          "ANC-AKN",
+          "ANC-DUT",
+          "ANC-OME",
+          "ANC-KTN",
+          "ANC-JNU"
+        ]
       }
     ]
   },
@@ -4279,6 +4306,46 @@ window.NTA_DATA = {
     [
       "PHX",
       "OGG"
+    ],
+    [
+      "ANC",
+      "ADQ"
+    ],
+    [
+      "ANC",
+      "DLG"
+    ],
+    [
+      "ANC",
+      "FAI"
+    ],
+    [
+      "ANC",
+      "SIT"
+    ],
+    [
+      "ANC",
+      "AKN"
+    ],
+    [
+      "ANC",
+      "DUT"
+    ],
+    [
+      "ANC",
+      "OME"
+    ],
+    [
+      "ANC",
+      "KTN"
+    ],
+    [
+      "ANC",
+      "JNU"
+    ],
+    [
+      "PHX",
+      "MEM"
     ]
   ]
 };
