@@ -87,6 +87,26 @@ async function waitForAnySchedule(timeoutMs=30000){
   }
   return null;
 }
+async function chooseFirstFeasibleFlight(index){
+  const options=page.locator('#flight-options-'+index+' .flight');
+  try{
+    await options.first().waitFor({state:'visible',timeout:15000});
+  }catch(_){
+    if(index<1)throw _;
+    const stay=page.locator('.stay').nth(index-1);
+    const nextServiceDate=stay.locator('.stay-av:not(:disabled)').first();
+    await nextServiceDate.waitFor({state:'visible',timeout:30000});
+    const dateText=(await nextServiceDate.innerText()).replace(/\s+/g,' ');
+    await nextServiceDate.click();
+    pass('Selected the next available onward service date when no same-day flight fit Leg '+(index+1),dateText);
+    await options.first().waitFor({state:'visible',timeout:90000});
+  }
+  await options.first().click();
+  await page.waitForFunction(({index})=>{
+    const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
+    return Boolean(s.selections&&s.selections[String(index)]);
+  },{index},{timeout:15000});
+}
 
 try{
   browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome'});
@@ -254,15 +274,7 @@ try{
     assert(!/Published timetable fallback|Morning planning window|Midday planning window|Evening planning window/i.test(firstLegText),'Alpena first leg no longer presents fallback values as published or generic planning windows',firstLegText);
     pass('Exact Detroit-Alpena-Detroit-Chicago-Houghton-Chicago-Detroit route has a useful service-day calendar');
 
-    for(let i=0;i<6;i++){
-      const options=page.locator('#flight-options-'+i+' .flight');
-      await options.first().waitFor({state:'visible',timeout:90000});
-      await options.first().click();
-      await page.waitForFunction(({index})=>{
-        const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
-        return Boolean(s.selections&&s.selections[String(index)]);
-      },{index:i},{timeout:15000});
-    }
+    for(let i=0;i<6;i++)await chooseFirstFeasibleFlight(i);
     await page.waitForFunction(()=>document.querySelector('#summary')?.textContent?.includes('6 of 6 flight legs selected'),null,{timeout:15000});
     pass('Exact Detroit-Alpena-Detroit-Chicago-Houghton-Chicago-Detroit route can be completed end to end');
     const bookingItems=page.locator('.booking-checklist .booking-item');
@@ -391,15 +403,10 @@ try{
     assert(chips.length===7&&exactRoute.every((code,i)=>chips[i]?.includes(code)),'Exact demo route renders all seven route points in itinerary',chips.join(' | '));
 
     for(let i=0;i<6;i++){
-      const options=page.locator('#flight-options-'+i+' .flight');
-      await options.first().waitFor({state:'visible',timeout:90000});
-      const text=(await options.first().innerText()).replace(/\s+/g,' ');
+      await chooseFirstFeasibleFlight(i);
+      const selected=page.locator('#flight-options-'+i+' .flight.selected');
+      const text=(await selected.innerText()).replace(/\s+/g,' ');
       assert(/Live flight|Provider flight|Known service/i.test(text),'Leg '+(i+1)+' exposes a selectable provider or known-service option',text);
-      await options.first().click();
-      await page.waitForFunction(({index})=>{
-        const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
-        return Boolean(s.selections&&s.selections[String(index)]);
-      },{index:i},{timeout:15000});
     }
     await page.waitForFunction(()=>document.querySelector('#summary')?.textContent?.includes('6 of 6 flight legs selected'),null,{timeout:15000});
     pass('Exact DTW-CIU-DTW-ORD-CMX-ORD-DTW route can be completed end to end');
