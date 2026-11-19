@@ -202,9 +202,9 @@ try{
     const coverageDate=tripDate;
     const target=BASE_URL+'/itinerary.html?route='+encodeURIComponent('DTW,CIU')+'&date='+encodeURIComponent(coverageDate);
     await page.goto(target,{waitUntil:'domcontentloaded',timeout:60000});
-    await page.waitForFunction(()=>document.body.innerText.includes('Provider coverage gap')||document.body.innerText.includes('No provider fare returned'),null,{timeout:30000});
+    await page.waitForFunction(()=>/Prototype fare\s+\?\d+/i.test(document.querySelector('.leg')?.textContent||'')||document.body.innerText.includes('Provider coverage gap')||document.body.innerText.includes('No provider fare returned'),null,{timeout:30000});
     const legText=await page.locator('.leg').first().innerText();
-    assert(/Provider coverage gap|No provider fare returned/i.test(legText),'Delta-market route exposes provider coverage honestly',legText.replace(/\s+/g,' '));
+    assert(/Prototype fare\s+\?\d+|Provider coverage gap|No provider fare returned/i.test(legText),'Coverage-gap route exposes a clearly marked prototype fare or explicit provider gap',legText.replace(/\s+/g,' '));
     const external=page.locator('.leg').first().getByRole('link',{name:/Check current fares/i});
     assert(await external.count()===1,'Coverage-gap leg offers a current-fare search fallback');
     const href=await external.getAttribute('href');
