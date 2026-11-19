@@ -197,6 +197,23 @@
   function scheduleState(a,b,date){
     const month=monthKeyFromDate(date);
     const data=scheduleMonthData.get(scheduleMonthKey(a,b,month));
+    if(data&&!data.error){
+      const day=data.days&&data.days[date];
+      if(day&&day.count>0)return {status:'yes',label:'Scheduled',detail:`${day.count} published flight${day.count===1?'':'s'}`};
+      if(Array.isArray(data.unknownDates)&&data.unknownDates.includes(date))return {status:'error',label:'Schedule check incomplete',detail:'retry this date'};
+      if(Array.isArray(data.checkedDates)&&data.checkedDates.includes(date))return {status:'none',label:'No scheduled nonstop',detail:'no published nonstop service found'};
+    }
+    const pattern=publishedServicePattern(a,b);
+    if(pattern){
+      const p=parseYmd(date);
+      if(p){
+        const dow=new Date(Date.UTC(p.y,p.m-1,p.d,12)).getUTCDay();
+        const operating=pattern.days.includes(dow);
+        return operating
+          ?{status:'yes',label:'Scheduled',detail:`${Math.max(1,Number(pattern.count)||1)} published flight${Number(pattern.count)===1?'':'s'}`}
+          :{status:'none',label:'No scheduled nonstop',detail:'published service pattern'};
+      }
+    }
     if(!data)return {status:'checking',label:'Checking…',detail:''};
     if(data.error){
       if(isScheduleFallbackCode(data.code)){
@@ -204,10 +221,6 @@
       }
       return {status:'error',label:'Schedule unavailable',detail:''};
     }
-    const day=data.days&&data.days[date];
-    if(day&&day.count>0)return {status:'yes',label:'Scheduled',detail:`${day.count} published flight${day.count===1?'':'s'}`};
-    if(Array.isArray(data.unknownDates)&&data.unknownDates.includes(date))return {status:'error',label:'Schedule check incomplete',detail:'retry this date'};
-    if(Array.isArray(data.checkedDates)&&data.checkedDates.includes(date))return {status:'none',label:'No scheduled nonstop',detail:'no published nonstop service found'};
     return {status:'checking',label:'Checking…',detail:''};
   }
   function firstLeg(){

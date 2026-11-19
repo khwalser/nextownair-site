@@ -272,6 +272,11 @@ try{
     const fares=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
     assert(fares.filter(x=>x.trim()==='nonstop').length>=3,'Alpena calendar marks future operating dates as nonstop',fares.join(' | '));
     assert(await page.locator('#calendarServiceKey').isVisible(),'Alpena calendar shows the service-day legend');
+    await page.locator('#flight-options-0 .flight').first().click();
+    const downstreamStay=page.locator('.stay').first();
+    await downstreamStay.locator('.stay-av:not(:disabled)').first().waitFor({state:'visible',timeout:15000});
+    pass('Published service pattern keeps downstream onward dates selectable when the external schedule provider is unavailable');
+    await page.reload({waitUntil:'domcontentloaded',timeout:60000});
     assert(await page.locator('.prototype-legend').isVisible(),'Prototype time/fare legend is visible once for the itinerary');
     assert(await page.locator('#calendarKey').isHidden(),'Alpena calendar hides the fare-status legend');
     assert(!/no provider fare|queued|rate limit/i.test((await page.locator('#startDateCalendar').innerText())),'Alpena calendar does not expose provider-fare noise');
