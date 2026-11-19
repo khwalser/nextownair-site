@@ -867,6 +867,7 @@
     const requests=new Map();
     const addRequest=(a,b,date)=>{
       if(!a||!b||!date)return;
+      if(publishedServicePattern(a,b))return;
       const month=monthKeyFromDate(date),key=scheduleMonthKey(a,b,month);
       if(!requests.has(key))requests.set(key,{a,b,month,dates:[]});
       requests.get(key).dates.push(date);

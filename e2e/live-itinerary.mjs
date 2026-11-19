@@ -247,6 +247,7 @@ try{
     assert(initialFareLabels.filter(x=>x.trim()==='nonstop').length>=3,'Published-service fallback marks operating dates as nonstop',initialFareLabels.join(' | '));
     assert(await page.locator('#calendarKey').isHidden(),'Published-service fallback hides the fare-status legend');
     assert(await page.locator('#calendarServiceKey').isVisible(),'Published-service fallback shows the service-day legend');
+    assert((await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents()).some(x=>x.trim()==='nonstop'),'Route-specific published service pattern remains authoritative even when the external schedule provider is unavailable');
     await page.waitForTimeout(7000);
     const stableGapStatus=await page.locator('#calendarStatus').innerText();
     assert(!/rate limit reached|pricing resumes automatically/i.test(stableGapStatus),'Downstream provider rate limits do not overwrite the coverage-gap calendar status',stableGapStatus);
