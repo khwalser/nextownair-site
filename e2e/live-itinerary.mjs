@@ -64,22 +64,22 @@ async function clearTrip(){
   await page.getByRole('button',{name:'Start over'}).click();
   await page.waitForFunction(()=>document.querySelectorAll('#trip .stop').length===0);
 }
-function matchingFare(origin,destination,date){
-  return diagnostics.fareResponses.filter(row=>{
+function matchingFare(origin,destination,date,minIndex=0){
+  return diagnostics.fareResponses.slice(minIndex).filter(row=>{
     try{
       const u=new URL(row.url);
       return u.searchParams.get('origin')===origin&&u.searchParams.get('destination')===destination&&u.searchParams.get('date')===date;
     }catch{return false;}
   }).at(-1)||null;
 }
-async function waitForFare(origin,destination,date,timeoutMs=90000){
+async function waitForFare(origin,destination,date,timeoutMs=90000,minIndex=0){
   const started=Date.now();
   while(Date.now()-started<timeoutMs){
-    const row=matchingFare(origin,destination,date);
+    const row=matchingFare(origin,destination,date,minIndex);
     if(row&&row.status===200)return row;
     await sleep(500);
   }
-  return matchingFare(origin,destination,date);
+  return matchingFare(origin,destination,date,minIndex);
 }
 async function waitForAnySchedule(timeoutMs=30000){
   const started=Date.now();
@@ -466,8 +466,9 @@ try{
     for(let offset=0;offset<3&&!priced;offset++){
       const date=addDays(tripDate,offset);
       const target=BASE_URL+'/itinerary.html?route='+encodeURIComponent(origin+','+destination)+'&date='+encodeURIComponent(date);
+      const responseStart=diagnostics.fareResponses.length;
       await page.goto(target,{waitUntil:'domcontentloaded',timeout:60000});
-      const row=await waitForFare(origin,destination,date,90000);
+      const row=await waitForFare(origin,destination,date,90000,responseStart);
       if(row?.status===200&&row.body?.contractVersion==='nta-flights-v1'&&Array.isArray(row.body.offers)&&row.body.offers.some(o=>o&&o.liveMode)){
         priced={origin,destination,date,row};
       }
