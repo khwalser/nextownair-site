@@ -9,7 +9,7 @@ Map-first flight discovery and itinerary planning focused on Essential Air Servi
 - **Netlify project:** `nextownair-site`
 - **Custom domain:** `nextownair.com`
 - **Hosting:** Netlify connected to GitHub
-- **Current MVP data revision:** `2026-11-19.13`
+- **Current MVP data revision:** `2026-11-19.24`
 
 ## Product behavior
 
@@ -35,7 +35,7 @@ The browser requests fares/offers through:
 
 The contract is currently `nta-flights-v1`. The browser-side request and normalization boundary lives in `flight-provider.js`.
 
-Duffel is currently one backend fare adapter, not a frontend dependency. The legacy `netlify/functions/flight-proxy.js` remains only as a temporary compatibility shim and is not called by the production browser flow.
+Duffel is currently one backend fare adapter, not a frontend dependency. The retired provider-specific browser proxy has been removed; fare traffic enters through the provider-neutral `/api/flights` boundary.
 
 ### Schedule availability
 
@@ -71,13 +71,13 @@ The routing engine uses both layers. Map scope and routing scope are intentional
 
 Current graph state:
 
-- 231 airports in the dataset
-- 239 map-layer route edges
+- 232 airports in the dataset
+- 247 map-layer route edges
 - 61 commercial backbone edges
-- 218 airports in the main connected routing component
-- 4 explicitly documented unresolved regional components
+- 1 explicit non-flight transfer edge
+- all 232 airports currently participate in the connected travel graph
 
-Unresolved components are listed in `routeVerification.unresolvedNetworkComponents`. CI fails if a new or different disconnected set appears. NexTownAir does not invent a flight edge merely to make the graph connected.
+If a regional component becomes unresolved again, it must be listed explicitly in `routeVerification.unresolvedNetworkComponents`. CI fails if the actual disconnected set differs from that declaration. NexTownAir does not invent a flight edge merely to make the graph connected.
 
 ## Production validation
 

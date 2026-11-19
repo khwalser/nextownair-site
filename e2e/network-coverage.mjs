@@ -2,7 +2,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const BASE_URL=(process.env.COVERAGE_BASE_URL||'https://6ac043b048b4440008ee5ffd--nextownair-site.netlify.app').replace(/\/$/,'');
+const BASE_URL=(process.env.COVERAGE_BASE_URL||'https://nextownair.com').replace(/\/$/,'');
 const OUT_DIR=process.env.COVERAGE_OUT_DIR||'artifacts';
 fs.mkdirSync(OUT_DIR,{recursive:true});
 
@@ -95,21 +95,22 @@ try{
       let result;
       try{
         result=await page.evaluate(async ({origin,destination,date})=>{
-          const res=await fetch('/.netlify/functions/flight-proxy?origin='+encodeURIComponent(origin)+'&destination='+encodeURIComponent(destination)+'&date='+encodeURIComponent(date),{headers:{Accept:'application/json'}});
+          const res=await fetch('/api/flights?origin='+encodeURIComponent(origin)+'&destination='+encodeURIComponent(destination)+'&date='+encodeURIComponent(date),{headers:{Accept:'application/json'}});
           let body={};try{body=await res.json();}catch{}
           return {status:res.status,body};
         },{origin:test.route[0],destination:test.route[1],date});
       }catch(err){
         result={status:0,body:{error:'browser_fetch_failed',message:String(err)}};
       }
-      const entry={date,httpStatus:result.status,error:result.body?.error||null,offerCount:Array.isArray(result.body?.offers)?result.body.offers.length:null,liveMode:result.body?.liveMode??null,carriers:Array.isArray(result.body?.offers)?[...new Set(result.body.offers.map(o=>o.operatingCarrier).filter(Boolean))]:[]};
+      const offers=Array.isArray(result.body?.offers)?result.body.offers:[];
+      const entry={date,httpStatus:result.status,error:result.body?.error||null,contractVersion:result.body?.contractVersion||null,sourceProvider:result.body?.sourceProvider||null,offerCount:offers.length,liveMode:offers.some(o=>Boolean(o&&o.liveMode)),carriers:[...new Set(offers.map(o=>o&&o.operatingCarrier).filter(Boolean))]};
       row.dates.push(entry);
       if(result.status===429){
         const wait=Math.min(65000,Math.max(1000,Number(result.body?.retryAfterMs)||15000));
         await sleep(wait);
         continue;
       }
-      if(result.status===200&&entry.offerCount>0){
+      if(result.status===200&&result.body?.contractVersion==='nta-flights-v1'&&entry.offerCount>0){
         row.status='live-offer';
         row.firstLiveDate=date;
         row.firstOfferCount=entry.offerCount;
