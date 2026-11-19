@@ -13,7 +13,7 @@ User-selected route order is authoritative. NexTownAir may insert airports requi
 The planning graph represents verified nonstop service, not merely EAS community-to-designated-hub relationships.
 
 1. DOT/EAS data establishes subsidized EAS community-to-hub service relationships.
-2. Current airport, airline, or commercial schedule sources may establish additional real nonstop service from those airports.
+2. Current airport, airline, or commercial schedule sources may establish additional real nonstop service from those airports. Source-audited additions are recorded in `routeVerification.additionalSmallAirportSources` so the graph does not collapse back to DOT hub-only relationships.
 3. Major-airport connector service is represented by explicit verified edges. A pair is never inferred merely because both airports are called hubs.
 4. Airport `type` is metadata. It does not control whether an airport may be selected, routed through, or treated as part of the trip.
 5. The routing graph may be richer than the default map presentation. Map visibility and zoom policy are presentation concerns, not route-existence rules.

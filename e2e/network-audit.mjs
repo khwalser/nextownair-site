@@ -98,6 +98,16 @@ const remainingComponents=components.slice(1);
 if(remainingComponents.length)console.log('WARN: remaining disconnected regional components: '+remainingComponents.map(c=>'['+c.join(',')+']').join(' '));
 
 if((D.routeVerification?.backboneRoutePairs||0)!==backboneRoutes.length)fail('backboneRoutePairs metadata does not match backboneRoutes length');
+const declaredAdditional=(D.routeVerification?.additionalSmallAirportSources||[]).flatMap(s=>s.verifiedPairs||[]);
+for(const pair of declaredAdditional){
+  const [a,b]=String(pair).split('-');
+  if(!a||!b||!adj.get(a)?.has(b))fail('Declared additional small-airport route missing from graph: '+pair);
+}
+if(declaredAdditional.length!==(D.routeVerification?.additionalSmallAirportRoutePairs||0)){
+  fail('additionalSmallAirportRoutePairs metadata does not match declared source pairs');
+}else if(declaredAdditional.length){
+  pass('All source-declared additional small-airport nonstop routes exist in the graph');
+}
 if(backboneRoutes.length)pass('Commercial backbone edges are tracked separately from the default map layer');
 const expectedUnresolved=(D.routeVerification?.unresolvedNetworkComponents||[])
   .map(x=>(x.airports||[]).slice().sort().join('|'))

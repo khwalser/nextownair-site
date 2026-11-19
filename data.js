@@ -7,13 +7,13 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.13",
+  "mvpRevision": "2026-11-19.14",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
     "easRoutePairs": 225,
     "connectorRoutePairs": 14,
-    "note": "The planner routes over explicit verified EAS/map edges plus a separate current commercial backbone. EAS pairs come from U.S. DOT May 2026 reports; backbone pairs come from current airport-published nonstop destination lists. Airport type never determines whether a route exists or whether a stop was user-selected.",
+    "note": "The planner routes over explicit verified EAS/map edges plus a separate current commercial backbone. EAS pairs come from U.S. DOT May 2026 reports; additional small-airport nonstop pairs come from current airport-published service pages; backbone pairs come from current airport-published nonstop destination lists. Airport type never determines whether a route exists or whether a stop was user-selected.",
     "continuityChecks": [
       "BIL",
       "CLT",
@@ -101,6 +101,39 @@ window.NTA_DATA = {
           "TKJ"
         ],
         "reason": "Regional Alaska pair; no national-network bridge is modeled without verified current service."
+      }
+    ],
+    "additionalSmallAirportRoutePairs": 5,
+    "additionalSmallAirportSources": [
+      {
+        "airport": "GRI",
+        "label": "Central Nebraska Regional Airport — All Routes / Allegiant",
+        "url": "https://flygrandisland.com/",
+        "checkedAsOf": "2026-11-19",
+        "verifiedPairs": [
+          "GRI-LAS",
+          "GRI-AZA"
+        ]
+      },
+      {
+        "airport": "CNY",
+        "label": "Grand County, Utah — Scheduled Air Service",
+        "url": "https://www.grandcountyutah.net/1286/Scheduled-Air-Service",
+        "checkedAsOf": "2026-11-19",
+        "verifiedPairs": [
+          "CNY-DEN",
+          "CNY-SLC"
+        ]
+      },
+      {
+        "airport": "COD",
+        "label": "Yellowstone Regional Airport — Maps and Directions / Flight Information",
+        "url": "https://flyyra.com/maps-directions/",
+        "checkedAsOf": "2026-11-19",
+        "verifiedPairs": [
+          "COD-SLC"
+        ],
+        "note": "SLC is seasonal; DEN remains year-round."
       }
     ]
   },
@@ -4135,6 +4168,26 @@ window.NTA_DATA = {
     [
       "KZB",
       "ADQ"
+    ],
+    [
+      "GRI",
+      "LAS"
+    ],
+    [
+      "GRI",
+      "AZA"
+    ],
+    [
+      "CNY",
+      "DEN"
+    ],
+    [
+      "CNY",
+      "SLC"
+    ],
+    [
+      "COD",
+      "SLC"
     ]
   ],
   "backboneRoutes": [

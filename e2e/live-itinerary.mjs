@@ -148,7 +148,12 @@ try{
     mayaguezToDenver:window.NTA.findFlightPath('MAZ','DEN'),
     kodiakToDenver:window.NTA.findFlightPath('ADQ','DEN'),
     nomeToDenver:window.NTA.findFlightPath('OME','DEN'),
-    fairbanksToDenver:window.NTA.findFlightPath('FAI','DEN')
+    fairbanksToDenver:window.NTA.findFlightPath('FAI','DEN'),
+    grandIslandToLasVegas:window.NTA.findFlightPath('GRI','LAS'),
+    grandIslandToMesa:window.NTA.findFlightPath('GRI','AZA'),
+    moabToDenver:window.NTA.findFlightPath('CNY','DEN'),
+    moabToSaltLake:window.NTA.findFlightPath('CNY','SLC'),
+    codyToSaltLake:window.NTA.findFlightPath('COD','SLC')
   }));
   assert(networkRegression.billingsToDenver?.join('>')==='BIL>DEN','Billings has a verified onward path to Denver',JSON.stringify(networkRegression.billingsToDenver));
   assert(networkRegression.wolfPointToDenver?.join('>')==='OLF>BIL>DEN','Billings-served EAS communities continue into the national network',JSON.stringify(networkRegression.wolfPointToDenver));
@@ -159,6 +164,10 @@ try{
   assert(networkRegression.kodiakToDenver?.includes('ANC')&&networkRegression.kodiakToDenver?.at(-1)==='DEN','Kodiak joins the national network through verified Anchorage service',JSON.stringify(networkRegression.kodiakToDenver));
   assert(networkRegression.nomeToDenver?.includes('ANC')&&networkRegression.nomeToDenver?.at(-1)==='DEN','Nome joins the national network through verified Anchorage service',JSON.stringify(networkRegression.nomeToDenver));
   assert(networkRegression.fairbanksToDenver?.includes('ANC')&&networkRegression.fairbanksToDenver?.at(-1)==='DEN','Fairbanks joins the national network through verified Anchorage service',JSON.stringify(networkRegression.fairbanksToDenver));
+  assert(networkRegression.grandIslandToLasVegas?.join('>')==='GRI>LAS','Grand Island exposes airport-published nonstop Las Vegas service',JSON.stringify(networkRegression.grandIslandToLasVegas));
+  assert(networkRegression.grandIslandToMesa?.join('>')==='GRI>AZA','Grand Island exposes airport-published nonstop Phoenix-Mesa service',JSON.stringify(networkRegression.grandIslandToMesa));
+  assert(networkRegression.moabToDenver?.join('>')==='CNY>DEN'&&networkRegression.moabToSaltLake?.join('>')==='CNY>SLC','Moab exposes airport-published Denver and Salt Lake City nonstop service',JSON.stringify({den:networkRegression.moabToDenver,slc:networkRegression.moabToSaltLake}));
+  assert(networkRegression.codyToSaltLake?.join('>')==='COD>SLC','Cody exposes airport-published seasonal Salt Lake City service',JSON.stringify(networkRegression.codyToSaltLake));
   await page.waitForFunction(()=>{
     const strokes=[...document.querySelectorAll('.leaflet-overlay-pane path')].map(p=>(p.getAttribute('stroke')||'').toLowerCase());
     return strokes.includes('#2f8f86')&&strokes.includes('#7255a1');
