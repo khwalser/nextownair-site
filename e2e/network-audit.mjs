@@ -36,9 +36,9 @@ for(const edge of routes){
 if(!process.exitCode) pass('Route edges are valid and unique');
 
 for(const a of airports.filter(a=>a.type==='eas')){
-  if(!(adj.get(a)?.size)) fail('EAS airport has no route '+a.code);
+  if(!(adj.get(a.code)?.size)) fail('EAS airport has no route '+a.code);
   for(const hub of (a.hubs||[])){
-    if(!adj.get(a)?.has(hub)) fail('Missing DOT/EAS edge '+a.code+' ↔ '+hub);
+    if(!adj.get(a.code)?.has(hub)) fail('Missing DOT/EAS edge '+a.code+' ↔ '+hub);
   }
 }
 if(!process.exitCode) pass('All DOT/EAS hub relationships exist in the graph');
