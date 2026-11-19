@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.27",
+  "mvpRevision": "2026-11-19.28",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
@@ -4549,6 +4549,86 @@ window.NTA_DATA = {
     }
   ],
   "servicePatterns": {
+    "BHB|BOS": {
+      "activeThrough": "2026-12-31",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 3,
+      "airline": "Cape Air",
+      "label": "Daily current nonstop service, three flights per day",
+      "sourceLabel": "Current Bar Harbor-Boston published schedule",
+      "sourceUrl": "https://www.directflights.com/BHB-BOS",
+      "checkedAsOf": "2026-11-19"
+    },
+    "BOS|BHB": {
+      "activeThrough": "2026-12-31",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 3,
+      "airline": "Cape Air",
+      "label": "Daily current nonstop service, three flights per day",
+      "sourceLabel": "Current Boston-Bar Harbor published schedule",
+      "sourceUrl": "https://www.directflights.com/BOS-BHB",
+      "checkedAsOf": "2026-11-19"
+    },
+    "RKD|BOS": {
+      "activeThrough": "2026-12-31",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 3,
+      "airline": "Cape Air",
+      "label": "Daily current nonstop service, three flights per day",
+      "sourceLabel": "Current Rockland-Boston published schedule",
+      "sourceUrl": "https://www.directflights.com/RKD-BOS",
+      "checkedAsOf": "2026-11-19"
+    },
+    "BOS|RKD": {
+      "activeThrough": "2026-12-31",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 3,
+      "airline": "Cape Air",
+      "label": "Daily current nonstop service, three flights per day",
+      "sourceLabel": "Current Boston-Rockland published schedule",
+      "sourceUrl": "https://www.directflights.com/BOS-RKD",
+      "checkedAsOf": "2026-11-19"
+    },
+    "RUT|BOS": {
+      "activeThrough": "2026-12-31",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 3,
+      "airline": "Cape Air",
+      "label": "Daily current nonstop service, three flights per day",
+      "sourceLabel": "Current Rutland-Boston published schedule",
+      "sourceUrl": "https://www.directflights.com/RUT-BOS",
+      "checkedAsOf": "2026-11-19"
+    },
+    "BOS|RUT": {
+      "activeThrough": "2026-12-31",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 3,
+      "airline": "Cape Air",
+      "label": "Daily current nonstop service, three flights per day",
+      "sourceLabel": "Current Rutland-Boston published schedule",
+      "sourceUrl": "https://www.directflights.com/RUT-BOS",
+      "checkedAsOf": "2026-11-19"
+    },
+    "SLK|BOS": {
+      "activeThrough": "2026-12-31",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 2,
+      "airline": "Cape Air",
+      "label": "Daily current nonstop service, two flights per day",
+      "sourceLabel": "Current Saranac Lake-Boston published schedule",
+      "sourceUrl": "https://www.directflights.com/SLK-BOS",
+      "checkedAsOf": "2026-11-19"
+    },
+    "BOS|SLK": {
+      "activeThrough": "2026-12-31",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 2,
+      "airline": "Cape Air",
+      "label": "Daily current nonstop service, two flights per day",
+      "sourceLabel": "Adirondack Regional Airport / current Cape Air service",
+      "sourceUrl": "https://www.adirondackairport.com/commercial-flights-with-cape-air",
+      "checkedAsOf": "2026-11-19"
+    },
     "AIA|DEN": {
       "days": [0, 1, 2, 3, 4, 5, 6],
       "count": 1,
