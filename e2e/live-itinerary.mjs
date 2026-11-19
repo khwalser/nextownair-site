@@ -166,6 +166,7 @@ try{
   assert(networkRegression.fairbanksToDenver?.includes('ANC')&&networkRegression.fairbanksToDenver?.at(-1)==='DEN','Fairbanks joins the national network through verified Anchorage service',JSON.stringify(networkRegression.fairbanksToDenver));
   assert(networkRegression.grandIslandToLasVegas?.join('>')==='GRI>LAS','Grand Island exposes airport-published nonstop Las Vegas service',JSON.stringify(networkRegression.grandIslandToLasVegas));
   assert(networkRegression.grandIslandToMesa?.join('>')==='GRI>AZA','Grand Island exposes airport-published nonstop Phoenix-Mesa service',JSON.stringify(networkRegression.grandIslandToMesa));
+  assert(await page.evaluate(()=>Boolean(window.NTA.byCode('AZA'))),'Phoenix-Mesa Gateway exists as a selectable airport endpoint');
   assert(networkRegression.moabToDenver?.join('>')==='CNY>DEN'&&networkRegression.moabToSaltLake?.join('>')==='CNY>SLC','Moab exposes airport-published Denver and Salt Lake City nonstop service',JSON.stringify({den:networkRegression.moabToDenver,slc:networkRegression.moabToSaltLake}));
   assert(networkRegression.codyToSaltLake?.join('>')==='COD>SLC','Cody exposes airport-published seasonal Salt Lake City service',JSON.stringify(networkRegression.codyToSaltLake));
   await page.waitForFunction(()=>{

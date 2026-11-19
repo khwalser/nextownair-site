@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.14",
+  "mvpRevision": "2026-11-19.15",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
@@ -134,6 +134,15 @@ window.NTA_DATA = {
           "COD-SLC"
         ],
         "note": "SLC is seasonal; DEN remains year-round."
+      }
+    ],
+    "endpointSources": [
+      {
+        "airport": "AZA",
+        "faaCode": "IWA",
+        "label": "FAA Chart Supplement — Phoenix-Mesa Gateway",
+        "url": "https://aeronav.faa.gov/afd/03SEP2026/sw_73_03SEP2026.pdf",
+        "checkedAsOf": "2026-11-19"
       }
     ]
   },
@@ -3210,6 +3219,17 @@ window.NTA_DATA = {
       "type": "hub",
       "region": "alaska",
       "note": "Alaska connector airport used by one or more EAS communities in the May 2026 DOT Alaska report."
+    },
+    {
+      "code": "AZA",
+      "faaCode": "IWA",
+      "name": "Phoenix-Mesa Gateway Airport",
+      "city": "Mesa",
+      "state": "AZ",
+      "lat": 33.307833,
+      "lon": -111.6555,
+      "type": "airport",
+      "note": "Commercial airport serving the Phoenix-Mesa region; IATA AZA / FAA IWA."
     }
   ],
   "routes": [
