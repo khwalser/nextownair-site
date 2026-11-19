@@ -270,6 +270,43 @@ try{
     pass('Exact Detroit-Alpena-Detroit-Chicago-Houghton-Chicago-Detroit route can be completed end to end');
   }
 
+  // 5) Upstream changes preserve feasible downstream choices and silently invalidate impossible ones.
+  {
+    const cascadeRoute=['ORD','CMX','ORD'];
+    const target=BASE_URL+'/itinerary.html?route='+encodeURIComponent(cascadeRoute.join(','))+'&date='+encodeURIComponent(tripDate);
+    await page.goto(target,{waitUntil:'domcontentloaded',timeout:60000});
+    const firstLeg=page.locator('#flight-options-0 .flight');
+    await firstLeg.first().waitFor({state:'visible',timeout:30000});
+    assert(await firstLeg.count()>=2,'Cascade test has multiple first-leg choices');
+    await firstLeg.first().click();
+    const secondLeg=page.locator('#flight-options-1 .flight');
+    await secondLeg.first().waitFor({state:'visible',timeout:30000});
+    await secondLeg.first().click();
+    await page.waitForFunction(()=>{
+      const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
+      return Boolean(s.selections?.['0']&&s.selections?.['1']);
+    },null,{timeout:15000});
+    const downstreamBefore=await page.evaluate(()=>JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}').selections?.['1']||'');
+    await page.locator('#flight-options-0 .flight').nth(1).click();
+    await page.waitForFunction(expected=>{
+      const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
+      return s.selections?.['1']===expected;
+    },downstreamBefore,{timeout:15000});
+    assert((await page.locator('#summary').innerText()).includes('2 of 2 flight legs selected'),'Changing an upstream flight preserves a still-feasible downstream selection');
+
+    const dialogs=[];
+    const dialogHandler=d=>{dialogs.push(d.message());d.dismiss().catch(()=>{});};
+    page.on('dialog',dialogHandler);
+    await page.locator('.stay').first().getByRole('button',{name:/Keep moving|Connect ASAP/i}).click();
+    await page.waitForFunction(previous=>{
+      const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
+      return (s.selections?.['1']||'')!==previous;
+    },downstreamBefore,{timeout:15000});
+    page.off('dialog',dialogHandler);
+    assert(dialogs.length===0,'Downstream recalculation does not interrupt the user with a dialog');
+    pass('Upstream itinerary changes preserve feasible selections and silently invalidate infeasible downstream state');
+  }
+
   // 5) Prove a real Duffel price can make it from the provider into the rendered calendar and flight cards.
   const candidates=[
     ['GCK','DFW'],

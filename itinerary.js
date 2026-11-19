@@ -919,12 +919,14 @@
     el.mapNav.href=mapUrl;el.editRoute.href=mapUrl;el.footerMap.href=mapUrl;el.brandHome.href=mapUrl;
     window.NTA.updateAddress('itinerary.html',state);
   }
-  function clearSelectionsFrom(legIndex){Object.keys(state.selections).forEach(k=>{if(Number(k)>=legIndex)delete state.selections[k];});}
   function chooseFlight(i,id){
     state.selections[String(i)]=id;
-    clearSelectionsFrom(i+1);save();render();
+    save();render();
   }
-  function setStay(i,next){state.stays[String(i)]=next;clearSelectionsFrom(i);save();render();}
+  function setStay(i,next){
+    state.stays[String(i)]=next;
+    save();render();
+  }
   function setStayByDate(i,arrivalDate,chosen){
     if(!window.NTA.validDate(chosen))return;
     let diff=window.NTA.diffDays(arrivalDate,chosen);
