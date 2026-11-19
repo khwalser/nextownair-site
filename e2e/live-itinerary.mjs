@@ -93,15 +93,27 @@ async function chooseFirstFeasibleFlight(index){
   const options=page.locator('#flight-options-'+index+' .flight');
   try{
     await options.first().waitFor({state:'visible',timeout:15000});
-  }catch(_){
-    if(index<1)throw _;
+  }catch(initialError){
+    if(index<1)throw initialError;
     const stay=page.locator('.stay').nth(index-1);
-    const nextServiceDate=stay.locator('.stay-av:not(:disabled)').first();
-    await nextServiceDate.waitFor({state:'visible',timeout:30000});
-    const dateText=(await nextServiceDate.innerText()).replace(/\s+/g,' ');
-    await nextServiceDate.click();
-    pass('Selected the next available onward service date when no same-day flight fit Leg '+(index+1),dateText);
-    await options.first().waitFor({state:'visible',timeout:90000});
+    let found=false;
+    for(let attempt=0;attempt<6&&!found;attempt++){
+      const candidates=stay.locator('.stay-av:not(:disabled)');
+      const count=await candidates.count();
+      if(!count)break;
+      const candidate=candidates.nth(Math.min(attempt,count-1));
+      await candidate.waitFor({state:'visible',timeout:30000});
+      const dateText=(await candidate.innerText()).replace(/\s+/g,' ');
+      await candidate.click();
+      try{
+        await options.first().waitFor({state:'visible',timeout:25000});
+        pass('Selected a future onward service date with a selectable flight for Leg '+(index+1),dateText);
+        found=true;
+      }catch(_){
+        pass('Skipped a future onward date that produced no selectable flight for Leg '+(index+1),dateText);
+      }
+    }
+    if(!found)throw new Error('No selectable future flight found for Leg '+(index+1)+' after checking up to six enabled service dates');
   }
   await options.first().click();
   await page.waitForFunction(({index})=>{
