@@ -427,6 +427,15 @@ try{
     const bookingHrefs=await bookingLinks.evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')||''));
     assert(bookingHrefs.every(h=>/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(h)),'Every MVP booking handoff targets a route/date-specific flight search',bookingHrefs.join(' | '));
 
+    // Phase 7: the booking checklist is a user-managed reminder, never a booking.
+    const bookingChecks=page.locator('.booking-checklist .booking-check-input');
+    assert(await bookingChecks.count()===6,'Phase 7 creates a reminder checkbox for every flight booking handoff');
+    await bookingChecks.first().check();
+    const persistedFirstFlight=await page.locator('#flight-options-0 .flight.selected').first();
+    await persistedFirstFlight.click();
+    assert(await page.locator('.booking-checklist .booking-check-input').first().isChecked(),'Phase 7 preserves the marked flight after a legitimate itinerary rerender');
+    assert((await page.locator('.booking-checklist .booking-check-input:checked').count())===1,'Phase 7 keeps booking reminders tied to individual flight identity');
+
     // Phase 5: changing the first stay in a six-leg completed trip must invalidate
     // stale downstream choices without discarding the still-feasible inbound flight.
     const sixLegBefore=await page.evaluate(()=>JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}'));
