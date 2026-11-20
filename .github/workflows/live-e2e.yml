@@ -18,6 +18,7 @@ on:
       - "e2e/network-audit.mjs"
       - "e2e/schedule-coverage-audit.mjs"
       - "e2e/calendar-coverage-regression.mjs"
+      - "e2e/calendar-pricing-progress-regression.mjs"
       - "e2e/schedule-full-day-regression.mjs"
       - "docs/data-architecture.md"
       - ".github/workflows/live-e2e.yml"
@@ -63,6 +64,9 @@ jobs:
 
       - name: Calendar coverage uncertainty regression
         run: node e2e/calendar-coverage-regression.mjs
+
+      - name: Verify calendar pricing progress and completion
+        run: node e2e/calendar-pricing-progress-regression.mjs
 
       - name: Audit route graph
         run: node e2e/network-audit.mjs
