@@ -450,6 +450,7 @@
         if(btn.disabled)return;
         const leg=firstLeg();
         if(leg)prioritizeFareCheck(leg.a,leg.b,date,{forceIfUnpriced:true});
+        recentClearedFlights=0;
         state.startDate=date;state.selections={};save();
         calendarMonthDate=monthStart(date);
         el.startDateCalendar.hidden=false;el.startDateButton.setAttribute('aria-expanded','true');
