@@ -238,7 +238,7 @@
       const day=data.days&&data.days[date];
       if(day&&day.count>0)return {status:'yes',label:'Scheduled',detail:`${day.count} published flight${day.count===1?'':'s'}`};
       if(Array.isArray(data.unknownDates)&&data.unknownDates.includes(date))return {status:'error',label:'Schedule check incomplete',detail:'retry this date'};
-      if(Array.isArray(data.checkedDates)&&data.checkedDates.includes(date))return {status:'fallback',label:'Check live fare',detail:'No date-specific service confirmed by schedule source; check live offers'};
+      if(Array.isArray(data.checkedDates)&&data.checkedDates.includes(date))return publishedServicePattern(a,b)?{status:'none',label:'No scheduled service',detail:'No service on this date in published operating pattern'}:{status:'fallback',label:'Check live fare',detail:'No date-specific service confirmed by schedule source; check live offers'};
     }
     const pattern=publishedServicePattern(a,b);
     if(pattern){
