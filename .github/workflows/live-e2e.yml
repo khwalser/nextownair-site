@@ -14,6 +14,7 @@ on:
       - "styles.css"
       - "netlify/functions/**"
       - "e2e/live-itinerary.mjs"
+      - "e2e/phase4-regression.mjs"
       - "e2e/network-audit.mjs"
       - "e2e/schedule-coverage-audit.mjs"
       - "docs/data-architecture.md"
@@ -54,6 +55,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+
+      - name: Phase 4 deterministic prototype regression
+        run: node e2e/phase4-regression.mjs
 
       - name: Audit route graph
         run: node e2e/network-audit.mjs
