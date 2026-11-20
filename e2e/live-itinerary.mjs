@@ -780,7 +780,7 @@ try{
       window.NTA.save(s);
     });
     await uat.getByRole('button',{name:'Open saved trip Phase 10 UAT reopen'}).click();
-    await uat.waitForFunction(()=>window.NTA.load().startDate==='2026-12-09',null,{timeout:15000});
+    await uat.waitForFunction(()=>window.NTA&&window.NTA.load().startDate==='2026-12-09',null,{timeout:15000});
     const restored=await uat.evaluate(()=>window.NTA.load());
     assert(restored.startDate==='2026-12-09'&&restored.route.join(',')==='DTW,ROC,DTW','Phase 10 real UI saved-trip reopen restores the traveler’s choices');
     assert(Object.keys(restored.selections||{}).length===0,'Phase 10 real UI saved-trip reopen does not resurrect booked or stale flights');
