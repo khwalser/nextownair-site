@@ -26,4 +26,23 @@ assert.equal(context.scheduleState('DTW','ROC','2026-11-27').status,'fallback','
 context.scheduleMonthData.set('DTW|ROC|2026-11',{error:true,code:'schedule_unavailable',days:{}});
 assert.equal(context.scheduleState('DTW','ROC','2026-11-27').status,'fallback','Schedule feed errors must not display retry badges');
 
+// The calendar must distinguish evidence of a flight from a priced offer.
+const avStart=source.indexOf('  function calendarAvailability(');
+const avEnd=source.indexOf('  function calendarFareText(',avStart);
+assert(avStart>=0&&avEnd>avStart,'Missing production calendar availability function');
+const fares=new Map();
+context.firstLeg=()=>({a:'DTW',b:'ROC'});
+context.liveFareData=fares;
+context.fareKey=(a,b,d)=>a+'|'+b+'|'+d;
+context.lowestOffer=data=>data?.offers?.[0]||null;
+vm.runInContext(source.slice(avStart,avEnd)+'\nthis.calendarAvailability=calendarAvailability;',context);
+dates.set('DTW|ROC|2026-11',{days:{'2026-11-25':{count:1}},checkedDates:['2026-11-25','2026-11-26']});
+assert.equal(context.calendarAvailability('2026-11-25').status,'available','Published flight exists without a known fare');
+assert.equal(context.calendarAvailability('2026-11-26').status,'fallback','Schedule gap remains unverified, not a confirmed absence');
+fares.set('DTW|ROC|2026-11-25',{offers:[{amount:241,currency:'USD'}]});
+assert.equal(context.calendarAvailability('2026-11-25').status,'available','Verified offer is an available flight');
+fares.set('DTW|ROC|2026-11-26',{offers:[{amount:260,currency:'USD'}]});
+assert.equal(context.calendarAvailability('2026-11-26').status,'available','Live fare is sufficient evidence of an available flight');
+assert.match(source,/return av\.status==='fallback'\?'unverified':'flight ✓'/,'Calendar distinguishes unknown dates from published flights');
+console.log('PASS: Calendar availability distinguishes confirmed service, priced flight, and unverified dates');
 console.log('PASS: Empty schedule coverage offers a live fare check without inventing service');
