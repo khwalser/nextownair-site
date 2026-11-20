@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.28",
+  "mvpRevision": "2026-11-19.29",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
@@ -4549,6 +4549,17 @@ window.NTA_DATA = {
     }
   ],
   "servicePatterns": {
+    "ORD|DTW": {
+      "activeFrom": "2026-12-01",
+      "activeThrough": "2026-12-16",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Daily published nonstop service during the stated December timetable window",
+      "sourceLabel": "ORD–DTW December 2026 published flight schedule, UA 2727",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/ORD/DTW",
+      "checkedAsOf": "2026-11-19"
+    },
     "BHB|BOS": {
       "activeThrough": "2026-12-31",
       "days": [0, 1, 2, 3, 4, 5, 6],
