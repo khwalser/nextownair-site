@@ -44,5 +44,14 @@ assert.equal(context.calendarAvailability('2026-11-25').status,'available','Veri
 fares.set('DTW|ROC|2026-11-26',{offers:[{amount:260,currency:'USD'}]});
 assert.equal(context.calendarAvailability('2026-11-26').status,'available','Live fare is sufficient evidence of an available flight');
 assert.match(source,/return av\.status==='fallback'\?'unverified':'flight ✓'/,'Calendar distinguishes unknown dates from published flights');
+const dataSource=fs.readFileSync(new URL('../data.js',import.meta.url),'utf8');
+const dataContext={window:{}};
+vm.createContext(dataContext);
+vm.runInContext(dataSource,dataContext);
+const dtwOrd=dataContext.window.NTA_DATA?.servicePatterns?.['DTW|ORD'];
+assert(dtwOrd&&dtwOrd.activeFrom<='2026-11-20'&&dtwOrd.activeThrough>='2026-11-30','DTW-ORD must have published November schedule coverage');
+assert.equal(dtwOrd.days.length,7,'DTW-ORD published flight must operate on all weekdays for November coverage');
+assert(/^https:\/\//.test(dtwOrd.sourceUrl),'Schedule pattern must retain a published citation');
+console.log('PASS: November DTW–ORD uses sourced operating-day coverage rather than unverified placeholder dates');
 console.log('PASS: Calendar availability distinguishes confirmed service, priced flight, and unverified dates');
 console.log('PASS: Empty schedule coverage offers a live fare check without inventing service');
