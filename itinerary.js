@@ -238,7 +238,7 @@
       const day=data.days&&data.days[date];
       if(day&&day.count>0)return {status:'yes',label:'Scheduled',detail:`${day.count} published flight${day.count===1?'':'s'}`};
       if(Array.isArray(data.unknownDates)&&data.unknownDates.includes(date))return {status:'error',label:'Schedule check incomplete',detail:'retry this date'};
-      if(Array.isArray(data.checkedDates)&&data.checkedDates.includes(date))return {status:'none',label:'No scheduled service',detail:'no published service found'};
+      if(Array.isArray(data.checkedDates)&&data.checkedDates.includes(date))return {status:'fallback',label:'Check live fare',detail:'No date-specific service confirmed by schedule source; check live offers'};
     }
     const pattern=publishedServicePattern(a,b);
     if(pattern){
@@ -364,7 +364,7 @@
         .map(([key])=>key.slice(-10));
       el.calendarStatus.textContent=liveDates.length
         ?'Live flight offers are available for '+liveDates.length+' date'+(liveDates.length===1?'':'s')+' this month. The separate published schedule feed has incomplete coverage; choose a highlighted fare date or check other dates.'
-        :'No published nonstop dates were returned by the schedule feed for this month. Coverage may be incomplete; this does not mean no flights operate.';
+        :'Published schedule data has no confirmed dates for this month. Live fare checks can identify bookable offers on highlighted dates; other dates remain unverified.';
       return;
     }
     const checked=dates.filter(date=>liveFareData.has(fareKey(leg.a,leg.b,date))).length;
@@ -521,7 +521,7 @@
     if(!remaining.length){
       renderStartCalendar();
       calendarScheduleCompleteKey=key;
-      queueCalendarFarePricing(leg.a,leg.b,scheduledCalendarDates(leg.a,leg.b,month),token);
+      queueCalendarFarePricing(leg.a,leg.b,scheduledCalendarDates(leg.a,leg.b,month).length?scheduledCalendarDates(leg.a,leg.b,month):monthDatesAll,token);
       updateCalendarFareStatus();
       return;
     }
@@ -562,7 +562,7 @@
       if(token!==calendarLoadVersion)return;
       const stillUnknown=(current?.unknownDates||[]).filter(d=>monthDatesAll.includes(d));
       calendarScheduleCompleteKey=key;
-      queueCalendarFarePricing(leg.a,leg.b,scheduledCalendarDates(leg.a,leg.b,month),token);
+      queueCalendarFarePricing(leg.a,leg.b,scheduledCalendarDates(leg.a,leg.b,month).length?scheduledCalendarDates(leg.a,leg.b,month):monthDatesAll,token);
       if(stillUnknown.length){
         el.calendarStatus.textContent=`Published schedule loaded for most dates. ${stillUnknown.length} date${stillUnknown.length===1?'':'s'} could not be confirmed; live fares for confirmed service dates load progressively.`;
       }else{
