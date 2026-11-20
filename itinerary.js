@@ -1369,7 +1369,7 @@
     return [flight.from,flight.to,flight.departDate,flight.flightNo,flight.carrier].join('|');
   }
   function restoreBookingChecks(){
-    document.querySelectorAll('.booking-check[data-booking-key]').forEach(input=>{
+    document.querySelectorAll('.booking-check-input[data-booking-key]').forEach(input=>{
       input.checked=bookedInSession.has(input.dataset.bookingKey);
       input.addEventListener('change',()=>{
         if(input.checked)bookedInSession.add(input.dataset.bookingKey);
