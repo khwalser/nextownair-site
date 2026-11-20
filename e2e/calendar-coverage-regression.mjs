@@ -53,8 +53,9 @@ assert(dtwOrd&&dtwOrd.activeFrom<='2026-11-20'&&dtwOrd.activeThrough>='2026-11-3
 assert.equal(dtwOrd.days.length,7,'DTW-ORD published flight must operate on all weekdays for November coverage');
 assert(/^https:\/\//.test(dtwOrd.sourceUrl),'Schedule pattern must retain a published citation');
 console.log('PASS: November DTW–ORD uses sourced operating-day coverage rather than unverified placeholder dates');
-assert.match(source,/const AUTO_PRICE_WINDOW=5;/,'Calendar should price only five priority dates automatically');
-assert.match(source,/Select another date to check its price/,'Calendar must explain that additional prices are on-demand');
-console.log('PASS: Calendar limits slow automatic fare lookups and offers on-demand checks');
+assert.match(source,/const AUTO_PRICE_WINDOW=31;/,'Calendar automatically scans all published flight dates in a month');
+assert.match(source,/return fallback\\?Math\\.min\\(5,/,'Unverified schedule-provider fallback stays limited to five speculative fare requests');
+assert.match(source,/Checking live prices: /,'Calendar reports checked, priced, and queued counts during full-month scan');
+console.log('PASS: Calendar automatically prices published service dates and bounds unverified schedule fallback');
 console.log('PASS: Calendar availability distinguishes confirmed service, priced flight, and unverified dates');
 console.log('PASS: Empty schedule coverage offers a live fare check without inventing service');
