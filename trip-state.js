@@ -144,6 +144,27 @@
     if(!q.has('route'))return null;
     return normalizeRoute((q.get('route')||'').split(','));
   }
+  // Share only user choices. Flight offers and selected inventory are deliberately
+  // omitted because external availability and prices must be checked again.
+  function encodeTripSnapshot(state){
+    const clean=sanitize(state);
+    const payload=JSON.stringify({v:1,route:clean.route,autoConnectorIndices:clean.autoConnectorIndices,startDate:clean.startDate,stays:clean.stays});
+    return btoa(payload).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');
+  }
+  function decodeTripSnapshot(value){
+    if(typeof value!=='string'||!value||value.length>8000||!/^[A-Za-z0-9_-]+$/.test(value))return null;
+    try{
+      const payload=JSON.parse(atob(value.replace(/-/g,'+').replace(/_/g,'/')));
+      if(!payload||payload.v!==1||!Array.isArray(payload.route)||payload.route.length>40)return null;
+      const restored=sanitize(payload);
+      restored.selections={};
+      return restored;
+    }catch(_){return null;}
+  }
+  function shareTripUrl(page,state){
+    const token=encodeTripSnapshot(state);
+    return new URL(page+'?snapshot='+encodeURIComponent(token),location.href).href;
+  }
   function load(){
     const q=new URLSearchParams(location.search);
     if(q.get('fresh')==='1'){
@@ -154,8 +175,9 @@
         history.replaceState(null,'',clean);
       }catch(_){/* file previews may block */}
     }
-    const state=readStored();
-    const qr=routeFromQuery();
+    const shared=q.has('snapshot')?decodeTripSnapshot(q.get('snapshot')):null;
+    const state=shared||readStored();
+    const qr=shared?null:routeFromQuery();
     if(qr!==null)reconcileRoute(state,qr);
     if(q.has('auto')){
       const raw=(q.get('auto')||'').split(',').map(x=>x.trim()).filter(Boolean);
@@ -172,7 +194,7 @@
       state.autoConnectorIndices=[...new Set(state.autoConnectorIndices||[])].sort((a,b)=>a-b);
       state.autoConnectors=[...new Set(state.autoConnectorIndices.map(i=>state.route[i]).filter(Boolean))];
     }
-    if(validDate(q.get('date')))state.startDate=q.get('date');
+    if(!shared&&validDate(q.get('date')))state.startDate=q.get('date');
     return save(state);
   }
   function setRoute(state,route){reconcileRoute(state,route);return save(state);}
@@ -197,5 +219,5 @@
     if(!validDate(s))return '';
     return parseDate(s).toLocaleDateString(undefined,Object.assign({month:'short',day:'numeric',timeZone:'UTC'},opts||{}));
   }
-  window.NTA={KEY,todayLocal,validDate,normalizeRoute,load,save,setRoute,clearTrip,clearSavedAppState,buildUrl,updateAddress,byCode,addDays,diffDays,fmtDate,hasListedRoute,isNetworkHub,hasFlightLink,getTransferLink,hasTransferLink,hasTravelLink,findFlightPath,findTravelPath};
+  window.NTA={KEY,todayLocal,validDate,normalizeRoute,load,save,encodeTripSnapshot,decodeTripSnapshot,shareTripUrl,setRoute,clearTrip,clearSavedAppState,buildUrl,updateAddress,byCode,addDays,diffDays,fmtDate,hasListedRoute,isNetworkHub,hasFlightLink,getTransferLink,hasTransferLink,hasTravelLink,findFlightPath,findTravelPath};
 })();
