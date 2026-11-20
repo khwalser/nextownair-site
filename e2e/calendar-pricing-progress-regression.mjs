@@ -65,7 +65,7 @@ const queueCtx={
   rememberFareData:()=>{}
 };
 vm.createContext(queueCtx);
-vm.runInContext(source.slice(queueStart,queueEnd)+'\\nthis.queueCalendarFarePricing=queueCalendarFarePricing;',queueCtx);
+vm.runInContext(source.slice(queueStart,queueEnd)+'\nthis.queueCalendarFarePricing=queueCalendarFarePricing;',queueCtx);
 const allDates=Array.from({length:11},(_,i)=>'2026-11-'+String(i+20).padStart(2,'0'));
 queueCtx.queueCalendarFarePricing('DTW','ORD',allDates,1);
 assert.equal(queuedDates.length,11,'All eleven published flight dates are queued automatically, not only five');
