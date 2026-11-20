@@ -105,7 +105,7 @@
   }
   const FARE_MAX_CONCURRENT=1;
   const FARE_START_GAP_MS=5000;
-  const AUTO_PRICE_WINDOW=31;
+  const AUTO_PRICE_WINDOW=5;
   const FARE_SESSION_KEY='nextownair.liveFares.v1';
   const FARE_SESSION_TTL_MS=5*60*1000;
   const SCHEDULE_FALLBACK_SESSION_KEY='nextownair.scheduleFallback.v1';
@@ -290,8 +290,8 @@
       if(data.coverageLimited&&av.status!=='unavailable')return av.status==='available'?'flight ✓':'unverified';
       if(av.status!=='unavailable')return av.status==='available'?'flight ✓':'unverified';
     }
-    if(fareActiveKeys.has(key))return 'pricing…';
-    if(liveFareCache.has(key))return 'queued';
+    if(fareActiveKeys.has(key))return av.status==='available'?'flight ✓':'pricing…';
+    if(liveFareCache.has(key))return av.status==='available'?'flight ✓':'checking';
     if(av.status==='unavailable')return '—';
     if(av.status==='retry')return 'unverified';
     if(av.status==='checking')return 'checking';
