@@ -454,6 +454,8 @@ try{
     const clearedNotice=page.locator('.trip-cleared-notice');
     await clearedNotice.waitFor({state:'visible',timeout:15000});
     assert(/5 previously selected flights were cleared/.test(await clearedNotice.innerText()),'Phase 6 explicitly identifies the five invalidated downstream flight selections');
+    await page.waitForTimeout(750);
+    assert(await clearedNotice.isVisible(),'Phase 6 invalidation message survives asynchronous fare and schedule updates');
 
     assert(phase5Dialogs.length===0,'Phase 5 recalculates six-leg itinerary without blocking dialogs');
     assert(await page.locator('.booking-checklist .booking-item').count()<=1,'Phase 5 booking checklist never retains stale downstream flights');
