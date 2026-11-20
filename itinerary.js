@@ -326,12 +326,28 @@
       .map(([date])=>date)
       .sort();
   }
+  function calendarMoreFareControl(a,b,month,dates,queued){
+    const button=document.getElementById('calendarMoreFares');
+    if(!button)return;
+    const remaining=dates.filter(date=>{
+      const key=fareKey(a,b,date);
+      return !liveFareData.has(key)&&!calendarFareJobs.has(key);
+    });
+    const pending=dates.filter(date=>calendarFareJobs.has(fareKey(a,b,date))).length;
+    button.hidden=!remaining.length||Boolean(queued)&&remaining.length===0||fareCoverageBlockedLegs.has(fareLegKey(a,b));
+    button.disabled=pending>0;
+    button.textContent=pending>0
+      ?`Checking ${pending} queued date${pending===1?'':'s'}…`
+      :`Check prices for ${remaining.length} more date${remaining.length===1?'':'s'}`;
+  }
   function updateCalendarFareStatus(){
     const leg=firstLeg();if(!leg||!calendarMonthDate)return;
     const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
     const key=scheduleMonthKey(leg.a,leg.b,month);
     if(calendarScheduleCompleteKey!==key)return;
     const scheduleData=scheduleMonthData.get(key);
+    const moreButton=document.getElementById('calendarMoreFares');
+    if(moreButton)moreButton.hidden=true;
     if(fareCoverageBlockedLegs.has(fareLegKey(leg.a,leg.b))){
       const pattern=publishedServicePattern(leg.a,leg.b);
       el.calendarStatus.textContent=pattern
@@ -369,6 +385,7 @@
     }
     const checked=dates.filter(date=>liveFareData.has(fareKey(leg.a,leg.b,date))).length;
     const queued=dates.filter(date=>calendarFareJobs.has(fareKey(leg.a,leg.b,date))).length;
+    calendarMoreFareControl(leg.a,leg.b,month,dates,queued);
     el.calendarStatus.textContent=queued
       ?`Published flights are shown immediately. Checking live prices for the selected and nearby dates (${checked} returned, ${priced} priced). Select another date to check its price.`
       :`Published flights confirmed on ${dates.length} dates. Live fares found on ${priced}; select any other date to request its price.`;
@@ -392,18 +409,41 @@
       calendarFareJobs.add(key);
       const promise=fetchFare(a,b,date,false);
       updateCalendarCell(date);
+      const refreshVisibleCalendar=()=>{
+        const visible=firstLeg();
+        const visibleMonth=calendarMonthDate
+          ?`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`
+          :'';
+        if(visible?.a!==a||visible?.b!==b||visibleMonth!==monthKeyFromDate(date))return;
+        updateCalendarCell(date);
+        updateCalendarFareStatus();
+      };
       promise.then(data=>{
         rememberFareData(key,data);
-        if(token===calendarLoadVersion)updateCalendarCell(date);
+        refreshVisibleCalendar();
       }).catch(err=>{
         rememberFareData(key,{error:true,status:err.status||0,offers:[],message:String(err.message||err)});
-        if(token===calendarLoadVersion)updateCalendarCell(date);
+        refreshVisibleCalendar();
       }).finally(()=>{
         calendarFareJobs.delete(key);
-        if(token===calendarLoadVersion)updateCalendarFareStatus();
+        refreshVisibleCalendar();
       });
     });
   }
+  const calendarMoreFaresButton=document.getElementById('calendarMoreFares');
+  if(calendarMoreFaresButton)calendarMoreFaresButton.addEventListener('click',()=>{
+    const leg=firstLeg();
+    if(!leg||!calendarMonthDate)return;
+    const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
+    const dates=scheduledCalendarDates(leg.a,leg.b,month);
+    const remaining=dates.filter(date=>{
+      const key=fareKey(leg.a,leg.b,date);
+      return !liveFareData.has(key)&&!calendarFareJobs.has(key);
+    });
+    if(!remaining.length)return;
+    queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,remaining.length);
+    updateCalendarFareStatus();
+  });
   function updateCalendarCell(date){
     const cell=el.calendarGrid.querySelector(`[data-calendar-date="${date}"]`);
     if(!cell)return;
