@@ -116,6 +116,7 @@
   let farePumpTimer=null;
   let renderVersion=0;
   let recentClearedFlights=0;
+  let previousSelectionSnapshot=null;
   let calendarMonthDate=null;
   let calendarLoadVersion=0;
   let calendarAutoLoadKey='';
@@ -451,6 +452,7 @@
         const leg=firstLeg();
         if(leg)prioritizeFareCheck(leg.a,leg.b,date,{forceIfUnpriced:true});
         recentClearedFlights=0;
+        previousSelectionSnapshot=null;
         state.startDate=date;state.selections={};save();
         calendarMonthDate=monthStart(date);
         el.startDateCalendar.hidden=false;el.startDateButton.setAttribute('aria-expanded','true');
@@ -1053,11 +1055,13 @@
   }
   function chooseFlight(i,id){
     recentClearedFlights=0;
+    previousSelectionSnapshot=null;
     state.selections[String(i)]=id;
     save();render();
   }
   function setStay(i,next){
     recentClearedFlights=0;
+    previousSelectionSnapshot=new Set(Object.keys(state.selections||{}));
     state.stays[String(i)]=next;
     save();render();
   }
@@ -1490,7 +1494,9 @@
         rows.push({type:'flight',text:`Flight · ${state.route[i]} → ${state.route[i+1]} · ${window.NTA.fmtDate(departDate)} · ${optionTimeText(previousChosen,previousChosen.departMin)} → ${optionTimeText(previousChosen,arr.min)} · ${previousChosen.flightNo} · ${optionFareText(previousChosen)}`});
       } else {previousArrivalDate=departDate;previousArrivalMin=null;}
     }
-    const invalidatedCount=[...selectionsAtStart].filter(key=>!Object.prototype.hasOwnProperty.call(state.selections,key)).length;
+    const beforeInvalidation=previousSelectionSnapshot||selectionsAtStart;
+    const invalidatedCount=[...beforeInvalidation].filter(key=>!Object.prototype.hasOwnProperty.call(state.selections,key)).length;
+    previousSelectionSnapshot=null;
     if(invalidatedCount>0)recentClearedFlights=invalidatedCount;
     renderSummary(rows,timeline,recentClearedFlights);
     updateLiveTripFare();
