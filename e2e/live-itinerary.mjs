@@ -118,6 +118,13 @@ async function chooseFirstFeasibleFlight(index){
     }
     if(!found)throw new Error('No selectable future flight found for Leg '+(index+1)+' after checking 15 distinct consecutive dates');
   }
+  // A cached/revalidated selected flight may already be active; avoid
+  // unnecessarily clicking it while asynchronous fare/schedule updates rerender.
+  const savedSelection=await page.evaluate(i=>{
+    const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
+    return s.selections?.[String(i)]||null;
+  },index);
+  if(savedSelection&&await options.first().getAttribute('aria-pressed')==='true')return;
   await options.first().click();
   await page.waitForFunction(({index})=>{
     const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
