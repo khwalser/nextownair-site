@@ -85,6 +85,29 @@ jobs:
           echo "Production did not expose expected MVP revision $EXPECTED."
           exit 1
 
+      - name: Verify exact deployed frontend assets
+        if: ${{ !inputs.base_url || inputs.base_url == 'https://nextownair.com' }}
+        run: |
+          for attempt in {1..48}; do
+            match=1
+            for asset in index.html itinerary.html map.js itinerary.js trip-state.js flight-provider.js data.js styles.css; do
+              expected="$(sha256sum "$asset" | cut -d' ' -f1)"
+              actual="$(curl -fsSL --max-time 20 "https://nextownair.com/$asset" | sha256sum | cut -d' ' -f1)" || { match=0; break; }
+              if [ "$expected" != "$actual" ]; then
+                echo "Waiting on current production asset: $asset"
+                match=0
+                break
+              fi
+            done
+            if [ "$match" -eq 1 ]; then
+              echo "PASS: production serves exact checkout bytes of all eight critical frontend assets"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Production asset mismatch: refusing to test a stale deployment."
+          exit 1
+
       - name: Install Playwright package
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
