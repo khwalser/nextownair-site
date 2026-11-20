@@ -359,7 +359,7 @@
     const dates=scheduledCalendarDates(leg.a,leg.b,month);
     const priced=dates.filter(date=>Boolean(lowestOffer(liveFareData.get(fareKey(leg.a,leg.b,date))))).length;
     if(!dates.length){
-      el.calendarStatus.textContent='Published schedule loaded. No service service dates were found in this month.';
+      el.calendarStatus.textContent='No verified nonstop dates were returned for this month. The schedule feed may have incomplete coverage; this is not proof that no flights operate. Try a later month or check the airline.';
       return;
     }
     const checked=dates.filter(date=>liveFareData.has(fareKey(leg.a,leg.b,date))).length;
