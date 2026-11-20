@@ -99,7 +99,7 @@ async function chooseFirstFeasibleFlight(index){
     const dateInput=stay.locator('input.dateinput');
     await dateInput.waitFor({state:'visible',timeout:15000});
     const earliest=await dateInput.getAttribute('min');
-    if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(earliest||''))throw new Error('Missing minimum departure date for Leg '+(index+1));
+    if(!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(earliest||''))throw new Error('Missing minimum departure date for Leg '+(index+1));
     let found=false;
     // The four suggested stay buttons are not an exhaustive date search.
     // In particular, repeatedly clicking the final 4-night button never
