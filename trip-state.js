@@ -234,7 +234,12 @@
     return page+(qs?`?${qs}`:'');
   }
   function updateAddress(page,state){
-    try{history.replaceState(null,'',buildUrl(page,state));}catch(_){/* file previews may block */}
+    // The address bar identifies the page, not the current locally saved trip.
+    // Route/date query parameters remain available on explicit navigation links.
+    try{
+      const clean=page==='index.html'?'/' : page;
+      if(location.pathname!==clean||location.search)history.replaceState(null,'',clean+location.hash);
+    }catch(_){/* file previews may block */}
   }
   function byCode(code){return (D.airports||[]).find(a=>a.code===code)||null;}
   function parseDate(s){const [y,m,d]=s.split('-').map(Number);return new Date(Date.UTC(y,m-1,d));}
