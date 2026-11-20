@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.29",
+  "mvpRevision": "2026-11-19.30",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-19",
@@ -4549,6 +4549,17 @@ window.NTA_DATA = {
     }
   ],
   "servicePatterns": {
+    "DTW|ORD": {
+      "activeFrom": "2026-12-01",
+      "activeThrough": "2026-12-18",
+      "days": [0, 1, 2, 3, 4, 5, 6],
+      "count": 1,
+      "airline": "American Airlines",
+      "label": "Published daily Detroit–Chicago nonstop service during December 2026",
+      "sourceLabel": "Detroit–Chicago December 2026 flight timetable",
+      "sourceUrl": "https://www.flightsfrom.com/DTW-ORD",
+      "checkedAsOf": "2026-11-19"
+    },
     "ORD|DTW": {
       "activeFrom": "2026-12-01",
       "activeThrough": "2026-12-16",
