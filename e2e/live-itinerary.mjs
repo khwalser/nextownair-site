@@ -423,6 +423,33 @@ try{
     assert((selectedLines.match(/(?:\$|\?)\d+/g)||[]).length>=6,'Every completed selected leg displays a verified or prototype fare',selectedLines);
     const bookingHrefs=await bookingLinks.evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')||''));
     assert(bookingHrefs.every(h=>/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(h)),'Every MVP booking handoff targets a route/date-specific flight search',bookingHrefs.join(' | '));
+
+    // Phase 5: changing the first stay in a six-leg completed trip must invalidate
+    // stale downstream choices without discarding the still-feasible inbound flight.
+    const sixLegBefore=await page.evaluate(()=>JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}'));
+    assert(Object.keys(sixLegBefore.selections||{}).length===6,'Phase 5 starts with all six flight selections persisted');
+    const firstStayInput=page.locator('.stay .dateinput').first();
+    const firstStayMin=await firstStayInput.getAttribute('min');
+    const shiftedStayDate=addDays(firstStayMin,7);
+    const phase5Dialogs=[];
+    const phase5DialogHandler=d=>{phase5Dialogs.push(d.message());d.dismiss().catch(()=>{});};
+    page.on('dialog',phase5DialogHandler);
+    await firstStayInput.fill(shiftedStayDate);
+    await firstStayInput.dispatchEvent('change');
+    await page.waitForFunction(old=>{
+      const state=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
+      return state.selections?.['0']===old.selections['0']&&
+        Object.keys(state.selections||{}).length<6;
+    },sixLegBefore,{timeout:15000});
+    page.off('dialog',phase5DialogHandler);
+    const sixLegAfter=await page.evaluate(()=>JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}'));
+    assert(sixLegAfter.selections['0']===sixLegBefore.selections['0'],'Phase 5 preserves inbound Leg 1 when the next stay changes');
+    assert(!sixLegAfter.selections['1'],'Phase 5 clears stale Leg 2 when its departure date changes');
+    assert(Object.keys(sixLegAfter.selections).length===1,'Phase 5 clears all dependent downstream choices in a six-leg trip',JSON.stringify(sixLegAfter.selections));
+    assert(phase5Dialogs.length===0,'Phase 5 recalculates six-leg itinerary without blocking dialogs');
+    assert(await page.locator('.booking-checklist .booking-item').count()<=1,'Phase 5 booking checklist never retains stale downstream flights');
+    pass('Phase 5 six-leg cascading invalidation and booking-state consistency');
+
   }
 
   // 5) Upstream changes preserve feasible downstream choices and silently invalidate impossible ones.
