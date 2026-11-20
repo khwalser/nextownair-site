@@ -18,6 +18,7 @@ on:
       - "e2e/network-audit.mjs"
       - "e2e/schedule-coverage-audit.mjs"
       - "e2e/calendar-coverage-regression.mjs"
+      - "e2e/schedule-full-day-regression.mjs"
       - "docs/data-architecture.md"
       - ".github/workflows/live-e2e.yml"
   workflow_dispatch:
@@ -65,6 +66,9 @@ jobs:
 
       - name: Audit route graph
         run: node e2e/network-audit.mjs
+
+      - name: Confirm full-day published schedule retrieval
+        run: node e2e/schedule-full-day-regression.mjs
 
       - name: Audit schedule fallback coverage
         run: node e2e/schedule-coverage-audit.mjs
