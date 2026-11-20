@@ -1523,6 +1523,39 @@
     calendarAutoLoadKey='';
     showStartCalendar(true);
   });
+  const savedTripsList=document.getElementById('savedTripsList');
+  const savedTripsStatus=document.getElementById('savedTripsStatus');
+  const saveTripName=document.getElementById('saveTripName');
+  function renderSavedTrips(){
+    if(!savedTripsList)return;
+    savedTripsList.replaceChildren();
+    const entries=window.NTA.listSavedTrips();
+    if(!entries.length){const p=document.createElement('p');p.className='small';p.textContent='No saved trips on this browser.';savedTripsList.appendChild(p);return;}
+    for(const entry of entries){
+      const row=document.createElement('div');row.className='btnrow saved-trip-row';
+      const name=document.createElement('span');name.textContent=entry.name+' · '+entry.savedAt.slice(0,10);
+      const open=document.createElement('button');open.type='button';open.className='btn tertiary';open.textContent='Open';open.setAttribute('aria-label','Open saved trip '+entry.name);
+      open.addEventListener('click',()=>{
+        const restored=window.NTA.openSavedTrip(entry.id);
+        if(!restored){savedTripsStatus.textContent='Saved trip could not be opened.';return;}
+        window.NTA.save(restored);
+        location.href='itinerary.html';
+      });
+      const remove=document.createElement('button');remove.type='button';remove.className='btn tertiary';remove.textContent='Delete';remove.setAttribute('aria-label','Delete saved trip '+entry.name);
+      remove.addEventListener('click',()=>{window.NTA.deleteSavedTrip(entry.id);savedTripsStatus.textContent='Saved trip deleted.';renderSavedTrips();});
+      row.append(name,open,remove);savedTripsList.appendChild(row);
+    }
+  }
+  const saveTripButton=document.getElementById('saveNamedTrip');
+  if(saveTripButton)saveTripButton.addEventListener('click',()=>{
+    try{
+      window.NTA.saveNamedTrip(saveTripName.value,state);
+      saveTripName.value='';
+      savedTripsStatus.textContent='Trip saved on this browser. Flight options will be checked when reopened.';
+      renderSavedTrips();
+    }catch(error){savedTripsStatus.textContent=error.message;}
+  });
+  renderSavedTrips();
   const shareButton=document.getElementById('shareTrip');
   const shareStatus=document.getElementById('shareTripStatus');
   if(shareButton)shareButton.addEventListener('click',async()=>{
