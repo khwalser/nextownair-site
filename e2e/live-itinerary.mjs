@@ -162,6 +162,8 @@ try{
     assert(/itinerary\.html\?route=DTW%2CROC&date=2026-12-10/.test(planHref),'Planner link still passes active route and date explicitly');
   }finally{await cleanUrlContext.close();}
 
+  assert(await page.locator('#brandHome').getAttribute('href')==='/' ,'Blank-trip home navigation points at the clean root without a stale date');
+
   // 2) Build a round trip from the map using the same controls a human uses.
   await page.evaluate(()=>localStorage.clear());
   await page.reload({waitUntil:'domcontentloaded'});
