@@ -1523,6 +1523,17 @@
     calendarAutoLoadKey='';
     showStartCalendar(true);
   });
+  const shareButton=document.getElementById('shareTrip');
+  const shareStatus=document.getElementById('shareTripStatus');
+  if(shareButton)shareButton.addEventListener('click',async()=>{
+    const url=window.NTA.shareTripUrl('itinerary.html',state);
+    try{
+      await navigator.clipboard.writeText(url);
+      shareStatus.textContent='Link copied. Flights and fares are checked again when reopened.';
+    }catch(_){
+      shareStatus.textContent='Copy this link: '+url;
+    }
+  });
   el.printTrip.addEventListener('click',()=>window.print());
   render();
 })();
