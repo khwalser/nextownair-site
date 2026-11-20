@@ -451,6 +451,9 @@ try{
     await recalculationNotice.waitFor({state:'visible',timeout:15000});
     assert(/Continue building your itinerary/.test(await recalculationNotice.innerText()),'Phase 6 explains incomplete itinerary after upstream changes');
     assert(/5 flight legs still need a selection/.test(await recalculationNotice.innerText()),'Phase 6 displays the exact number of pending flight selections');
+    const clearedNotice=page.locator('.trip-cleared-notice');
+    await clearedNotice.waitFor({state:'visible',timeout:15000});
+    assert(/5 previously selected flights were cleared/.test(await clearedNotice.innerText()),'Phase 6 explicitly identifies the five invalidated downstream flight selections');
 
     assert(phase5Dialogs.length===0,'Phase 5 recalculates six-leg itinerary without blocking dialogs');
     assert(await page.locator('.booking-checklist .booking-item').count()<=1,'Phase 5 booking checklist never retains stale downstream flights');
