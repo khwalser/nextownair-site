@@ -105,7 +105,7 @@
   }
   const FARE_MAX_CONCURRENT=1;
   const FARE_START_GAP_MS=5000;
-  const AUTO_PRICE_WINDOW=5;
+  const AUTO_PRICE_WINDOW=31; // Price every published service date in the visible month.
   const FARE_SESSION_KEY='nextownair.liveFares.v1';
   const FARE_SESSION_TTL_MS=5*60*1000;
   const SCHEDULE_FALLBACK_SESSION_KEY='nextownair.scheduleFallback.v1';
@@ -387,7 +387,7 @@
     const queued=dates.filter(date=>calendarFareJobs.has(fareKey(leg.a,leg.b,date))).length;
     calendarMoreFareControl(leg.a,leg.b,month,dates,queued);
     el.calendarStatus.textContent=queued
-      ?`Published flights are shown immediately. Checking live prices for the selected and nearby dates (${checked} returned, ${priced} priced). Select another date to check its price.`
+      ?`Published flights confirmed on ${dates.length} dates. Checking live prices: ${checked} of ${dates.length} checked, ${priced} priced, ${queued} queued or in progress. Selected and nearby dates go first.`
       :`Published flights confirmed on ${dates.length} dates. Live fares found on ${priced}; select any other date to request its price.`;
   }
   function queueCalendarFarePricing(a,b,dates,token,limit=AUTO_PRICE_WINDOW){
@@ -401,7 +401,12 @@
       if(y===selected)return 1;
       const dx=Math.abs(window.NTA.diffDays(selected,x)),dy=Math.abs(window.NTA.diffDays(selected,y));
       return dx-dy||x.localeCompare(y);
-    }).slice(0,Math.max(1,Number(limit)||AUTO_PRICE_WINDOW));
+    }).slice(0,(function(){
+      const month=dates[0]&&monthKeyFromDate(dates[0]);
+      const schedule=month&&scheduleMonthData.get(scheduleMonthKey(a,b,month));
+      const fallback=Boolean(schedule&&schedule.error&&isScheduleFallbackCode(schedule.code));
+      return fallback?Math.min(5,Math.max(1,Number(limit)||AUTO_PRICE_WINDOW)):Math.max(1,Number(limit)||AUTO_PRICE_WINDOW);
+    })());
     ordered.forEach(date=>{
       if(!['yes','fallback'].includes(scheduleState(a,b,date).status))return;
       const key=fareKey(a,b,date);
