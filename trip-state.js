@@ -226,6 +226,8 @@
   function setRoute(state,route){reconcileRoute(state,route);return save(state);}
   function clearTrip(){const s=baseState();return save(s);}
   function buildUrl(page,state){
+    // A blank trip has no shareable navigation state; keep homepage links canonical.
+    if(page==='index.html'&&!(state.route||[]).length)return '/';
     const p=new URLSearchParams();
     if(state.route&&state.route.length)p.set('route',state.route.join(','));
     if(state.autoConnectorIndices&&state.autoConnectorIndices.length)p.set('auto',state.autoConnectorIndices.join(','));
