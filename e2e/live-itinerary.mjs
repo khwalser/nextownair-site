@@ -428,6 +428,10 @@ try{
     assert(bookingHrefs.every(h=>/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(h)),'Every MVP booking handoff targets a route/date-specific flight search',bookingHrefs.join(' | '));
 
     // Phase 8: share a snapshot of user choices, never frozen flight inventory.
+    await page.getByRole('button',{name:'Copy shareable trip link'}).click();
+    await page.waitForFunction(()=>/Link copied|Copy this link:/.test(document.getElementById('shareTripStatus')?.textContent||''),null,{timeout:10000});
+    assert(/Link copied|Copy this link:/.test(await page.locator('#shareTripStatus').innerText()),'Phase 8 share button provides an accessible copy confirmation or selectable fallback');
+
     const phase8Source=await page.evaluate(()=>JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}'));
     const phase8Url=await page.evaluate(()=>window.NTA.shareTripUrl('itinerary.html',window.NTA.load()));
     assert(phase8Url.includes('snapshot='),'Phase 8 creates an explicit trip snapshot link');
