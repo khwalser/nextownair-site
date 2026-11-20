@@ -4550,17 +4550,17 @@ window.NTA_DATA = {
   ],
   "servicePatterns": {
     "DTW|ORD": {
-      "activeFrom": "2026-12-01",
+      "activeFrom": "2026-11-19",
       "activeThrough": "2026-12-18",
       "days": [0, 1, 2, 3, 4, 5, 6],
       "count": 1,
       "airline": "American Airlines",
-      "label": "Published daily Detroit–Chicago nonstop service during December 2026",
-      "sourceLabel": "Detroit–Chicago December 2026 flight timetable",
-      "sourceUrl": "https://www.flightsfrom.com/DTW-ORD",
-      "checkedAsOf": "2026-11-19"
+      "label": "Daily published Detroit–Chicago nonstop service (at least AA 3364) during the cited November–December timetable window",
+      "sourceLabel": "DTW–ORD November–December 2026 nonstop timetable · AA 3364",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/DTW/ORD",
+      "checkedAsOf": "2026-11-20"
     },
-    "ORD|DTW": {
+        "ORD|DTW": {
       "activeFrom": "2026-12-01",
       "activeThrough": "2026-12-16",
       "days": [0, 1, 2, 3, 4, 5, 6],
