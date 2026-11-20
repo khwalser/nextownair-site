@@ -275,8 +275,8 @@
     if(lowestOffer(fareData))return {status:'available',label:'Live fare'};
     const stateForDate=scheduleState(leg.a,leg.b,date);
     if(stateForDate.status==='yes')return {status:'available',label:'Scheduled'};
-    if(stateForDate.status==='none')return {status:'unavailable',label:'No service'};
-    if(stateForDate.status==='fallback')return {status:'fallback',label:'Live fare check'};
+    if(stateForDate.status==='none')return {status:'unavailable',label:'No published flight'};
+    if(stateForDate.status==='fallback')return {status:'fallback',label:'Flight unverified'};
     if(stateForDate.status==='error')return {status:'retry',label:'Retry'};
     return {status:'checking',label:'Checking'};
   }
@@ -287,15 +287,15 @@
       if(data.error)return 'fare unavailable';
       const best=lowestOffer(data);
       if(best)return formatMoney(best.amount,best.currency);
-      if(data.coverageLimited&&av.status!=='unavailable')return 'check live fare';
-      if(av.status!=='unavailable')return 'no provider fare';
+      if(data.coverageLimited&&av.status!=='unavailable')return av.status==='available'?'flight ✓':'unverified';
+      if(av.status!=='unavailable')return av.status==='available'?'flight ✓':'unverified';
     }
     if(fareActiveKeys.has(key))return 'pricing…';
     if(liveFareCache.has(key))return 'queued';
     if(av.status==='unavailable')return '—';
-    if(av.status==='retry')return 'check fare';
-    if(av.status==='checking')return 'check fare';
-    return av.status==='fallback'?'check fare':'scheduled';
+    if(av.status==='retry')return 'unverified';
+    if(av.status==='checking')return 'checking';
+    return av.status==='fallback'?'unverified':'flight ✓';
   }
   function calendarFareTitle(a,b,date,av){
     if(fareCoverageBlockedLegs.has(fareLegKey(a,b))){
