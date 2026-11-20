@@ -66,6 +66,16 @@
         </div>
       </section>
 
+      <section class="notice" aria-labelledby="savedTripsTitle">
+        <h3 id="savedTripsTitle">Saved trips</h3>
+        <p class="small">Save route, dates and stays on this browser. Flight choices and fares are checked again when reopened.</p>
+        <div class="btnrow">
+          <input id="saveTripName" type="text" maxlength="60" placeholder="Trip name" aria-label="Trip name">
+          <button id="saveNamedTrip" type="button" class="btn secondary">Save this trip</button>
+        </div>
+        <div id="savedTripsList"></div>
+        <div id="savedTripsStatus" role="status" aria-live="polite" class="small"></div>
+      </section>
       <div class="notice"><strong>Schedules + fares:</strong> Only known services are offered. Current provider values are shown normally; a leading <strong>?</strong> in the prototype color means that field is an MVP placeholder used to keep the itinerary calculable until a verified value is available.</div>
     </aside>
 
