@@ -488,6 +488,11 @@ try{
     const firstLeg=page.locator('#flight-options-0 .flight');
     await firstLeg.first().waitFor({state:'visible',timeout:30000});
     assert(await firstLeg.count()>=2,'Cascade test has multiple first-leg choices');
+
+    const initialGuidance=await page.locator('.trip-next-step').innerText();
+    assert(/Ready to build your trip/.test(initialGuidance),'Phase 6 shows a neutral prompt before any flight has been chosen');
+    assert(!/Itinerary recalculated/.test(initialGuidance),'Phase 6 does not falsely claim an initial recalculation');
+
     await firstLeg.first().click();
     const stay=page.locator('.stay').first();
     const laterDate=stay.locator('.stay-av:not(:disabled)').first();
@@ -507,6 +512,7 @@ try{
       return s.selections?.['1']===expected;
     },downstreamBefore,{timeout:15000});
     assert((await page.locator('#summary').innerText()).includes('2 of 2 flight legs selected'),'Changing an upstream flight preserves a downstream selection when its later service date remains feasible');
+    assert(await page.locator('.trip-next-step').count()===0,'Phase 6 hides incomplete-trip guidance for a fully selected itinerary');
 
     const dialogs=[];
     const dialogHandler=d=>{dialogs.push(d.message());d.dismiss().catch(()=>{});};
