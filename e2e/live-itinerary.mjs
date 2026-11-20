@@ -460,20 +460,16 @@ try{
     pass('Phase 5 cascading invalidation survives a full page reload');
 
     // Changing the trip start date invalidates all selected flights, including Leg 1.
-    const selectedStart=page.locator('.calendar-day[data-calendar-date]').filter({hasNot:page.locator('[disabled]')});
-    const alternateDate=addDays(sixLegBefore.startDate,1);
-    const calendarToggle=page.locator('#startDateButton');
-    await calendarToggle.click();
-    const alternateDay=page.locator('.calendar-day[data-calendar-date="'+alternateDate+'"]');
-    if(await alternateDay.count()&&await alternateDay.isEnabled()){
-      await alternateDay.click();
-      const changed=await page.evaluate(()=>JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}'));
-      assert(changed.startDate===alternateDate,'Phase 5 calendar changes the itinerary start date');
-      assert(Object.keys(changed.selections||{}).length===0,'Phase 5 new trip date clears all stale flight selections');
-      pass('Phase 5 trip start-date changes invalidate every previous flight selection');
-    }else{
-      pass('Phase 5 alternate calendar date unavailable; date-change case deferred to available service date');
-    }
+    await page.locator('#startDateButton').click();
+    const alternateDay=page.locator('.calendar-day[data-calendar-date]:not([disabled]):not(.selected)').first();
+    await alternateDay.waitFor({state:'visible',timeout:15000});
+    const alternateDate=await alternateDay.getAttribute('data-calendar-date');
+    assert(Boolean(alternateDate)&&alternateDate!==sixLegBefore.startDate,'Phase 5 finds an alternate selectable calendar date');
+    await alternateDay.click();
+    const changed=await page.evaluate(()=>JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}'));
+    assert(changed.startDate===alternateDate,'Phase 5 calendar changes the itinerary start date');
+    assert(Object.keys(changed.selections||{}).length===0,'Phase 5 new trip date clears all stale flight selections');
+    pass('Phase 5 trip start-date changes invalidate every previous flight selection');
 
 
   }
