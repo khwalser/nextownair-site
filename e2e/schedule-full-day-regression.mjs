@@ -10,7 +10,7 @@ try{
   globalThis.Netlify={env:{get:()=> 'test-key'}};
   globalThis.fetch=async url=>{
     calls.push(String(url));
-    const afternoon=String(url).includes('T12%3A00');
+    const afternoon=decodeURIComponent(new URL(String(url)).pathname.split('/').at(-2)).endsWith('T12:00');
     const local=afternoon?'2026-12-03T15:00:00':'2026-12-03T08:00:00';
     const arrival=afternoon?'2026-12-03T16:05:00':'2026-12-03T09:05:00';
     return new Response(JSON.stringify({departures:[{
