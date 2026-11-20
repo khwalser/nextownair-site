@@ -39,3 +39,40 @@ ctx.showMore('DTW','ORD','2026-11',dates,0);
 assert.equal(button.hidden,true,'Unsupported fare routes do not offer fake price checks');
 assert.match(source,/refreshVisibleCalendar\(\)/,'Completed requests update the current visible calendar after a rerender');
 console.log('PASS: Calendar pricing progress, completion, optional additional checks, and unsupported coverage');
+
+const queueStart=source.indexOf('  function queueCalendarFarePricing(');
+const queueEnd=source.indexOf('  const calendarMoreFaresButton=',queueStart);
+assert(queueStart>=0&&queueEnd>queueStart,'Production calendar fare queue exists');
+const queuedDates=[];
+const queueCtx={
+  window:{NTA:{diffDays:(a,b)=>Math.round((Date.parse(b)-Date.parse(a))/86400000)}},
+  state:{startDate:'2026-11-20'},
+  AUTO_PRICE_WINDOW:31,
+  fareCoverageBlockedLegs:new Set(),
+  fareLegKey:(a,b)=>a+'|'+b,
+  fareKey:(a,b,d)=>a+'|'+b+'|'+d,
+  monthKeyFromDate:d=>d.slice(0,7),
+  scheduleMonthKey:(a,b,m)=>a+'|'+b+'|'+m,
+  scheduleMonthData:new Map([['DTW|ORD|2026-11',{days:{}}]]),
+  isScheduleFallbackCode:code=>code==='schedule_quota_exhausted',
+  scheduleState:()=>({status:'yes'}),
+  liveFareData:new Map(),calendarFareJobs:new Set(),
+  fetchFare:(a,b,date)=>{queuedDates.push(date);return new Promise(()=>{});},
+  updateCalendarCell:()=>{},
+  firstLeg:()=>({a:'DTW',b:'ORD'}),
+  calendarMonthDate:new Date(2026,10,1),
+  updateCalendarFareStatus:()=>{},
+  rememberFareData:()=>{}
+};
+vm.createContext(queueCtx);
+vm.runInContext(source.slice(queueStart,queueEnd)+'\\nthis.queueCalendarFarePricing=queueCalendarFarePricing;',queueCtx);
+const allDates=Array.from({length:11},(_,i)=>'2026-11-'+String(i+20).padStart(2,'0'));
+queueCtx.queueCalendarFarePricing('DTW','ORD',allDates,1);
+assert.equal(queuedDates.length,11,'All eleven published flight dates are queued automatically, not only five');
+assert.equal(queuedDates[0],'2026-11-20','Selected date is priced first');
+queueCtx.calendarFareJobs.clear();
+queuedDates.length=0;
+queueCtx.scheduleMonthData.set('DTW|ORD|2026-11',{error:true,code:'schedule_quota_exhausted'});
+queueCtx.queueCalendarFarePricing('DTW','ORD',allDates,2);
+assert.equal(queuedDates.length,5,'Unavailable schedule feed limits speculative automatic fare queries to five');
+console.log('PASS: Production fare queue prices all confirmed dates, prioritizes selected date, and bounds fallback checks');
