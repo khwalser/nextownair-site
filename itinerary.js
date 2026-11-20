@@ -370,10 +370,8 @@
     const checked=dates.filter(date=>liveFareData.has(fareKey(leg.a,leg.b,date))).length;
     const queued=dates.filter(date=>calendarFareJobs.has(fareKey(leg.a,leg.b,date))).length;
     el.calendarStatus.textContent=queued
-      ?`Loading live fares for scheduled dates: ${checked} of ${dates.length} checked, ${priced} with a fare so far. Selected and nearby dates go first.`
-     :priced
-        ?`Fare scan complete for scheduled dates: ${checked} of ${dates.length} checked, ${priced} with a provider fare.`
-        :`Fare scan complete for scheduled dates: ${checked} of ${dates.length} checked. The connected provider returned no nonstop prices; airline fares may still exist.`;
+      ?`Published flights are shown immediately. Checking live prices for the selected and nearby dates (${checked} returned, ${priced} priced). Select another date to check its price.`
+      :`Published flights confirmed on ${dates.length} dates. Live fares found on ${priced}; select any other date to request its price.`;
   }
   function queueCalendarFarePricing(a,b,dates,token,limit=AUTO_PRICE_WINDOW){
     if(fareCoverageBlockedLegs.has(fareLegKey(a,b))){
