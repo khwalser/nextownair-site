@@ -83,9 +83,10 @@ async function fetchHalfDay(apiKey,origin,destination,from,to){
 
 async function fetchDate(apiKey,origin,destination,date){
   const next=addDays(date,1);
+  // Both half-days are needed: morning service must not suppress afternoon flights.
   const morning=await fetchHalfDay(apiKey,origin,destination,`${date}T00:00`,`${date}T12:00`);
-  if(morning.length)return morning;
-  return fetchHalfDay(apiKey,origin,destination,`${date}T12:00`,`${next}T00:00`);
+  const afternoon=await fetchHalfDay(apiKey,origin,destination,`${date}T12:00`,`${next}T00:00`);
+  return [...morning,...afternoon];
 }
 
 export default async(req)=>{
