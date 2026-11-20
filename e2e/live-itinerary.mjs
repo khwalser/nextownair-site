@@ -449,7 +449,7 @@ try{
 
     const recalculationNotice=page.locator('.trip-next-step');
     await recalculationNotice.waitFor({state:'visible',timeout:15000});
-    assert(/Itinerary recalculated/.test(await recalculationNotice.innerText()),'Phase 6 explains incomplete itinerary after upstream changes');
+    assert(/Continue building your itinerary/.test(await recalculationNotice.innerText()),'Phase 6 explains incomplete itinerary after upstream changes');
     assert(/5 flight legs still need a selection/.test(await recalculationNotice.innerText()),'Phase 6 displays the exact number of pending flight selections');
 
     assert(phase5Dialogs.length===0,'Phase 5 recalculates six-leg itinerary without blocking dialogs');
