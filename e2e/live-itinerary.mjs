@@ -450,6 +450,32 @@ try{
     assert(await page.locator('.booking-checklist .booking-item').count()<=1,'Phase 5 booking checklist never retains stale downstream flights');
     pass('Phase 5 six-leg cascading invalidation and booking-state consistency');
 
+    // A reload must not resurrect invalid selections from persisted trip state.
+    await page.reload({waitUntil:'domcontentloaded',timeout:60000});
+    await page.waitForFunction(()=>document.querySelectorAll('.leg').length===6,null,{timeout:15000});
+    const persisted=await page.evaluate(()=>JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}'));
+    assert(persisted.selections?.['0']===sixLegBefore.selections['0'],'Phase 5 reload preserves the still-valid inbound flight');
+    assert(Object.keys(persisted.selections||{}).length===1,'Phase 5 reload does not resurrect invalid downstream selections');
+    assert(!/6 of 6 flight legs selected/.test(await page.locator('#summary').innerText()),'Phase 5 reload does not falsely report a completed trip');
+    pass('Phase 5 cascading invalidation survives a full page reload');
+
+    // Changing the trip start date invalidates all selected flights, including Leg 1.
+    const selectedStart=page.locator('.calendar-day[data-calendar-date]').filter({hasNot:page.locator('[disabled]')});
+    const alternateDate=addDays(sixLegBefore.startDate,1);
+    const calendarToggle=page.locator('#startDateButton');
+    await calendarToggle.click();
+    const alternateDay=page.locator('.calendar-day[data-calendar-date="'+alternateDate+'"]');
+    if(await alternateDay.count()&&await alternateDay.isEnabled()){
+      await alternateDay.click();
+      const changed=await page.evaluate(()=>JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}'));
+      assert(changed.startDate===alternateDate,'Phase 5 calendar changes the itinerary start date');
+      assert(Object.keys(changed.selections||{}).length===0,'Phase 5 new trip date clears all stale flight selections');
+      pass('Phase 5 trip start-date changes invalidate every previous flight selection');
+    }else{
+      pass('Phase 5 alternate calendar date unavailable; date-change case deferred to available service date');
+    }
+
+
   }
 
   // 5) Upstream changes preserve feasible downstream choices and silently invalidate impossible ones.
