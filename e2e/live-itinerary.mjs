@@ -427,6 +427,23 @@ try{
     const bookingHrefs=await bookingLinks.evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')||''));
     assert(bookingHrefs.every(h=>/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(h)),'Every MVP booking handoff targets a route/date-specific flight search',bookingHrefs.join(' | '));
 
+    // Phase 9: named saved trips preserve user choices, not stale offer selections.
+    await page.locator('#saveTripName').fill('Phase 9 test journey');
+    await page.locator('#saveNamedTrip').click();
+    await page.waitForFunction(()=>window.NTA.listSavedTrips().some(t=>t.name==='Phase 9 test journey'),null,{timeout:10000});
+    const savedPhase9=await page.evaluate(()=>{
+      const item=window.NTA.listSavedTrips().find(t=>t.name==='Phase 9 test journey');
+      return {entry:item,restored:window.NTA.openSavedTrip(item.id),current:window.NTA.load()};
+    });
+    assert(JSON.stringify(savedPhase9.restored.route)===JSON.stringify(savedPhase9.current.route),'Phase 9 saved trip preserves airport order');
+    assert(savedPhase9.restored.startDate===savedPhase9.current.startDate,'Phase 9 saved trip preserves starting date');
+    assert(JSON.stringify(savedPhase9.restored.stays)===JSON.stringify(savedPhase9.current.stays),'Phase 9 saved trip preserves stay preferences');
+    assert(Object.keys(savedPhase9.restored.selections||{}).length===0,'Phase 9 reopening requires refreshed flight selections');
+    assert(await page.getByRole('button',{name:'Open saved trip Phase 9 test journey'}).count()===1,'Phase 9 provides an accessible open control');
+    await page.getByRole('button',{name:'Delete saved trip Phase 9 test journey'}).click();
+    assert(await page.evaluate(()=>window.NTA.listSavedTrips().length===0),'Phase 9 deletes saved trips cleanly');
+    pass('Phase 9 saved trips can be created, inspected and deleted without caching selected flight promises');
+
     // Phase 8: share a snapshot of user choices, never frozen flight inventory.
     await page.getByRole('button',{name:'Copy shareable trip link'}).click();
     await page.waitForFunction(()=>/Link copied|Copy this link:/.test(document.getElementById('shareTripStatus')?.textContent||''),null,{timeout:10000});
