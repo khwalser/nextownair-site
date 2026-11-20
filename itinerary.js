@@ -115,6 +115,7 @@
   let fareBlockedUntil=0;
   let farePumpTimer=null;
   let renderVersion=0;
+  let recentClearedFlights=0;
   let calendarMonthDate=null;
   let calendarLoadVersion=0;
   let calendarAutoLoadKey='';
@@ -1050,10 +1051,12 @@
     window.NTA.updateAddress('itinerary.html',state);
   }
   function chooseFlight(i,id){
+    recentClearedFlights=0;
     state.selections[String(i)]=id;
     save();render();
   }
   function setStay(i,next){
+    recentClearedFlights=0;
     state.stays[String(i)]=next;
     save();render();
   }
@@ -1487,7 +1490,8 @@
       } else {previousArrivalDate=departDate;previousArrivalMin=null;}
     }
     const invalidatedCount=[...selectionsAtStart].filter(key=>!Object.prototype.hasOwnProperty.call(state.selections,key)).length;
-    renderSummary(rows,timeline,invalidatedCount);
+    if(invalidatedCount>0)recentClearedFlights=invalidatedCount;
+    renderSummary(rows,timeline,recentClearedFlights);
     updateLiveTripFare();
     hydrateLivePricing(version);
     hydrateScheduleAvailability(version);
