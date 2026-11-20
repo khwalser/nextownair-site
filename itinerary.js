@@ -237,7 +237,7 @@
     if(data&&!data.error){
       const day=data.days&&data.days[date];
       if(day&&day.count>0)return {status:'yes',label:'Scheduled',detail:`${day.count} published flight${day.count===1?'':'s'}`};
-      if(Array.isArray(data.unknownDates)&&data.unknownDates.includes(date))return {status:'error',label:'Schedule check incomplete',detail:'retry this date'};
+      if(Array.isArray(data.unknownDates)&&data.unknownDates.includes(date))return {status:'fallback',label:'Schedule unverified',detail:'Published schedule lookup incomplete; live fare may be checked separately'};
       if(Array.isArray(data.checkedDates)&&data.checkedDates.includes(date))return publishedServicePattern(a,b)?{status:'none',label:'No scheduled service',detail:'No service on this date in published operating pattern'}:{status:'fallback',label:'Check live fare',detail:'No date-specific service confirmed by schedule source; check live offers'};
     }
     const pattern=publishedServicePattern(a,b);
@@ -256,7 +256,7 @@
       if(isScheduleFallbackCode(data.code)){
         return {status:'fallback',label:'Live fare check',detail:data.code};
       }
-      return {status:'error',label:'Schedule unavailable',detail:''};
+      return {status:'fallback',label:'Schedule unverified',detail:'Published schedule source unavailable'};
     }
     return {status:'checking',label:'Checking…',detail:''};
   }
@@ -284,7 +284,7 @@
     if(fareCoverageBlockedLegs.has(fareLegKey(a,b))&&av.status!=='unavailable')return av.status==='available'?'nonstop':'';
     const key=fareKey(a,b,date),data=liveFareData.get(key);
     if(data){
-      if(data.error)return av.status==='fallback'||av.status==='checking'?'retry fare':'fare —';
+      if(data.error)return 'fare unavailable';
       const best=lowestOffer(data);
       if(best)return formatMoney(best.amount,best.currency);
       if(data.coverageLimited&&av.status!=='unavailable')return 'check live fare';
@@ -293,7 +293,7 @@
     if(fareActiveKeys.has(key))return 'pricing…';
     if(liveFareCache.has(key))return 'queued';
     if(av.status==='unavailable')return '—';
-    if(av.status==='retry')return 'retry';
+    if(av.status==='retry')return 'check fare';
     if(av.status==='checking')return 'check fare';
     return av.status==='fallback'?'check fare':'scheduled';
   }
