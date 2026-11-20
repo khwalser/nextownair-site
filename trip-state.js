@@ -149,7 +149,7 @@
   function encodeTripSnapshot(state){
     const clean=sanitize(state);
     const payload=JSON.stringify({v:1,route:clean.route,autoConnectorIndices:clean.autoConnectorIndices,startDate:clean.startDate,stays:clean.stays});
-    return btoa(payload).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');
+    return btoa(payload).split('+').join('-').split('/').join('_').replace(/=+$/,'');
   }
   function decodeTripSnapshot(value){
     if(typeof value!=='string'||!value||value.length>8000||!/^[A-Za-z0-9_-]+$/.test(value))return null;
