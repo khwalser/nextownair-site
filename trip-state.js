@@ -221,6 +221,12 @@
       state.autoConnectors=[...new Set(state.autoConnectorIndices.map(i=>state.route[i]).filter(Boolean))];
     }
     if(!shared&&validDate(q.get('date')))state.startDate=q.get('date');
+    // A trip from a previous visit must not open on a date already in the past.
+    // Keep the route and stays, but invalidate flight selections tied to old dates.
+    if(state.startDate<todayLocal()){
+      state.startDate=todayLocal();
+      state.selections={};
+    }
     return save(state);
   }
   function setRoute(state,route){reconcileRoute(state,route);return save(state);}
