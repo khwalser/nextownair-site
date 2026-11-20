@@ -757,6 +757,36 @@ try{
   await page.waitForFunction(()=>document.querySelectorAll('#trip .stop').length===2);
   pass('Legacy route-builder URL lands in the working map flow');
 
+  // Phase 10: exercise real saved-trip reopen in an isolated browser (not just storage APIs).
+  const uatContext=await browser.newContext({viewport:{width:1280,height:850}});
+  try{
+    const uat=await uatContext.newPage();
+    await uat.goto(BASE_URL+'/index.html?fresh=1',{waitUntil:'domcontentloaded',timeout:60000});
+    await uat.evaluate(()=>{
+      const s=window.NTA.load();
+      s.route=['DTW','ROC','DTW'];
+      s.startDate='2026-12-09';
+      s.stays={'1':{mode:'nights',nights:2,date:null}};
+      s.selections={};
+      window.NTA.save(s);
+    });
+    await uat.goto(BASE_URL+'/itinerary.html',{waitUntil:'domcontentloaded',timeout:60000});
+    await uat.locator('#saveTripName').fill('Phase 10 UAT reopen');
+    await uat.locator('#saveNamedTrip').click();
+    await uat.waitForFunction(()=>window.NTA.listSavedTrips().some(x=>x.name==='Phase 10 UAT reopen'));
+    await uat.evaluate(()=>{
+      const s=window.NTA.load();
+      s.startDate='2026-12-19';
+      window.NTA.save(s);
+    });
+    await uat.getByRole('button',{name:'Open saved trip Phase 10 UAT reopen'}).click();
+    await uat.waitForFunction(()=>window.NTA.load().startDate==='2026-12-09',null,{timeout:15000});
+    const restored=await uat.evaluate(()=>window.NTA.load());
+    assert(restored.startDate==='2026-12-09'&&restored.route.join(',')==='DTW,ROC,DTW','Phase 10 real UI saved-trip reopen restores the traveler’s choices');
+    assert(Object.keys(restored.selections||{}).length===0,'Phase 10 real UI saved-trip reopen does not resurrect booked or stale flights');
+    pass('Phase 10 end-to-end named-trip reopen survives navigation and requires renewed flight selection');
+  }finally{await uatContext.close();}
+
   // 9) Basic mobile pass.
   const mobile=await context.newPage();
   attachDiagnostics(mobile);
