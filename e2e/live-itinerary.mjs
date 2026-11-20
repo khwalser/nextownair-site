@@ -125,11 +125,20 @@ async function chooseFirstFeasibleFlight(index){
     return s.selections?.[String(i)]||null;
   },index);
   if(savedSelection&&await options.first().getAttribute('aria-pressed')==='true')return;
-  await options.first().click();
-  await page.waitForFunction(({index})=>{
-    const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
-    return Boolean(s.selections&&s.selections[String(index)]);
-  },{index},{timeout:15000});
+  for(let attempt=0;attempt<3;attempt++){
+    await options.first().waitFor({state:'visible',timeout:15000});
+    await options.first().click();
+    try{
+      await page.waitForFunction(({index})=>{
+        const s=JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}');
+        return Boolean(s.selections&&s.selections[String(index)]);
+      },{index},{timeout:5000});
+      return;
+    }catch(err){
+      if(attempt===2)throw err;
+      pass('Retrying flight choice after an asynchronous availability refresh on leg '+(index+1));
+    }
+  }
 }
 
 try{
