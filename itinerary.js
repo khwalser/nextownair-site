@@ -359,7 +359,12 @@
     const dates=scheduledCalendarDates(leg.a,leg.b,month);
     const priced=dates.filter(date=>Boolean(lowestOffer(liveFareData.get(fareKey(leg.a,leg.b,date))))).length;
     if(!dates.length){
-      el.calendarStatus.textContent='No verified nonstop dates were returned for this month. The schedule feed may have incomplete coverage; this is not proof that no flights operate. Try a later month or check the airline.';
+      const liveDates=[...liveFareData.entries()]
+        .filter(([key,data])=>key.startsWith(leg.a+'|'+leg.b+'|'+month+'-')&&Boolean(lowestOffer(data)))
+        .map(([key])=>key.slice(-10));
+      el.calendarStatus.textContent=liveDates.length
+        ?'Live flight offers are available for '+liveDates.length+' date'+(liveDates.length===1?'':'s')+' this month. The separate published schedule feed has incomplete coverage; choose a highlighted fare date or check other dates.'
+        :'No published nonstop dates were returned by the schedule feed for this month. Coverage may be incomplete; this does not mean no flights operate.';
       return;
     }
     const checked=dates.filter(date=>liveFareData.has(fareKey(leg.a,leg.b,date))).length;
