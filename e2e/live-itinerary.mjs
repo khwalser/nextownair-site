@@ -147,6 +147,21 @@ try{
   }));
   assert(freshState.route.length===0&&!freshState.fareCache&&!freshState.url.includes('fresh=1'),'Fresh-test link clears saved trip and pricing session once');
   
+  // Homepage address is canonical even when opened through an old date-only link.
+  const cleanUrlContext=await browser.newContext({viewport:{width:1100,height:850}});
+  try{
+    const cleanPage=await cleanUrlContext.newPage();
+    await cleanPage.goto(BASE_URL+'/index.html?date=2026-11-18',{waitUntil:'domcontentloaded',timeout:60000});
+    await cleanPage.waitForFunction(()=>location.pathname==='/'&&location.search==='',null,{timeout:15000});
+    assert(new URL(cleanPage.url()).pathname==='/'&&new URL(cleanPage.url()).search==='','Legacy date-only homepage URL becomes canonical root');
+    await cleanPage.goto(BASE_URL+'/index.html?route=DTW,ROC&date=2026-12-10',{waitUntil:'domcontentloaded',timeout:60000});
+    await cleanPage.waitForFunction(()=>location.pathname==='/'&&location.search==='',null,{timeout:15000});
+    const routePreserved=await cleanPage.evaluate(()=>window.NTA.load());
+    assert(routePreserved.route.join(',')==='DTW,ROC'&&routePreserved.startDate==='2026-12-10','Canonical homepage retains the explicitly supplied route and date in trip state');
+    const planHref=await cleanPage.locator('#plan').getAttribute('href');
+    assert(/itinerary\.html\?route=DTW%2CROC&date=2026-12-10/.test(planHref),'Planner link still passes active route and date explicitly');
+  }finally{await cleanUrlContext.close();}
+
   // 2) Build a round trip from the map using the same controls a human uses.
   await page.evaluate(()=>localStorage.clear());
   await page.reload({waitUntil:'domcontentloaded'});
