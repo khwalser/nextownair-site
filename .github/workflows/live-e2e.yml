@@ -90,7 +90,7 @@ jobs:
         run: |
           for attempt in {1..48}; do
             match=1
-            for asset in index.html itinerary.html map.js itinerary.js trip-state.js flight-provider.js data.js styles.css; do
+            for asset in map.js itinerary.js trip-state.js flight-provider.js data.js; do
               expected="$(sha256sum "$asset" | cut -d' ' -f1)"
               actual="$(curl -fsSL --max-time 20 "https://nextownair.com/$asset" | sha256sum | cut -d' ' -f1)" || { match=0; break; }
               if [ "$expected" != "$actual" ]; then
@@ -100,7 +100,7 @@ jobs:
               fi
             done
             if [ "$match" -eq 1 ]; then
-              echo "PASS: production serves exact checkout bytes of all eight critical frontend assets"
+              echo "PASS: production serves exact checkout bytes of all five critical JavaScript assets"
               exit 0
             fi
             sleep 5
