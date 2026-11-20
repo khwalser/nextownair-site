@@ -446,6 +446,12 @@ try{
     assert(sixLegAfter.selections['0']===sixLegBefore.selections['0'],'Phase 5 preserves inbound Leg 1 when the next stay changes');
     assert(!sixLegAfter.selections['1'],'Phase 5 clears stale Leg 2 when its departure date changes');
     assert(Object.keys(sixLegAfter.selections).length===1,'Phase 5 clears all dependent downstream choices in a six-leg trip',JSON.stringify(sixLegAfter.selections));
+
+    const recalculationNotice=page.locator('.trip-next-step');
+    await recalculationNotice.waitFor({state:'visible',timeout:15000});
+    assert(/Itinerary recalculated/.test(await recalculationNotice.innerText()),'Phase 6 explains incomplete itinerary after upstream changes');
+    assert(/5 flight legs still need a selection/.test(await recalculationNotice.innerText()),'Phase 6 displays the exact number of pending flight selections');
+
     assert(phase5Dialogs.length===0,'Phase 5 recalculates six-leg itinerary without blocking dialogs');
     assert(await page.locator('.booking-checklist .booking-item').count()<=1,'Phase 5 booking checklist never retains stale downstream flights');
     pass('Phase 5 six-leg cascading invalidation and booking-state consistency');
