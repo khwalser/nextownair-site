@@ -21,4 +21,9 @@ const result=context.scheduleState('DTW','ROC','2026-11-25');
 assert.equal(result.status,'fallback','Missing published date must offer a live fare check, not falsely assert no service');
 assert.notEqual(result.status,'yes','A live fare check must not invent verified service');
 assert.equal(context.scheduleState('DTW','ROC','2026-11-26').status,'checking','Unqueried dates stay unverified');
+context.scheduleMonthData.set('DTW|ROC|2026-11',{days:{},unknownDates:['2026-11-27'],checkedDates:['2026-11-25']});
+assert.equal(context.scheduleState('DTW','ROC','2026-11-27').status,'fallback','Incomplete schedule dates must not display retry badges');
+context.scheduleMonthData.set('DTW|ROC|2026-11',{error:true,code:'schedule_unavailable',days:{}});
+assert.equal(context.scheduleState('DTW','ROC','2026-11-27').status,'fallback','Schedule feed errors must not display retry badges');
+
 console.log('PASS: Empty schedule coverage offers a live fare check without inventing service');
