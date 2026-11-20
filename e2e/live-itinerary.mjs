@@ -427,6 +427,24 @@ try{
     const bookingHrefs=await bookingLinks.evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')||''));
     assert(bookingHrefs.every(h=>/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(h)),'Every MVP booking handoff targets a route/date-specific flight search',bookingHrefs.join(' | '));
 
+    // Phase 8: share a snapshot of user choices, never frozen flight inventory.
+    const phase8Source=await page.evaluate(()=>JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}'));
+    const phase8Url=await page.evaluate(()=>window.NTA.shareTripUrl('itinerary.html',window.NTA.load()));
+    assert(phase8Url.includes('snapshot='),'Phase 8 creates an explicit trip snapshot link');
+    const phase8Context=await browser.newContext({viewport:{width:1280,height:900}});
+    try{
+      const sharedPage=await phase8Context.newPage();
+      await sharedPage.goto(phase8Url,{waitUntil:'domcontentloaded',timeout:60000});
+      const imported=await sharedPage.evaluate(()=>JSON.parse(localStorage.getItem('nextownair.trip.v1')||'{}'));
+      assert(JSON.stringify(imported.route)===JSON.stringify(phase8Source.route),'Phase 8 restores user route order in a fresh browser');
+      assert(imported.startDate===phase8Source.startDate,'Phase 8 restores itinerary starting date');
+      assert(JSON.stringify(imported.stays)===JSON.stringify(phase8Source.stays),'Phase 8 restores traveler stay choices');
+      assert(JSON.stringify(imported.autoConnectorIndices)===JSON.stringify(phase8Source.autoConnectorIndices),'Phase 8 preserves explicit auto-connector positions');
+      assert(Object.keys(imported.selections||{}).length===0,'Phase 8 does not share stale selected flight inventory');
+      assert(await sharedPage.evaluate(()=>window.NTA.decodeTripSnapshot('broken!')===null),'Phase 8 rejects invalid snapshot tokens');
+      pass('Phase 8 safely restores shareable travel choices without promises of stale inventory');
+    }finally{await phase8Context.close();}
+
     // Phase 7: the booking checklist is a user-managed reminder, never a booking.
     const bookingChecks=page.locator('.booking-checklist .booking-check-input');
     assert(await bookingChecks.count()===6,'Phase 7 creates a reminder checkbox for every flight booking handoff');
