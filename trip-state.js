@@ -165,6 +165,32 @@
     const token=encodeTripSnapshot(state);
     return new URL(page+'?snapshot='+encodeURIComponent(token),location.href).href;
   }
+  const SAVED_TRIPS_KEY='nextownair.savedTrips.v1';
+  function listSavedTrips(){
+    try{
+      const entries=JSON.parse(localStorage.getItem(SAVED_TRIPS_KEY)||'[]');
+      if(!Array.isArray(entries))return [];
+      return entries.filter(e=>e&&typeof e.id==='string'&&typeof e.token==='string'&&decodeTripSnapshot(e.token)).slice(0,20);
+    }catch(_){return [];}
+  }
+  function saveNamedTrip(name,state){
+    const label=String(name||'').trim().slice(0,60);
+    if(!label)throw new Error('Enter a trip name.');
+    const snapshot=encodeTripSnapshot(state);
+    const entries=listSavedTrips();
+    const id='trip-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
+    entries.unshift({id,name:label,savedAt:new Date().toISOString(),token:snapshot});
+    try{localStorage.setItem(SAVED_TRIPS_KEY,JSON.stringify(entries.slice(0,20)));}catch(_){throw new Error('Browser storage is unavailable.');}
+    return id;
+  }
+  function openSavedTrip(id){
+    const entry=listSavedTrips().find(x=>x.id===id);
+    return entry?decodeTripSnapshot(entry.token):null;
+  }
+  function deleteSavedTrip(id){
+    const entries=listSavedTrips().filter(x=>x.id!==id);
+    try{localStorage.setItem(SAVED_TRIPS_KEY,JSON.stringify(entries));return true;}catch(_){return false;}
+  }
   function load(){
     const q=new URLSearchParams(location.search);
     if(q.get('fresh')==='1'){
@@ -219,5 +245,5 @@
     if(!validDate(s))return '';
     return parseDate(s).toLocaleDateString(undefined,Object.assign({month:'short',day:'numeric',timeZone:'UTC'},opts||{}));
   }
-  window.NTA={KEY,todayLocal,validDate,normalizeRoute,load,save,encodeTripSnapshot,decodeTripSnapshot,shareTripUrl,setRoute,clearTrip,clearSavedAppState,buildUrl,updateAddress,byCode,addDays,diffDays,fmtDate,hasListedRoute,isNetworkHub,hasFlightLink,getTransferLink,hasTransferLink,hasTravelLink,findFlightPath,findTravelPath};
+  window.NTA={KEY,todayLocal,validDate,normalizeRoute,load,save,listSavedTrips,saveNamedTrip,openSavedTrip,deleteSavedTrip,encodeTripSnapshot,decodeTripSnapshot,shareTripUrl,setRoute,clearTrip,clearSavedAppState,buildUrl,updateAddress,byCode,addDays,diffDays,fmtDate,hasListedRoute,isNetworkHub,hasFlightLink,getTransferLink,hasTransferLink,hasTravelLink,findFlightPath,findTravelPath};
 })();
