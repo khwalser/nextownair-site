@@ -115,8 +115,6 @@
   let fareBlockedUntil=0;
   let farePumpTimer=null;
   let renderVersion=0;
-  let recentClearedFlights=0;
-  let previousSelectionSnapshot=null;
   let calendarMonthDate=null;
   let calendarLoadVersion=0;
   let calendarAutoLoadKey='';
@@ -451,8 +449,6 @@
         if(btn.disabled)return;
         const leg=firstLeg();
         if(leg)prioritizeFareCheck(leg.a,leg.b,date,{forceIfUnpriced:true});
-        recentClearedFlights=0;
-        previousSelectionSnapshot=null;
         state.startDate=date;state.selections={};save();
         calendarMonthDate=monthStart(date);
         el.startDateCalendar.hidden=false;el.startDateButton.setAttribute('aria-expanded','true');
@@ -1054,14 +1050,10 @@
     window.NTA.updateAddress('itinerary.html',state);
   }
   function chooseFlight(i,id){
-    recentClearedFlights=0;
-    previousSelectionSnapshot=null;
     state.selections[String(i)]=id;
     save();render();
   }
   function setStay(i,next){
-    recentClearedFlights=0;
-    previousSelectionSnapshot=new Set(Object.keys(state.selections||{}));
     state.stays[String(i)]=next;
     save();render();
   }
@@ -1402,16 +1394,15 @@
       <ol>${items}</ol>
     </section>`;
   }
-  function renderSummary(rows,timeline,invalidatedCount=0){
+  function renderSummary(rows,timeline){
     const legs=flightLegCount(),transfers=transferLegCount(),picked=rows.filter(r=>r.type==='flight').length,completedTransfers=rows.filter(r=>r.type==='transfer').length;
     const complete=(legs+transfers)>0&&picked===legs&&completedTransfers===transfers,transferLabel=transfers?` · ${transfers} transfer${transfers===1?'':'s'} included`:'';
     const pending=Math.max(0,legs-picked);
-    const clearedNotice=invalidatedCount>0?`<div class="trip-cleared-notice" role="status"><strong>Flight choices updated:</strong> ${invalidatedCount} previously selected flight${invalidatedCount===1?' was':'s were'} cleared because the new itinerary no longer supports ${invalidatedCount===1?'it':'them'}. Your still-valid choices were kept.</div>`:'';
     const nextStep=pending>0
       ? `<div class="trip-next-step" role="status" aria-live="polite"><strong>${picked>0?'Continue building your itinerary':'Ready to build your trip'}.</strong> ${pending} flight leg${pending===1?' still needs':'s still need'} a selection. Changing dates or connections automatically removes flights that no longer fit; choose the next available flight to continue.</div>`
       :'';
 
-    el.summary.innerHTML=`<div class="summary-top"><div><div class="eyebrow">Trip summary</div><h3 style="margin:4px 0">${picked} of ${legs} flight leg${legs===1?'':'s'} selected${transferLabel}</h3></div><div id="liveTripFare" class="live-trip-fare"><span class="small">Checking live fares…</span></div></div>${complete?'<div class="trip-complete">✓ Itinerary complete — your full travel-time breakdown is ready.</div>':''}${clearedNotice}${nextStep}${rows.length?rows.map(r=>`<div class="selectedline ${r.type==='transfer'?'transfer-line':''}">${r.text}</div>`).join(''):'<div class="muted">Choose a flight tile when you are ready. Your route and stay choices are already saved.</div>'}${complete?renderTravelChart(timeline):''}${complete?renderBookingChecklist(timeline):''}<div class="btnrow" style="margin-top:12px"><a class="btn secondary" href="${window.NTA.buildUrl('index.html',state)}">Edit route on map</a><button id="summaryPrint" class="btn tertiary" type="button">Print itinerary</button></div>`;
+    el.summary.innerHTML=`<div class="summary-top"><div><div class="eyebrow">Trip summary</div><h3 style="margin:4px 0">${picked} of ${legs} flight leg${legs===1?'':'s'} selected${transferLabel}</h3></div><div id="liveTripFare" class="live-trip-fare"><span class="small">Checking live fares…</span></div></div>${complete?'<div class="trip-complete">✓ Itinerary complete — your full travel-time breakdown is ready.</div>':''}${nextStep}${rows.length?rows.map(r=>`<div class="selectedline ${r.type==='transfer'?'transfer-line':''}">${r.text}</div>`).join(''):'<div class="muted">Choose a flight tile when you are ready. Your route and stay choices are already saved.</div>'}${complete?renderTravelChart(timeline):''}${complete?renderBookingChecklist(timeline):''}<div class="btnrow" style="margin-top:12px"><a class="btn secondary" href="${window.NTA.buildUrl('index.html',state)}">Edit route on map</a><button id="summaryPrint" class="btn tertiary" type="button">Print itinerary</button></div>`;
     document.getElementById('summaryPrint').addEventListener('click',()=>window.print());
   }
   function renderEmpty(){
@@ -1420,7 +1411,6 @@
   }
   function render(){
     const version=++renderVersion;
-    const selectionsAtStart=new Set(Object.keys(state.selections||{}));
     liveFareByLeg.clear();
     selectedFareByLeg.clear();
     syncLinks();el.startDate.value=state.startDate;el.startDateButtonText.textContent=formatStartDate(state.startDate);
@@ -1494,11 +1484,7 @@
         rows.push({type:'flight',text:`Flight · ${state.route[i]} → ${state.route[i+1]} · ${window.NTA.fmtDate(departDate)} · ${optionTimeText(previousChosen,previousChosen.departMin)} → ${optionTimeText(previousChosen,arr.min)} · ${previousChosen.flightNo} · ${optionFareText(previousChosen)}`});
       } else {previousArrivalDate=departDate;previousArrivalMin=null;}
     }
-    const beforeInvalidation=previousSelectionSnapshot||selectionsAtStart;
-    const invalidatedCount=[...beforeInvalidation].filter(key=>!Object.prototype.hasOwnProperty.call(state.selections,key)).length;
-    previousSelectionSnapshot=null;
-    if(invalidatedCount>0)recentClearedFlights=invalidatedCount;
-    renderSummary(rows,timeline,recentClearedFlights);
+    renderSummary(rows,timeline);
     updateLiveTripFare();
     hydrateLivePricing(version);
     hydrateScheduleAvailability(version);
