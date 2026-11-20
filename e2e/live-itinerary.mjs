@@ -171,6 +171,24 @@ try{
 
   assert(await page.locator('#brandHome').getAttribute('href')==='/' ,'Blank-trip home navigation points at the clean root without a stale date');
 
+  // A previously saved itinerary must not reopen in the past.
+  const pastDatePage=await context.newPage();
+  await pastDatePage.goto(BASE_URL+'/index.html?fresh=1',{waitUntil:'domcontentloaded'});
+  await pastDatePage.evaluate(()=>{
+    const s=window.NTA.load();
+    s.route=['DTW','ORD','CMX','ORD','DTW'];
+    s.startDate='2026-11-18';
+    s.selections={'0':'stale-flight'};
+    window.NTA.save(s);
+  });
+  await pastDatePage.goto(BASE_URL+'/itinerary.html',{waitUntil:'domcontentloaded'});
+  await pastDatePage.waitForFunction(()=>window.NTA&&window.NTA.load().startDate>=window.NTA.todayLocal(),null,{timeout:15000});
+  const revisedPast=await pastDatePage.evaluate(()=>window.NTA.load());
+  assert(revisedPast.route.join(',')==='DTW,ORD,CMX,ORD,DTW','Stale-date correction preserves chosen itinerary');
+  assert(revisedPast.startDate>=localDatePlus(0),'Itinerary start date is never reopened in the past',revisedPast.startDate);
+  assert(Object.keys(revisedPast.selections||{}).length===0,'Invalid flight selections from an expired trip date are cleared');
+  await pastDatePage.close();
+
   // 2) Build a round trip from the map using the same controls a human uses.
   await page.evaluate(()=>localStorage.clear());
   await page.reload({waitUntil:'domcontentloaded'});
