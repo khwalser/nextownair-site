@@ -357,3 +357,25 @@ assert(patternCtx.patternAppliesOnDate(patternCtx.publishedServicePattern('HOT',
 assert(source.includes("'DFW|CVN','CVN|DFW','DFW|HOT','HOT|DFW'"),'Newly sourced legs keep background fare lookups bounded');
 console.log('PASS: Clovis six-day and Hot Springs daily December schedules remain source-backed without invented Wednesdays');
 
+
+const servicePrototypeStart=source.indexOf('  function prototypeOptions(');
+const servicePrototypeEnd=source.indexOf('  function fareKey(',servicePrototypeStart);
+assert(servicePrototypeStart>=0&&servicePrototypeEnd>servicePrototypeStart,'Service planning option generator is present');
+const servicePrototypeContext={
+  serviceCountForDate:(a,b,date)=>{
+    const p=patternCtx.publishedServicePattern(a,b);
+    return patternCtx.patternAppliesOnDate(p,date)?p.count:0;
+  },
+  estimatedFlightMinutes:()=>90,stableHash:()=>187,
+  deterministicPrototypeFare:()=>160,
+  servicePatternStops:()=>[],
+  publishedServicePattern:patternCtx.publishedServicePattern
+};
+vm.createContext(servicePrototypeContext);
+vm.runInContext(source.slice(servicePrototypeStart,servicePrototypeEnd)+'\nthis.prototypeOptions=prototypeOptions;',servicePrototypeContext);
+const eldPrototype=servicePrototypeContext.prototypeOptions('ELD','DFW','2026-12-08')[0];
+assert(eldPrototype&&eldPrototype.carrier==='Contour Airlines','Airport-sourced carrier is shown on El Dorado planning flight');
+assert.equal(eldPrototype.timeStatus,'prototype','Source-backed flight date never implies prototype departure time is verified');
+assert.equal(eldPrototype.fareStatus,'prototype','Planning fare remains explicitly unverified');
+assert.equal(servicePrototypeContext.prototypeOptions('CVN','DFW','2026-12-09').length,0,'No prototype Clovis flight is invented on unsupported Wednesday');
+console.log('PASS: Published carrier names are useful while estimated fares, times and unsupported dates stay clearly marked');
