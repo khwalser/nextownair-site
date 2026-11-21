@@ -316,3 +316,7 @@ const mixed=Array.from(fareChoiceCtx.normalizedFareChoices({currency:'USD',fareC
 assert.deepEqual(mixed,['EUR','USD'],'Different currencies retain their provider order without false price ranking');
 assert(source.includes("comparableFares&&idx===0?' lowest':''"),'Lowest badge only applies to comparable prices');
 console.log('PASS: Returned fare prices are ranked only when currencies are comparable');
+
+assert(source.includes('data-external-first-fares href="${externalFareSearchUrl(a,b,departDate)}"'),'An unpriced first flight includes an external search for its exact date');
+assert(source.includes('data-external-onward-fares href="${externalFareSearchUrl(a,b,departDate)}"'),'Missing onward flight includes a dated airline-fare search');
+console.log('PASS: Unavailable first and onward legs offer dated external fare-search recovery');
