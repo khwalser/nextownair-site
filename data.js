@@ -4549,6 +4549,80 @@ window.NTA_DATA = {
     }
   ],
   "servicePatterns": {
+    "DFW|CVN": {
+      "activeFrom": "2026-11-21",
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Denver Air Connection / Key Lime Air",
+      "label": "Published nonstop service pattern; exact flight times and fares require provider confirmation",
+      "sourceLabel": "Clovis-DFW published six weekly service days excluding Wednesday",
+      "sourceUrl": "https://www.kayak.com/flight-routes/Clovis-CVN/Dallas-Ft-Worth-other-airports-DFW",
+      "checkedAsOf": "2026-11-21"
+    },
+    "CVN|DFW": {
+      "activeFrom": "2026-11-21",
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Denver Air Connection / Key Lime Air",
+      "label": "Published nonstop service pattern; exact flight times and fares require provider confirmation",
+      "sourceLabel": "Clovis-DFW published six weekly service days excluding Wednesday",
+      "sourceUrl": "https://www.flightsfrom.com/CVN-DFW",
+      "checkedAsOf": "2026-11-21"
+    },
+    "DFW|HOT": {
+      "activeFrom": "2026-11-21",
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Southern Airways Express",
+      "label": "Published nonstop service pattern; exact flight times and fares require provider confirmation",
+      "sourceLabel": "Dallas/Hot Springs December 2026 daily published nonstop service",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/DFW/HOT",
+      "checkedAsOf": "2026-11-21"
+    },
+    "HOT|DFW": {
+      "activeFrom": "2026-11-21",
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Southern Airways Express",
+      "label": "Published nonstop service pattern; exact flight times and fares require provider confirmation",
+      "sourceLabel": "Hot Springs/Dallas December 2026 daily published nonstop service",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/HOT/DFW",
+      "checkedAsOf": "2026-11-21"
+    },
     "ELD|DFW": {
       "activeFrom": "2026-11-21",
       "activeThrough": "2026-12-31",
