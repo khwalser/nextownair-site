@@ -129,4 +129,15 @@ for(const [from,to] of [['LWB','CLT'],['CLT','LWB']]){
   assert(p.sourceUrl.endsWith(from+'-'+to));
 }
 assert(!ledger.missing.some(x=>x.pair==='LWB-CLT'));
+for(const community of ['DIK','ATY']){
+  assert(!ledger.missing.some(x=>x.pair===community+'-DEN'),'Daily nonstop date window verified and removed from unknown register');
+  for(const [from,to] of [[community,'DEN'],['DEN',community]]){
+    const p=D.servicePatterns[from+'|'+to];
+    assert(p,'Directional schedule evidence for '+from+' to '+to);
+    assert.deepEqual([...p.days],[0,1,2,3,4,5,6]);
+    assert.equal(p.activeFrom,'2026-11-23');
+    assert.equal(p.activeThrough,'2026-11-29','No fabricated schedule dates after published week');
+    assert(p.sourceUrl.endsWith(from+'-'+to));
+  }
+}
 console.log('PASS: '+ledger.missing.length+' EAS operating-day evidence gaps individually tracked; no fabricated schedule dates');
