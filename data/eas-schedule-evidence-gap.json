@@ -2,8 +2,8 @@
   "basis": "Existing NexTownAir May 2026 DOT EAS community–hub model; NOT a verified operating-day timetable",
   "generated": "2026-11-21",
   "totalContractedPairs": 225,
-  "existingDayPatternCovered": 49,
-  "missingDayPatterns": 176,
+  "existingDayPatternCovered": 51,
+  "missingDayPatterns": 174,
   "contractSourceMeaning": "Reported EAS contracted community/hub evidence at the report date; does not prove daily operations, contract renewal or bookability.",
   "missing": [
     {
@@ -114,19 +114,6 @@
       "communityCode": "ART",
       "hub": "PHL",
       "state": "NY",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
-      "pair": "ATY-DEN",
-      "community": "Watertown Regional Airport",
-      "communityCode": "ATY",
-      "hub": "DEN",
-      "state": "SD",
       "contractEvidence": "May 2026 DOT contracted EAS route list",
       "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
       "scheduleDayEvidence": "not_verified",
@@ -444,19 +431,6 @@
       "communityCode": "DDC",
       "hub": "DEN",
       "state": "KS",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
-      "pair": "DIK-DEN",
-      "community": "Dickinson Theodore Roosevelt Regional Airport",
-      "communityCode": "DIK",
-      "hub": "DEN",
-      "state": "ND",
       "contractEvidence": "May 2026 DOT contracted EAS route list",
       "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
       "scheduleDayEvidence": "not_verified",
@@ -2536,6 +2510,20 @@
       "timeWindow": "Nov 23–29, 2026",
       "status": "time_bounded_published_operating_days",
       "note": "At least one daily nonstop both directions in week48 with holiday time variation"
+    },
+    {
+      "pair": "DIK-DEN",
+      "source": "https://www.directflights.com/DIK-DEN",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Both directions with source-supported daily nonstop route in exact observed week; not extended to later months"
+    },
+    {
+      "pair": "ATY-DEN",
+      "source": "https://www.directflights.com/ATY-DEN",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Both directions with source-supported daily nonstop route in exact observed week; not extended to later months"
     }
   ]
 }
