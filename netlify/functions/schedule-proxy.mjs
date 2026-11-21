@@ -88,13 +88,20 @@ async function fetchHalfDay(apiKey,origin,destination,from,to){
   const url=`${API_BASE}/flights/airports/iata/${encodeURIComponent(origin)}/${encodeURIComponent(from)}/${encodeURIComponent(to)}?${params}`;
   const res=await rateLimitedFetch(url,apiKey);
   if(res.status===204)return [];
-  const body=await res.json().catch(()=>({}));
+  let body;
+  try{body=await res.json();}
+  catch(error){
+    if(res.ok)throw new Error("Schedule provider returned invalid JSON");
+    body={};
+  }
   if(!res.ok){
     const err=new Error(body?.message||body?.detail||body?.title||body?.errors?.[0]?.message||`API.Market HTTP ${res.status}`);
     err.status=res.status;throw err;
   }
-  const departures=Array.isArray(body?.departures)?body.departures:[];
-  return departures.map(f=>normalizeFlight(f,destination)).filter(Boolean);
+  if(!body||!Array.isArray(body.departures)){
+    throw new Error("Schedule provider returned an invalid departures payload");
+  }
+  return body.departures.map(f=>normalizeFlight(f,destination)).filter(Boolean);
 }
 
 async function fetchDate(apiKey,origin,destination,date){
