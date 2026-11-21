@@ -20,6 +20,7 @@ on:
       - "e2e/schedule-coverage-audit.mjs"
       - "e2e/calendar-coverage-regression.mjs"
       - "e2e/calendar-pricing-progress-regression.mjs"
+      - "e2e/fare-null-normalization-regression.mjs"
       - "e2e/schedule-full-day-regression.mjs"
       - "docs/data-architecture.md"
       - ".github/workflows/live-e2e.yml"
@@ -71,6 +72,9 @@ jobs:
       - name: Verify calendar pricing progress and completion
         id: pricing
         run: node e2e/calendar-pricing-progress-regression.mjs
+
+      - name: Regress missing fare amount normalization
+        run: node e2e/fare-null-normalization-regression.mjs
 
       - name: Audit route graph
         id: network
