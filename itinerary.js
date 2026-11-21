@@ -1556,7 +1556,7 @@
         continue;
       }
       const legRendered=renderLeg(i,a,b,departDate,plan,previousChosen);
-      const currentFareData=liveFareData.get(fareKey(state.route[i],state.route[i+1],departDate));
+      const currentFareData=liveFareData.get(fareKey(state.route[i],state.route[i+1],legRendered.departDate));
       if(currentFareData)liveFareByLeg.set(i,currentFareData);
       el.content.appendChild(legRendered.section);
       previousChosen=legRendered.chosen;
