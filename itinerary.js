@@ -662,7 +662,9 @@
       if(!o||typeof o!=='object')return null;
       const departMin=isoMinutes(o.departureTime),arrivalMin=isoMinutes(o.arrivalTime);
       if(departMin==null||arrivalMin==null)return null;
-      const departDay=isoDate(o.departureTime)||date;
+      const departDay=isoDate(o.departureTime);
+      // Never place a provider flight from another day on the requested date.
+      if(!departDay||departDay!==date)return null;
       const arrivalDay=isoDate(o.arrivalTime)||departDay;
       const dayOffset=Math.max(0,window.NTA.diffDays(departDay,arrivalDay));
       const providerDuration=Number(o.durationMinutes);
