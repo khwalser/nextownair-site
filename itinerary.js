@@ -1309,8 +1309,10 @@
     const transfer=transferFor(a,b),section=document.createElement('section');
     section.className='leg transfer-leg';section.dataset.legIndex=String(i);
     const locked=i>0&&!priorSelected,duration=Math.max(1,Number(transfer&&transfer.durationMinutes)||60);
+    const transferTitle=transfer&&transfer.mode==='ground-ferry'?'Ground + airport ferry transfer':'Ground transfer';
+    const transferCarrier=transfer&&transfer.mode==='ground-ferry'?'Ketchikan local transfer':'Local airport transfer';
     if(locked){
-      section.innerHTML=`<div class="leghead"><div><div class="eyebrow">Transfer · ${a} → ${b}</div><h2>Ground + airport ferry transfer</h2><p class="small">Select the previous flight to place this transfer on the timeline.</p></div><span class="transfer-badge">Not a flight</span></div>`;
+      section.innerHTML=`<div class="leghead"><div><div class="eyebrow">Transfer · ${a} → ${b}</div><h2>${transferTitle}</h2><p class="small">Select the previous flight to place this transfer on the timeline.</p></div><span class="transfer-badge">Not a flight</span></div>`;
       return {section,chosen:null,departDate,arrivalDate:departDate,arrivalMin:null,transfer};
     }
     const hasInbound=Number.isFinite(Number(inboundArrivalMin)),startMin=hasInbound?Number(inboundArrivalMin):null,total=startMin==null?null:startMin+duration;
@@ -1318,8 +1320,8 @@
     const arrivalDate=hasInbound?window.NTA.addDays(inboundArrivalDate,dayOffset):departDate;
     const durationText=duration>=60?`${Math.floor(duration/60)}h${duration%60?` ${duration%60}m`:''}`:`${duration}m`;
     const timeText=hasInbound?`<span class="prototype-value">?${F.timeFrom(startMin)} → ?${F.timeFrom(arrivalMin)}</span>`:'<span class="prototype-value">Timing set around your first onward flight</span>';
-    section.innerHTML=`<div class="leghead"><div><div class="eyebrow">Transfer · ${a} → ${b}</div><h2>Ground + airport ferry transfer</h2><p class="small">${transfer&&transfer.label?transfer.label:'Required local transfer between airports.'}</p></div><span class="transfer-badge">Not a flight</span></div><div class="transfer-card"><div><strong>${timeText}</strong><span>Prototype transfer allowance · <span class="prototype-value">?${durationText}</span></span></div><div class="small">No airfare is attached to this segment. NexTownAir uses the transfer allowance only to keep downstream flight timing coherent.</div></div>`;
-    return {section,chosen:{transfer:true,duration,departMin:startMin,arrivalMin,arrivalDayOffset:dayOffset,timeStatus:'prototype',fareStatus:'not-applicable',flightNo:'Ground + airport ferry',carrier:'Ketchikan local transfer'},departDate:hasInbound?inboundArrivalDate:departDate,arrivalDate,arrivalMin,transfer};
+    section.innerHTML=`<div class="leghead"><div><div class="eyebrow">Transfer · ${a} → ${b}</div><h2>${transferTitle}</h2><p class="small">${transfer&&transfer.label?transfer.label:'Required local transfer between airports.'}</p></div><span class="transfer-badge">Not a flight</span></div><div class="transfer-card"><div><strong>${timeText}</strong><span>Prototype transfer allowance · <span class="prototype-value">?${durationText}</span></span></div><div class="small">No airfare is attached to this segment. NexTownAir uses the transfer allowance only to keep downstream flight timing coherent.</div></div>`;
+    return {section,chosen:{transfer:true,duration,departMin:startMin,arrivalMin,arrivalDayOffset:dayOffset,timeStatus:'prototype',fareStatus:'not-applicable',flightNo:transferTitle,carrier:transferCarrier},departDate:hasInbound?inboundArrivalDate:departDate,arrivalDate,arrivalMin,transfer};
   }
   function nextConfirmedFlightDate(a,b,afterDate,days=14){
     for(let offset=1;offset<=days;offset++){
