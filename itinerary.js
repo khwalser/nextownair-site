@@ -816,6 +816,12 @@
     const value=F.timeFrom(min);
     return option&&option.timeStatus==='prototype'?`?${value}`:value;
   }
+  function normalizedFareChoices(option){
+    const fares=(Array.isArray(option?.fareChoices)?option.fareChoices:[])
+      .filter(x=>x&&x.amount!=null&&x.amount!==''&&Number.isFinite(Number(x.amount))&&Number(x.amount)>=0);
+    const currencies=new Set(fares.map(f=>f.currency||option.currency||'USD'));
+    return currencies.size<=1?[...fares].sort((a,b)=>Number(a.amount)-Number(b.amount)):fares;
+  }
   function optionFareText(option){
     if(!option||option.price==null||option.price===''||!Number.isFinite(Number(option.price))||Number(option.price)<0)return '';
     return option.fareStatus==='prototype'?prototypeFareText(option.price):formatMoney(option.price,option.currency);
@@ -1409,13 +1415,14 @@
       const arr=F.arrival(o,departDate);
       const bt=document.createElement('button');bt.type='button';bt.className=`flight${selected?' selected':''}`;bt.setAttribute('aria-pressed',String(selected));
       const badge=o.scheduleVerified?'Published flight':(o.prototype?'Known service':(o.liveMode?'Live flight':'Provider flight'));
-      const fareChoices=(o.fareChoices||[]).filter(x=>x&&x.amount!=null&&x.amount!==''&&Number.isFinite(Number(x.amount))&&Number(x.amount)>=0);
+      const fareChoices=normalizedFareChoices(o);
+      const comparableFares=new Set(fareChoices.map(f=>f.currency||o.currency||'USD')).size<=1;
       const fareLabel=optionFareText(o);
       const timeClass=o.timeStatus==='prototype'?' prototype-value':'';
       const fareClass=o.fareStatus==='prototype'?' prototype-value':'';
       const price=o.price!=null&&o.price!==''&&Number.isFinite(Number(o.price))&&Number(o.price)>=0?(
         usingProvider&&fareChoices.length>1&&o.fareStatus==='verified'
-          ? `<div class="price${fareClass}">Lowest fare ${fareLabel}</div><div class="fare-choice-list" aria-label="Returned fare prices">${fareChoices.map((f,idx)=>`<span class="fare-choice${idx===0?' lowest':''}">${idx===0?'Lowest · ':''}${formatMoney(f.amount,f.currency||o.currency)}</span>`).join('')}</div><div class="small">${fareChoices.length} live fare prices returned for this flight</div>`
+          ? `<div class="price${fareClass}">Returned fare ${fareLabel}</div><div class="fare-choice-list" aria-label="Returned fare prices">${fareChoices.map((f,idx)=>`<span class="fare-choice${comparableFares&&idx===0?' lowest':''}">${comparableFares&&idx===0?'Lowest · ':''}${formatMoney(f.amount,f.currency||o.currency)}</span>`).join('')}</div><div class="small">${fareChoices.length} live fare prices returned for this flight${comparableFares?'':' · different currencies cannot be ranked directly'}</div>`
           : `<div class="price${fareClass}">${fareLabel}</div>`
       ):'';
       bt.innerHTML=`<div class="times${timeClass}">${optionTimeText(o,o.departMin)} → ${optionTimeText(o,arr.min)}${o.arrivalDayOffset?' +1 day':''}</div><div class="small">${o.flightNo} · ${o.carrier}</div><div class="small">${fmtDuration(o.duration)} · ${optionServiceText(o)}</div>${price}<span class="flight-badge">${badge}</span><div class="selectlabel">${selected?'✓ Selected':'Select this flight'}</div>`;
