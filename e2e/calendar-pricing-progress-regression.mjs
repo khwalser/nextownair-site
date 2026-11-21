@@ -215,3 +215,14 @@ fetchCtx.fareQueue[0].resolve({offers:[{amount:277,currency:'USD'}]});
 const explicitFare=await explicit;
 assert.equal(explicitFare.offers[0].amount,277,'Explicit fare query is allowed to return provider pricing');
 console.log('PASS: Automatic route-coverage cap does not suppress a traveler-initiated live price lookup');
+
+const lowestStart=source.indexOf('  function lowestOffer(');
+const lowestEnd=source.indexOf('  function formatMoney(',lowestStart);
+assert(lowestStart>=0&&lowestEnd>lowestStart,'Lowest-offer parser is present');
+const amountCtx={};vm.createContext(amountCtx);
+vm.runInContext(source.slice(lowestStart,lowestEnd)+'\nthis.lowestOffer=lowestOffer;',amountCtx);
+assert.equal(amountCtx.lowestOffer({offers:[{amount:null},{amount:'bad'},{amount:245}]}).amount,245,'Null and malformed prices cannot outrank a valid fare');
+assert.equal(amountCtx.lowestOffer({offers:[{amount:null},{amount:''},{amount:'NaN'}]}),null,'All missing provider prices remain unpriced rather than $0');
+assert.equal(amountCtx.lowestOffer({offers:[null,{amount:333},{amount:199}]}).amount,199,'Valid offer selection still finds the lowest numeric price');
+assert(source.includes('if(!cheapest.length){'),'Trip fare summary does not show zero when all quotes lack valid amounts');
+console.log('PASS: Provider fare validation rejects null, malformed and fabricated zero fares');
