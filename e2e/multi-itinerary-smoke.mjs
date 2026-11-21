@@ -81,7 +81,26 @@ try{
         }else{
           await explore.click();
           check(await page.locator('#startDateCalendar').isVisible(),'Departure calendar opens from missing-flight guidance');
-          console.log('INFO: '+tc.name+' — '+row.selection);
+          // A long itinerary is not "complete" merely because its calendar loads.
+          // Try two later selectable dates, without inventing schedule or fares.
+          row.alternativeDatesTried=[];
+          const alternatives=await page.locator('.calendar-day[data-calendar-date]:not([disabled])').evaluateAll((nodes,start)=>
+            nodes.map(n=>n.dataset.calendarDate).filter(d=>d>start).slice(0,2),tc.date);
+          for(const alternateDate of alternatives){
+            row.alternativeDatesTried.push(alternateDate);
+            await page.locator('.calendar-day[data-calendar-date="'+alternateDate+'"]').click();
+            check((await page.evaluate(()=>window.NTA.load().startDate))===alternateDate,'Calendar updates selected departure date',alternateDate);
+            try{await page.locator('#flight-options-0 .flight').first().waitFor({state:'visible',timeout:7000});}catch(_){}
+            if(await page.locator('#flight-options-0 .flight').count()){
+              await page.locator('#flight-options-0 .flight').first().click();
+              row.selection=await page.evaluate(()=>window.NTA.load().selections?.['0']);
+              check(Boolean(row.selection),'Alternative date yields a selectable first flight',alternateDate);
+              break;
+            }
+          }
+          if(typeof row.selection==='string'&&row.selection.startsWith('no selectable')){
+            console.log('INFO: '+tc.name+' — no confirmed first-leg inventory on '+[tc.date,...row.alternativeDatesTried].join(', '));
+          }
         }
       }
       row.totalFlightLegs=tc.route.length-1;
@@ -98,8 +117,8 @@ try{
         });
       }
       console.log('DIAGNOSTICS: '+tc.name+' — '+JSON.stringify(row.legDiagnostics));
-      // Exercise downstream flight and stay choices on the two shorter round trips.
-      if(tc.route.length===3&&row.completedFlightLegs>=1){
+      // Attempt onward flight choices on any itinerary with a confirmed first-leg option.
+      if(row.completedFlightLegs>=1){
         for(let legIndex=1;legIndex<row.totalFlightLegs;legIndex++){
           const selector=page.locator('#flight-options-'+legIndex+' .flight');
           let found=await selector.count()>0;
@@ -136,7 +155,7 @@ try{
         }
         row.completedFlightLegs=await page.evaluate(()=>Object.keys(window.NTA.load().selections||{}).length);
         row.complete=row.completedFlightLegs===row.totalFlightLegs;
-        check(row.complete,'Round trip reaches fully selected state',row.completedFlightLegs+'/'+row.totalFlightLegs+' flight legs selected');
+        if(tc.route.length===3)check(row.complete,'Round trip reaches fully selected state',row.completedFlightLegs+'/'+row.totalFlightLegs+' flight legs selected');
         if(row.complete){
           await page.reload({waitUntil:'domcontentloaded',timeout:60000});
           const persistedCount=await page.evaluate(()=>Object.keys(window.NTA.load().selections||{}).length);
