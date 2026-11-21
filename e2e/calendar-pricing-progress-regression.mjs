@@ -103,3 +103,8 @@ console.log('PASS: Published-service choices do not depend on slow fare-provider
 assert(source.includes("const pinnedFallback=(pinnedId.startsWith('prototype|')"),'Late live pricing preserves previously selected published-service planning choices');
 assert(source.includes('opts=[...opts,pinnedFallback]'),'Real fare options remain visible without silently discarding a still-valid prototype choice');
 console.log('PASS: Late provider responses retain explicit prototype selections alongside real fares');
+
+const rolloverPosition=source.indexOf('departDate=nextDate;');
+const selectionGuardPosition=source.indexOf('if(storedSelection&&!String(storedSelection).endsWith(');
+assert(rolloverPosition>=0&&selectionGuardPosition>rolloverPosition,'Selection validity is checked after automatic connector departure-date rollover');
+console.log('PASS: Automatic next-service-day connector selections are not cleared on rerender');
