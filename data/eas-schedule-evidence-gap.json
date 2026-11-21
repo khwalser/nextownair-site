@@ -2,8 +2,8 @@
   "basis": "Existing NexTownAir May 2026 DOT EAS community–hub model; NOT a verified operating-day timetable",
   "generated": "2026-11-21",
   "totalContractedPairs": 225,
-  "existingDayPatternCovered": 48,
-  "missingDayPatterns": 177,
+  "existingDayPatternCovered": 49,
+  "missingDayPatterns": 176,
   "contractSourceMeaning": "Reported EAS contracted community/hub evidence at the report date; does not prove daily operations, contract renewal or bookability.",
   "missing": [
     {
@@ -1323,19 +1323,6 @@
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
-      "pair": "LWB-CLT",
-      "community": "Greenbrier Valley Airport",
-      "communityCode": "LWB",
-      "hub": "CLT",
-      "state": "WV",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
       "pair": "LWB-ORD",
       "community": "Greenbrier Valley Airport",
       "communityCode": "LWB",
@@ -2542,6 +2529,13 @@
       "timeWindow": "November 23–29, 2026",
       "status": "time_bounded_published_operating_days",
       "note": "Every day in both directional timetables, with holiday-adjusted flight number and time"
+    },
+    {
+      "pair": "LWB-CLT",
+      "source": "https://www.directflights.com/LWB-CLT",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "At least one daily nonstop both directions in week48 with holiday time variation"
     }
   ]
 }
