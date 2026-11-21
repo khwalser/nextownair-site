@@ -7,10 +7,10 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-19.30",
+  "mvpRevision": "2026-11-21.31",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
-    "auditedAsOf": "2026-11-19",
+    "auditedAsOf": "2026-11-21",
     "easRoutePairs": 225,
     "connectorRoutePairs": 14,
     "note": "The planner routes over explicit verified flight edges plus explicit non-flight transfer edges where the real trip requires them. EAS pairs come from U.S. DOT May 2026 reports; additional small-airport nonstop pairs come from current airport/airline-published service pages and timetables; backbone pairs come from current airport-published nonstop destination lists. A transfer edge is never presented as a flight.",
@@ -34,9 +34,12 @@ window.NTA_DATA = {
       "OME",
       "KTN",
       "JNU",
-      "MEM"
+      "MEM",
+      "MKK",
+      "HPN",
+      "MRI"
     ],
-    "backboneRoutePairs": 61,
+    "backboneRoutePairs": 64,
     "backboneSources": [
       {
         "airport": "IAD",
@@ -66,6 +69,29 @@ window.NTA_DATA = {
           "ANC-KTN",
           "ANC-JNU"
         ]
+      },
+      {
+        "airport": "MKK",
+        "label": "Mokulele Airlines official Hawaii destination network and November 21, 2026 MKK airport departure schedule",
+        "url": "https://www.mokuleleairlines.com/",
+        "departureEvidenceUrl": "https://www.flightstats.com/v2/flight-tracker/departures/MKK",
+        "checkedAsOf": "2026-11-21",
+        "verifiedPairs": [
+          "MKK-HNL",
+          "MKK-OGG"
+        ],
+        "note": "These are observed nonstop route links, not evidence of daily service or guaranteed departures on future dates."
+      },
+      {
+        "airport": "HPN",
+        "label": "Current American Airlines HPN-ORD nonstop published schedules",
+        "url": "https://www.flightsfrom.com/HPN-ORD",
+        "secondaryUrl": "https://www.google.com/travel/flights/flights-from-westchester-county-to-chicago.html",
+        "checkedAsOf": "2026-11-21",
+        "verifiedPairs": [
+          "HPN-ORD"
+        ],
+        "note": "Route evidence only; individual operating dates and fares remain provider-checked."
       }
     ],
     "unresolvedNetworkComponents": [],
@@ -130,7 +156,7 @@ window.NTA_DATA = {
         "checkedAsOf": "2026-11-19"
       }
     ],
-    "transferEdgePairs": 1,
+    "transferEdgePairs": 2,
     "transferSources": [
       {
         "label": "Taquan Air scheduled flights and Ketchikan Waterfront Base",
@@ -4531,6 +4557,18 @@ window.NTA_DATA = {
     [
       "PHX",
       "MEM"
+    ],
+    [
+      "MKK",
+      "HNL"
+    ],
+    [
+      "MKK",
+      "OGG"
+    ],
+    [
+      "HPN",
+      "ORD"
     ]
   ],
   "transferEdges": [
@@ -4546,6 +4584,19 @@ window.NTA_DATA = {
       "sourceLabel": "Alaska DOT Gravina Access / airport ferry access",
       "sourceUrl": "https://dot.alaska.gov/sereg/projects/gravina_access/assets/Final_EIS/Purpose_Need.pdf",
       "checkedAsOf": "2026-11-19"
+    },
+    {
+      "from": "MRI",
+      "to": "ANC",
+      "mode": "ground",
+      "label": "Anchorage Merrill Field → Ted Stevens International airport transfer",
+      "durationMinutes": 45,
+      "durationStatus": "prototype",
+      "fareStatus": "not-applicable",
+      "note": "These are distinct Anchorage airports. Traveler must arrange a road transfer; the 45-minute planning allowance is a prototype, not a verified pickup-to-check-in duration.",
+      "sourceLabel": "Rome2Rio MRI–ANC driving / rideshare access; Anchorage DOT ground transport",
+      "sourceUrl": "https://www.rome2rio.com/s/Anchorage-Airport-ANC/Anchorage-Merrill-Field-Airport-MRI",
+      "checkedAsOf": "2026-11-21"
     }
   ],
   "servicePatterns": {
@@ -4702,7 +4753,15 @@ window.NTA_DATA = {
     "DTW|ORD": {
       "activeFrom": "2026-11-19",
       "activeThrough": "2026-12-18",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "American Airlines",
       "label": "Daily published Detroit–Chicago nonstop service (at least AA 3364) during the cited November–December timetable window",
@@ -4710,10 +4769,18 @@ window.NTA_DATA = {
       "sourceUrl": "https://zbordirect.com/en/tools/schedule/DTW/ORD",
       "checkedAsOf": "2026-11-20"
     },
-        "ORD|DTW": {
+    "ORD|DTW": {
       "activeFrom": "2026-12-01",
       "activeThrough": "2026-12-16",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "United Airlines",
       "label": "Daily published nonstop service during the stated December timetable window",
@@ -4723,7 +4790,15 @@ window.NTA_DATA = {
     },
     "BHB|BOS": {
       "activeThrough": "2026-12-31",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 3,
       "airline": "Cape Air",
       "label": "Daily current nonstop service, three flights per day",
@@ -4733,7 +4808,15 @@ window.NTA_DATA = {
     },
     "BOS|BHB": {
       "activeThrough": "2026-12-31",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 3,
       "airline": "Cape Air",
       "label": "Daily current nonstop service, three flights per day",
@@ -4743,7 +4826,15 @@ window.NTA_DATA = {
     },
     "RKD|BOS": {
       "activeThrough": "2026-12-31",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 3,
       "airline": "Cape Air",
       "label": "Daily current nonstop service, three flights per day",
@@ -4753,7 +4844,15 @@ window.NTA_DATA = {
     },
     "BOS|RKD": {
       "activeThrough": "2026-12-31",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 3,
       "airline": "Cape Air",
       "label": "Daily current nonstop service, three flights per day",
@@ -4763,7 +4862,15 @@ window.NTA_DATA = {
     },
     "RUT|BOS": {
       "activeThrough": "2026-12-31",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 3,
       "airline": "Cape Air",
       "label": "Daily current nonstop service, three flights per day",
@@ -4773,7 +4880,15 @@ window.NTA_DATA = {
     },
     "BOS|RUT": {
       "activeThrough": "2026-12-31",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 3,
       "airline": "Cape Air",
       "label": "Daily current nonstop service, three flights per day",
@@ -4783,7 +4898,15 @@ window.NTA_DATA = {
     },
     "SLK|BOS": {
       "activeThrough": "2026-12-31",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 2,
       "airline": "Cape Air",
       "label": "Daily current nonstop service, two flights per day",
@@ -4793,7 +4916,15 @@ window.NTA_DATA = {
     },
     "BOS|SLK": {
       "activeThrough": "2026-12-31",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 2,
       "airline": "Cape Air",
       "label": "Daily current nonstop service, two flights per day",
@@ -4802,7 +4933,15 @@ window.NTA_DATA = {
       "checkedAsOf": "2026-11-19"
     },
     "AIA|DEN": {
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "Denver Air Connection",
       "label": "Daily current nonstop service; conservative minimum one flight per day",
@@ -4811,7 +4950,15 @@ window.NTA_DATA = {
       "checkedAsOf": "2026-11-19"
     },
     "DEN|AIA": {
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "Denver Air Connection",
       "label": "Daily current nonstop service; conservative minimum one flight per day",
@@ -4821,7 +4968,15 @@ window.NTA_DATA = {
     },
     "CDR|DEN": {
       "activeThrough": "2026-12-31",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "Denver Air Connection",
       "label": "Current nonstop service; conservative minimum one flight per operating day",
@@ -4831,7 +4986,15 @@ window.NTA_DATA = {
     },
     "DEN|CDR": {
       "activeThrough": "2026-12-31",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "Denver Air Connection",
       "label": "Current nonstop service; conservative minimum one flight per operating day",
@@ -4841,7 +5004,15 @@ window.NTA_DATA = {
     },
     "LBF|DEN": {
       "activeThrough": "2027-05-16",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "United Airlines",
       "label": "Daily current nonstop service; conservative minimum one flight per day",
@@ -4851,7 +5022,15 @@ window.NTA_DATA = {
     },
     "DEN|LBF": {
       "activeThrough": "2027-05-16",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "United Airlines",
       "label": "Daily current nonstop service; conservative minimum one flight per day",
@@ -4860,7 +5039,15 @@ window.NTA_DATA = {
       "checkedAsOf": "2026-11-19"
     },
     "BFF|DEN": {
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "United Airlines",
       "label": "Daily current passenger service to Denver; conservative minimum one flight per day",
@@ -4869,7 +5056,15 @@ window.NTA_DATA = {
       "checkedAsOf": "2026-11-19"
     },
     "DEN|BFF": {
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "United Airlines",
       "label": "Daily current passenger service from Denver; conservative minimum one flight per day",
@@ -4879,7 +5074,15 @@ window.NTA_DATA = {
     },
     "ESC|DTW": {
       "activeThrough": "2027-06-03",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "Delta Air Lines",
       "label": "Daily current nonstop service",
@@ -4889,7 +5092,15 @@ window.NTA_DATA = {
     },
     "DTW|ESC": {
       "activeThrough": "2027-06-03",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "Delta Air Lines",
       "label": "Daily current nonstop service",
@@ -4899,7 +5110,15 @@ window.NTA_DATA = {
     },
     "IMT|DTW": {
       "activeThrough": "2027-06-03",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "Delta Air Lines",
       "label": "Daily current nonstop service",
@@ -4909,7 +5128,15 @@ window.NTA_DATA = {
     },
     "DTW|IMT": {
       "activeThrough": "2027-06-03",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "Delta Air Lines",
       "label": "Daily current nonstop service",
@@ -4919,7 +5146,15 @@ window.NTA_DATA = {
     },
     "PLN|DTW": {
       "activeThrough": "2026-12-31",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "Delta Air Lines",
       "label": "Daily current nonstop service",
@@ -4929,7 +5164,15 @@ window.NTA_DATA = {
     },
     "DTW|PLN": {
       "activeThrough": "2026-12-31",
-      "days": [0, 1, 2, 3, 4, 5, 6],
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
       "count": 1,
       "airline": "Delta Air Lines",
       "label": "Daily current nonstop service",
