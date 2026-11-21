@@ -8,7 +8,7 @@ const end=source.indexOf('async function fetchDate(',start);
 assert(start>=0&&end>start,'Published schedule parser is present');
 let mock;
 const context={
-  URLSearchParams,encodeURIComponent,
+  URLSearchParams,encodeURIComponent,API_BASE:'https://provider.test',
   rateLimitedFetch:async()=>mock,
   normalizeFlight:flight=>flight
 };
