@@ -146,3 +146,6 @@ assert(connectorRollo.includes('const nextFareData=liveFareData.get(fareKey(a,b,
 assert(connectorRollo.includes('fareData=nextFareData;'),'Next-day connector price panel is bound to next-day fare data');
 assert(connectorRollo.includes('providerOptions(nextFareData,a,b,nextDate)'),'Real next-day offers supersede prototypes when available');
 console.log('PASS: Automatic connector rollover cannot display prior-date provider fare as next-day price');
+
+assert(source.includes('liveFareData.get(fareKey(state.route[i],state.route[i+1],legRendered.departDate))'),'Itinerary fare totals use effective connector departure dates, never provisional prior-day dates');
+console.log('PASS: Fare summary respects effective next-service-day departure dates');
