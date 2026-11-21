@@ -2,8 +2,8 @@
   "basis": "Existing NexTownAir May 2026 DOT EAS community–hub model; NOT a verified operating-day timetable",
   "generated": "2026-11-21",
   "totalContractedPairs": 225,
-  "existingDayPatternCovered": 44,
-  "missingDayPatterns": 181,
+  "existingDayPatternCovered": 46,
+  "missingDayPatterns": 179,
   "contractSourceMeaning": "Reported EAS contracted community/hub evidence at the report date; does not prove daily operations, contract renewal or bookability.",
   "missing": [
     {
@@ -452,19 +452,6 @@
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
-      "pair": "DEC-ORD",
-      "community": "Decatur Airport",
-      "communityCode": "DEC",
-      "hub": "ORD",
-      "state": "IL",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
       "pair": "DIK-DEN",
       "community": "Dickinson Theodore Roosevelt Regional Airport",
       "communityCode": "DIK",
@@ -496,19 +483,6 @@
       "communityCode": "DUJ",
       "hub": "PIT",
       "state": "PA",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
-      "pair": "DVL-DEN",
-      "community": "Devils Lake Regional Airport",
-      "communityCode": "DVL",
-      "hub": "DEN",
-      "state": "ND",
       "contractEvidence": "May 2026 DOT contracted EAS route list",
       "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
       "scheduleDayEvidence": "not_verified",
@@ -2566,6 +2540,20 @@
       "timeWindow": "November 23–29, 2026",
       "status": "time_bounded_published_operating_days",
       "note": "No scheduled service Thursday Nov 26"
+    },
+    {
+      "pair": "DVL-DEN",
+      "source": "https://www.directflights.com/DVL-DEN",
+      "timeWindow": "November 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Daily in both directions even on Thanksgiving; variable flight frequency"
+    },
+    {
+      "pair": "DEC-ORD",
+      "source": "https://www.directflights.com/DEC-ORD",
+      "timeWindow": "November 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Daily in both directions even on Thanksgiving; variable flight frequency"
     }
   ]
 }
