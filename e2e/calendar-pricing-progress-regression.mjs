@@ -582,3 +582,11 @@ assert.equal(repeatedLegFares.size,2,'Both itinerary legs sharing the same fare 
 assert.deepEqual([...repeatedLegFares.keys()].sort(),[1,4],'Repeated route/date pricing is attached to the correct leg indexes');
 assert.equal(repeatedRequests,0,'Cached fare is not refetched for repeated legs');
 console.log('PASS: Multi-stop open-jaw trips retain per-leg fare accounting for duplicate route-date keys');
+
+const contradictory=optionCtx.providerOptions({offers:[
+  {...offerBase,departureTime:'2026-12-08T21:30:00',arrivalTime:'2026-12-08T20:45:00',durationMinutes:95,amount:80},
+  {...offerBase,amount:225}
+]},'ELD','DFW','2026-12-08');
+assert.equal(contradictory.length,1,'Earlier same-day arrival is rejected despite misleading positive provider duration');
+assert.equal(contradictory[0].price,225,'Correctly timed fare remains available');
+console.log('PASS: Contradictory same-day arrival timestamps cannot create impossible connecting flights');
