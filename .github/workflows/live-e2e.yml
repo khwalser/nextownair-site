@@ -23,6 +23,7 @@ on:
       - "e2e/fare-null-normalization-regression.mjs"
       - "e2e/flight-request-timeout-regression.mjs"
       - "e2e/flight-input-validation-regression.mjs"
+      - "e2e/live-flight-validation.mjs"
       - "e2e/schedule-full-day-regression.mjs"
       - "docs/data-architecture.md"
       - ".github/workflows/live-e2e.yml"
@@ -140,6 +141,9 @@ jobs:
           done
           echo "Production asset mismatch: refusing to test a stale deployment."
           exit 1
+
+      - name: Verify deployed fare API input validation
+        run: node e2e/live-flight-validation.mjs
 
       - name: Install Playwright package
         env:
