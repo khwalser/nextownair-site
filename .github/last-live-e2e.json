@@ -1,0 +1,19 @@
+{
+  "testedCommit": "8dd6cc94c192e7b8f892f747619ae50a185248a6",
+  "runId": "44928388577",
+  "runUrl": "https://github.com/khwalser/nextownair-site/actions/runs/44928388577",
+  "result": "fail",
+  "steps": {
+    "phase4": "failure",
+    "calendar": "skipped",
+    "pricing": "skipped",
+    "network": "skipped",
+    "schedule": "skipped",
+    "coverage": "skipped",
+    "deployed": "skipped",
+    "assets": "skipped",
+    "multi": "skipped",
+    "browser": "skipped"
+  },
+  "checkedAt": "2026-11-21T17:08:38.655Z"
+}
