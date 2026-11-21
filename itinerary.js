@@ -1330,7 +1330,13 @@
     if(!opts.length){
       const stillChecking=!fareData;
       if(i===0){
-        box.innerHTML=`<div class="${stillChecking?'pending-flights':'no-flights'}">${stillChecking?'Checking published service and live offers for this date.':'No selectable offer was returned for this date; this does not prove the flight does not operate.'} <button type="button" class="btn tertiary" data-open-departure-calendar>Explore other departure dates</button></div>`;
+        const next=nextConfirmedFlightDate(a,b,departDate);
+        box.innerHTML=`<div class="${stillChecking?'pending-flights':'no-flights'}">${stillChecking?'Checking published service and live offers for this date.':'No selectable offer was returned for this date; this does not prove the flight does not operate.'} ${next?`<button type="button" class="btn tertiary" data-first-next-date>Try confirmed flight date ${window.NTA.fmtDate(next,{weekday:'short',month:'short',day:'numeric'})}</button>`:''} <button type="button" class="btn tertiary" data-open-departure-calendar>Explore other departure dates</button></div>`;
+        const nextButton=box.querySelector('[data-first-next-date]');
+        if(nextButton)nextButton.addEventListener('click',()=>{
+          state.startDate=next;state.selections={};save();
+          calendarMonthDate=monthStart(next);render();
+        });
         box.querySelector('[data-open-departure-calendar]').addEventListener('click',()=>{
           showStartCalendar(false);
           el.startDateCalendar.scrollIntoView({behavior:'smooth',block:'start'});
