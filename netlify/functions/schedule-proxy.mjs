@@ -41,7 +41,17 @@ function normalizeFlight(flight,destination){
 
 const API_BASE="https://prod.api.market/api/v1/aedbx/aerodatabox";
 const MIN_START_GAP_MS=1250;
+const UPSTREAM_TIMEOUT_MS=8000;
+const MAX_INLINE_RETRY_MS=5000;
 let lastStartAt=0;
+
+function scheduleRetryDelayMs(header){
+  const raw=String(header||"").trim();
+  if(!raw)return 1500;
+  if(/^\\d+(?:\\.\\d+)?$/.test(raw))return Math.max(0,Number(raw)*1000);
+  const until=Date.parse(raw);
+  return Number.isFinite(until)?Math.max(0,until-Date.now()):1500;
+}
 
 async function rateLimitedFetch(url,apiKey){
   let lastResponse=null;
@@ -49,11 +59,17 @@ async function rateLimitedFetch(url,apiKey){
     const wait=Math.max(0,lastStartAt+MIN_START_GAP_MS-Date.now());
     if(wait)await sleep(wait);
     lastStartAt=Date.now();
-    const res=await fetch(url,{headers:{Accept:"application/json","x-api-market-key":apiKey}});
+    // One upstream hang must not stall the entire monthly calendar.
+    const res=await fetch(url,{
+      headers:{Accept:"application/json","x-api-market-key":apiKey},
+      signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
+    });
     lastResponse=res;
     if(res.status!==429)return res;
-    const retryAfter=Number.parseFloat(res.headers.get("retry-after")||"1");
-    const backoff=Math.max(MIN_START_GAP_MS,Number.isFinite(retryAfter)?Math.ceil(retryAfter*1000)+250:1500);
+    const backoff=Math.max(MIN_START_GAP_MS,Math.ceil(scheduleRetryDelayMs(res.headers.get("retry-after"))+250));
+    // An exhausted quota or very long Retry-After is a provider limitation,
+    // not a reason to hold the user interface for minutes or hours.
+    if(attempt===2||backoff>MAX_INLINE_RETRY_MS)return res;
     await sleep(backoff);
   }
   return lastResponse;
