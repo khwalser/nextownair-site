@@ -39,6 +39,7 @@
   const scheduleMonthCache=new Map();
   const scheduleMonthData=new Map();
   const calendarFareJobs=new Set();
+  const manualFareCheckedDates=new Set();
   const fareQueue=[];
   const fareActiveKeys=new Set();
   const fareNoOfferCounts=new Map();
@@ -337,10 +338,11 @@
     if(!button)return;
     const remaining=dates.filter(date=>{
       const key=fareKey(a,b,date);
-      return !liveFareData.has(key)&&!calendarFareJobs.has(key);
+      const data=liveFareData.get(key);
+      return !calendarFareJobs.has(key)&&(!data||(fareCoverageBlockedLegs.has(fareLegKey(a,b))&&data.coverageLimited&&!manualFareCheckedDates.has(key)));
     });
     const pending=dates.filter(date=>calendarFareJobs.has(fareKey(a,b,date))).length;
-    button.hidden=!remaining.length||fareCoverageBlockedLegs.has(fareLegKey(a,b));
+    button.hidden=!remaining.length;
     button.disabled=pending>0;
     const batchLimit=isKnownFareCoverageGap(a,b)?2:5;
     button.textContent=pending>0
@@ -357,6 +359,8 @@
     if(moreButton)moreButton.hidden=true;
     if(fareCoverageBlockedLegs.has(fareLegKey(leg.a,leg.b))){
       const pattern=publishedServicePattern(leg.a,leg.b);
+      const dates=scheduledCalendarDates(leg.a,leg.b,month);
+      if(dates.length)calendarMoreFareControl(leg.a,leg.b,month,dates,0);
       el.calendarStatus.textContent=pattern
         ?`${pattern.label} is published for ${leg.a} → ${leg.b}. The fare provider has limited coverage on this route; select a date to request another live fare check.`
         :`Choose a departure date. Live fare pricing is not available in-app for this route; use “Check current fares” on the flight leg after selecting a date.`;
@@ -398,8 +402,8 @@
       ?`Published flights confirmed on ${dates.length} dates. Checking live prices: ${checked} of ${dates.length} checked, ${priced} priced, ${queued} queued or in progress. Selected and nearby dates go first.`
       :`${checked} of ${dates.length} published-service dates checked for live prices; ${priced} returned a valid fare. ${Math.max(0,dates.length-checked)} remain unchecked. A missing fare does not mean a flight is unavailable. Select an unchecked date to request its price.`;
   }
-  function queueCalendarFarePricing(a,b,dates,token,limit=AUTO_PRICE_WINDOW){
-    if(fareCoverageBlockedLegs.has(fareLegKey(a,b))){
+  function queueCalendarFarePricing(a,b,dates,token,limit=AUTO_PRICE_WINDOW,manual=false){
+    if(fareCoverageBlockedLegs.has(fareLegKey(a,b))&&!manual){
       updateCalendarFareStatus();
       return;
     }
@@ -419,9 +423,11 @@
     ordered.forEach(date=>{
       if(!['yes','fallback'].includes(scheduleState(a,b,date).status))return;
       const key=fareKey(a,b,date);
-      if(liveFareData.has(key)||calendarFareJobs.has(key))return;
+      const existing=liveFareData.get(key);
+      if(calendarFareJobs.has(key)||(existing&&!(manual&&existing.coverageLimited&&!manualFareCheckedDates.has(key))))return;
       calendarFareJobs.add(key);
-      const promise=fetchFare(a,b,date,false);
+      if(manual)manualFareCheckedDates.add(key);
+      const promise=manual?prioritizeFareCheck(a,b,date,{forceIfUnpriced:true}):fetchFare(a,b,date,false);
       updateCalendarCell(date);
       const refreshVisibleCalendar=()=>{
         const visible=firstLeg();
@@ -455,10 +461,11 @@
       :scheduledCalendarDates(leg.a,leg.b,month);
     const remaining=dates.filter(date=>{
       const key=fareKey(leg.a,leg.b,date);
-      return !liveFareData.has(key)&&!calendarFareJobs.has(key);
+      const data=liveFareData.get(key);
+      return !calendarFareJobs.has(key)&&(!data||(fareCoverageBlockedLegs.has(fareLegKey(leg.a,leg.b))&&data.coverageLimited&&!manualFareCheckedDates.has(key)));
     });
     if(!remaining.length)return;
-    queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,Math.min(isKnownFareCoverageGap(leg.a,leg.b)?2:5,remaining.length));
+    queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,Math.min(isKnownFareCoverageGap(leg.a,leg.b)?2:5,remaining.length),true);
     updateCalendarFareStatus();
   });
   function updateCalendarCell(date){
