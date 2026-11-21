@@ -267,5 +267,7 @@ assert.equal(mapped.length,3,'Malformed null offer row does not crash option map
 assert.equal(mapped[0].price,null,'Missing amount is not converted to free airfare');
 assert.equal(mapped[1].price,null,'Nonnumeric amount is not converted to a valid flight fare');
 assert.equal(mapped[2].price,213,'Valid provider amount remains usable');
+assert.equal(optionCtx.providerOptions(null,'ELD','DFW','2026-12-08').length,0,'Absent next-day provider data produces an empty array, not a null crash');
+assert.equal(optionCtx.providerOptions({offers:null},'ELD','DFW','2026-12-08').length,0,'Null offers list safely yields zero flight options');
 assert(source.includes('previousChosen.price!=null')&&source.includes('o.price!=null')&&source.includes('x.amount!=null'),'Flight cards, selection and subtotal consistently exclude missing price amounts');
 console.log('PASS: Null provider rows and missing amounts never become $0 flight selections or fare totals');
