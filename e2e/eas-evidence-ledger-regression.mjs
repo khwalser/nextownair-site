@@ -38,4 +38,20 @@ for(const p of [capeOut,capeBack]){
 }
 assert(!ledger.missing.some(x=>x.pair==='LEB-HPN'),'Verified timetable no longer incorrectly listed as a coverage gap');
 
+// The newly sourced MSP spoke patterns have a documented operating-day window.
+// They must not imply year-round service based on a single observed week.
+for(const [community,airline] of [['ABR','Delta Air Lines'],['BJI','Delta Air Lines'],['BRD','Delta Air Lines'],['RHI','Delta Air Lines'],['INL','Delta Air Lines'],['TVF','Denver Air Connection']]){
+  const pair=[community,'MSP'].sort().join('-');
+  assert(!ledger.missing.some(e=>e.pair===pair),'Documented pair '+pair+' is no longer in unverified register');
+  for(const [from,to] of [[community,'MSP'],['MSP',community]]){
+    const pattern=D.servicePatterns[from+'|'+to];
+    assert(pattern,'Missing direction '+from+' → '+to);
+    assert.equal(pattern.activeFrom,'2026-11-23');
+    assert.equal(pattern.verifiedWeekEnd,'2026-11-29');
+    assert.equal(pattern.airline,airline);
+    assert.deepEqual([...pattern.days],[0,1,2,3,4,5,6]);
+    assert(/^https:\/\//.test(pattern.sourceUrl),'Source link required for each direction');
+    assert.equal(pattern.activeThrough,community==='TVF'?(from==='TVF'?'2027-01-21':'2027-01-30'):'2026-11-29','Do not extrapolate dates beyond sourced period');
+  }
+}
 console.log('PASS: '+ledger.missing.length+' EAS operating-day evidence gaps individually tracked; no fabricated schedule dates');
