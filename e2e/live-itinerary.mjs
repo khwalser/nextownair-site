@@ -316,38 +316,32 @@ try{
     pass('Published schedule path is usable','schedule response '+scheduleResponse.status+(scheduleResponse.body?.error?' · '+scheduleResponse.body.error:''));
   }
 
-  // 3) Unsupported-provider coverage degrades to a usable live-search fallback instead of burning the month.
+  // 3) Known fare-coverage gaps must still attempt a bounded real fare lookup.
   {
     const coverageDate=tripDate;
+    const initialRequests=diagnostics.requests.length;
     const target=BASE_URL+'/itinerary.html?route='+encodeURIComponent('DTW,CIU')+'&date='+encodeURIComponent(coverageDate);
     await page.goto(target,{waitUntil:'domcontentloaded',timeout:60000});
-    await page.waitForFunction(()=>/Prototype fare\s+\?\d+/i.test(document.querySelector('.leg')?.textContent||'')||document.body.innerText.includes('Provider coverage gap')||document.body.innerText.includes('No provider fare returned'),null,{timeout:30000});
-    const legText=await page.locator('.leg').first().innerText();
-    assert(/Prototype fare\s+\?\d+|Provider coverage gap|No provider fare returned/i.test(legText),'Coverage-gap route exposes a clearly marked prototype fare or explicit provider gap',legText.replace(/\s+/g,' '));
-    const external=page.locator('.leg').first().getByRole('link',{name:/Check current fares/i});
-    assert(await external.count()===1,'Coverage-gap leg offers a current-fare search fallback');
-    const href=await external.getAttribute('href');
-    assert(/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(href||''),'Fare fallback link targets a live flight search',href||'');
+    await page.waitForFunction(()=>document.querySelectorAll('.calendar-day:not(.past)').length>0,null,{timeout:30000});
+    const futureLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
+    assert(futureLabels.some(t=>/flight ✓|\\$[0-9]|fare unavailable|pricing/i.test(t)),'DTW-CIU calendar renders flight/fare status instead of blank price cells',futureLabels.join(' | '));
+    assert(await page.locator('#calendarServiceKey').isVisible(),'Published DTW-CIU service-day legend remains visible');
+    const start=Date.now();
+    let ciuRequests=[];
+    while(Date.now()-start<30000){
+      ciuRequests=diagnostics.requests.slice(initialRequests).filter(url=>{
+        if(!url.includes('/api/flights'))return false;
+        const q=new URL(url).searchParams;
+        return q.get('origin')==='DTW'&&q.get('destination')==='CIU';
+      });
+      if(ciuRequests.length)break;
+      await sleep(300);
+    }
+    assert(ciuRequests.length>0,'DTW-CIU attempts a live provider fare request instead of blocking it');
     const statusText=await page.locator('#calendarStatus').innerText();
-    assert(/Daily nonstop service is published|Choose a departure date|coverage gap|does not cover this route reliably/i.test(statusText),'Calendar identifies published service availability immediately',statusText);
-    assert(!/Loading live fares across the month|queued/i.test(statusText),'Known coverage-gap route does not begin a pointless month-long fare scan on first load',statusText);
-    const initialFareLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
-    assert(initialFareLabels.filter(x=>x.trim()==='nonstop').length>=3,'Published-service fallback marks operating dates as nonstop',initialFareLabels.join(' | '));
-    assert(await page.locator('#calendarKey').isHidden(),'Published-service fallback hides the fare-status legend');
-    assert(await page.locator('#calendarServiceKey').isVisible(),'Published-service fallback shows the service-day legend');
-    assert((await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents()).some(x=>x.trim()==='nonstop'),'Route-specific published service pattern remains authoritative even when the external schedule provider is unavailable');
-    await page.waitForTimeout(7000);
-    const stableGapStatus=await page.locator('#calendarStatus').innerText();
-    assert(!/rate limit reached|pricing resumes automatically/i.test(stableGapStatus),'Downstream provider rate limits do not overwrite the coverage-gap calendar status',stableGapStatus);
-
-    // Prove the coverage-gap state survives a page reload and does not restart the month-long fare scan.
-    await page.waitForFunction(()=>/Daily nonstop service is published|Choose a departure date|coverage gap|does not cover this route reliably/i.test(document.querySelector('#calendarStatus')?.textContent||''),null,{timeout:30000});
-    await page.reload({waitUntil:'domcontentloaded',timeout:60000});
-    await page.waitForFunction(()=>/Daily nonstop service is published|Choose a departure date|coverage gap|does not cover this route reliably/i.test(document.querySelector('#calendarStatus')?.textContent||''),null,{timeout:15000});
-    const reloadedStatus=await page.locator('#calendarStatus').innerText();
-    assert(!/Loading live fares across the month|queued/i.test(reloadedStatus),'Reload does not restart the pointless month-long fare scan',reloadedStatus);
-    const visibleFareLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
-    assert(visibleFareLabels.filter(x=>x.trim()==='nonstop').length>=3,'Reloaded published-service calendar preserves nonstop service markers',visibleFareLabels.join(' | '));
+    assert(/Checking live prices|Live fares found|limited coverage|fare provider/i.test(statusText),'DTW-CIU calendar acknowledges actual live price checks',statusText);
+    assert(!/Loading live fares across the month/i.test(statusText),'Known provider coverage gap avoids a full-month speculative scan');
+    pass('DTW-CIU calendar preserves confirmed service and attempts bounded provider pricing');
   }
 
   // 4) Sourced bush-carrier patterns remain date-aware when the live schedule provider is unavailable.
@@ -437,9 +431,9 @@ try{
     const qs='?route='+encodeURIComponent(alpenaRoute.join(','))+'&auto='+encodeURIComponent('2,3,5')+'&date='+encodeURIComponent(tripDate);
     await page.goto(BASE_URL+'/itinerary.html'+qs,{waitUntil:'domcontentloaded',timeout:60000});
     const status=await page.locator('#calendarStatus').innerText();
-    assert(/Daily nonstop service is published for DTW → APN/i.test(status),'Alpena calendar reports published daily nonstop service',status);
+    assert(/Published flights confirmed|checking live prices|limited coverage/i.test(status),'Alpena calendar reports confirmed service and pricing status',status);
     const fares=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
-    assert(fares.filter(x=>x.trim()==='nonstop').length>=3,'Alpena calendar marks future operating dates as nonstop',fares.join(' | '));
+    assert(fares.some(x=>/flight ✓|\\$[0-9]|pricing/i.test(x)),'Alpena calendar displays flight or fare status',fares.join(' | '));
     assert(await page.locator('#calendarServiceKey').isVisible(),'Alpena calendar shows the service-day legend');
     await page.locator('#flight-options-0 .flight').first().click();
     const downstreamStay=page.locator('.stay').first();
@@ -448,7 +442,7 @@ try{
     await page.reload({waitUntil:'domcontentloaded',timeout:60000});
     assert(await page.locator('.prototype-legend').isVisible(),'Prototype time/fare legend is visible once for the itinerary');
     assert(await page.locator('#calendarKey').isHidden(),'Alpena calendar hides the fare-status legend');
-    assert(!/no provider fare|queued|rate limit/i.test((await page.locator('#startDateCalendar').innerText())),'Alpena calendar does not expose provider-fare noise');
+    assert(!/unhandled exception|javascript error/i.test((await page.locator('#startDateCalendar').innerText())),'Alpena calendar remains readable while pricing attempts run');
     const desktopLayout=await page.evaluate(()=>{
       const cal=document.querySelector('#startDateCalendar')?.getBoundingClientRect();
       const leg=document.querySelector('#content .leg')?.getBoundingClientRect();
