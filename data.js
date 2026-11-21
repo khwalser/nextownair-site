@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-21.31",
+  "mvpRevision": "2026-11-21.32",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-21",
@@ -5764,6 +5764,46 @@ window.NTA_DATA = {
       "label": "Daily service, six round trips per day",
       "sourceLabel": "Cape Air essential travel — Lebanon to Boston",
       "sourceUrl": "https://flights.capeair.com/en/essential-travel-lebanon"
+    },
+    "LEB|HPN": {
+      "activeFrom": "2026-11-21",
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Cape Air",
+      "label": "Published daily nonstop service within cited November–December 2026 timetable; exact times and fares require date-specific provider confirmation",
+      "sourceLabel": "Lebanon Airport daily Cape Air service; November–December LEB–HPN published timetable",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/LEB/HPN",
+      "authorityUrl": "https://lebanonnh.gov/158/Book-Your-Flight",
+      "checkedAsOf": "2026-11-21"
+    },
+    "HPN|LEB": {
+      "activeFrom": "2026-11-21",
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Cape Air",
+      "label": "Published daily nonstop service within cited November–December 2026 timetable; exact times and fares require date-specific provider confirmation",
+      "sourceLabel": "Lebanon Airport daily Cape Air service; November–December HPN–LEB published timetable",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/HPN/LEB",
+      "authorityUrl": "https://lebanonnh.gov/158/Book-Your-Flight",
+      "checkedAsOf": "2026-11-21"
     }
   }
 };
