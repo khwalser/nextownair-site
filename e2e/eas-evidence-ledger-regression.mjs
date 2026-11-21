@@ -28,4 +28,14 @@ for(const entry of ledger.missing){
   assert(/^https:\/\//.test(entry.contractSource),'Each route references a dated public EAS report');
 }
 assert.equal(seen.size,expected.size);
+const capeOut=D.servicePatterns['LEB|HPN'],capeBack=D.servicePatterns['HPN|LEB'];
+assert(capeOut&&capeBack,'Both Lebanon–Westchester directions have documented operating-day patterns');
+for(const p of [capeOut,capeBack]){
+  assert.deepEqual([...p.days].sort((a,b)=>a-b),[0,1,2,3,4,5,6],'Only explicitly sourced daily operating days are used');
+  assert.equal(p.activeFrom,'2026-11-21');
+  assert.equal(p.activeThrough,'2026-12-31','Published-day fallback does not continue indefinitely');
+  assert(/^https:\/\//.test(p.sourceUrl),'Daily schedule needs direct source');
+}
+assert(!ledger.missing.some(x=>x.pair==='LEB-HPN'),'Verified timetable no longer incorrectly listed as a coverage gap');
+
 console.log('PASS: '+ledger.missing.length+' EAS operating-day evidence gaps individually tracked; no fabricated schedule dates');
