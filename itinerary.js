@@ -1528,7 +1528,8 @@
   // Keep it in this tab only: checking a box is a personal reminder, not a booking.
   const bookedInSession=new Set();
   function bookingProgressKey(flight){
-    return [flight.from,flight.to,flight.departDate,flight.flightNo,flight.carrier].join('|');
+    // Distinguish separate departures, including repeated route/date legs.
+    return [flight.from,flight.to,flight.departDate,flight.departTime,flight.arrivalDate,flight.arrivalTime,flight.flightNo,flight.carrier].join('|');
   }
   function restoreBookingChecks(){
     document.querySelectorAll('.booking-check-input[data-booking-key]').forEach(input=>{
