@@ -590,3 +590,14 @@ const contradictory=optionCtx.providerOptions({offers:[
 assert.equal(contradictory.length,1,'Earlier same-day arrival is rejected despite misleading positive provider duration');
 assert.equal(contradictory[0].price,225,'Correctly timed fare remains available');
 console.log('PASS: Contradictory same-day arrival timestamps cannot create impossible connecting flights');
+
+const bookingKeyStart=source.indexOf('  function bookingProgressKey(');
+const bookingKeyEnd=source.indexOf('  function restoreBookingChecks(',bookingKeyStart);
+assert(bookingKeyStart>=0&&bookingKeyEnd>bookingKeyStart,'Booking checkbox identity function exists');
+const bookingCtx={};vm.createContext(bookingCtx);
+vm.runInContext(source.slice(bookingKeyStart,bookingKeyEnd)+'\nthis.bookingProgressKey=bookingProgressKey;',bookingCtx);
+const bookingA={from:'DFW',to:'HOT',departDate:'2026-12-13',arrivalDate:'2026-12-13',departTime:'8:00 AM',arrivalTime:'9:15 AM',flightNo:'XY77',carrier:'Test Airline'};
+const bookingB={...bookingA,departTime:'4:00 PM',arrivalTime:'5:15 PM'};
+assert.notEqual(bookingCtx.bookingProgressKey(bookingA),bookingCtx.bookingProgressKey(bookingB),'Distinct departures sharing flight number and travel date have independent booking checklist state');
+assert.equal(bookingCtx.bookingProgressKey(bookingA),bookingCtx.bookingProgressKey({...bookingA}),'Same selected flight retains stable booking checklist identity');
+console.log('PASS: Duplicate flight numbers on repeated open-jaw legs no longer share booking checkbox progress');
