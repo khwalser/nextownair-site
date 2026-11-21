@@ -154,3 +154,28 @@ assert(connectorRollover.includes('nextConfirmedFlightDate(a,b,departDate,14)'),
 assert(connectorRollover.includes('if(nextDate){'),'Missing confirmed future service never generates an invented departure date');
 assert(connectorRollover.includes("opts.length===0&&knownRoute&&autoConnector&&plan.mode==='asap'"),'Automatic connector recovery also handles dates with no initial options');
 console.log('PASS: Automatic connectors advance only to a confirmed operating date within two weeks');
+
+const fareStart=source.indexOf('  function updateLiveTripFare(');
+const fareEnd=source.indexOf('  async function hydrateLivePricing(',fareStart);
+assert(fareStart>=0&&fareEnd>fareStart,'Fare total renderer exists');
+const fareNode={innerHTML:''};
+const fareCtx={
+  document:{getElementById:id=>id==='liveTripFare'?fareNode:null},
+  state:{route:['WFB','KTN','JNU','KTN']},
+  isTransferLeg:(a,b)=>a==='WFB'&&b==='KTN',
+  selectedFareByLeg:new Map([[1,{amount:160,currency:'USD',fareStatus:'verified'}],[2,{amount:180,currency:'USD',fareStatus:'verified'}]]),
+  liveFareByLeg:new Map(),
+  prototypeFareText:amount=>'?'+amount,
+  formatMoney:amount=>'$'+amount,
+  lowestOffer:d=>d?.offers?.[0]||null
+};
+vm.createContext(fareCtx);
+vm.runInContext(source.slice(fareStart,fareEnd)+'\nthis.updateLiveTripFare=updateLiveTripFare;',fareCtx);
+fareCtx.updateLiveTripFare();
+assert.match(fareNode.innerHTML,/Itinerary fare total \$340/,'Completed mixed-mode trip displays full flight fare total');
+assert.match(fareNode.innerHTML,/2 of 2 selected fares/,'Ground transfer is excluded from airfare denominator');
+fareCtx.selectedFareByLeg.delete(2);
+fareCtx.updateLiveTripFare();
+assert.match(fareNode.innerHTML,/Selected fare subtotal \$160/,'Mixed-mode trip missing one flight shows partial subtotal');
+assert.match(fareNode.innerHTML,/1 of 2 selected fare/,'Subtotal counts only flight legs');
+console.log('PASS: Mixed-mode itineraries exclude ferry transfers from airfare totals and completion counts');
