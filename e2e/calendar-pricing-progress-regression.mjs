@@ -320,3 +320,23 @@ console.log('PASS: Returned fare prices are ranked only when currencies are comp
 assert(source.includes('data-external-first-fares href="${externalFareSearchUrl(a,b,departDate)}"'),'An unpriced first flight includes an external search for its exact date');
 assert(source.includes('data-external-onward-fares href="${externalFareSearchUrl(a,b,departDate)}"'),'Missing onward flight includes a dated airline-fare search');
 console.log('PASS: Unavailable first and onward legs offer dated external fare-search recovery');
+
+const dataSource=fs.readFileSync(new URL('../data.js',import.meta.url),'utf8');
+const patternCtx={window:{},parseYmd:value=>{const p=/^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value);return p?{y:Number(p[1]),m:Number(p[2]),d:Number(p[3])}:null;}};
+vm.createContext(patternCtx);vm.runInContext(dataSource,patternCtx);
+patternCtx.D=patternCtx.window.NTA_DATA;
+patternCtx.fareLegKey=(a,b)=>a+'|'+b;
+const patternStart=source.indexOf('  function publishedServicePattern(');
+const patternEnd=source.indexOf('  function patternDeparturesForDate(',patternStart);
+assert(patternStart>=0&&patternEnd>patternStart,'Published route schedule resolver exists');
+vm.runInContext(source.slice(patternStart,patternEnd)+'\nthis.publishedServicePattern=publishedServicePattern;this.patternAppliesOnDate=patternAppliesOnDate;',patternCtx);
+for(const route of ['ELD|DFW','DFW|ELD','GRI|DFW','DFW|GRI']){
+  const [origin,destination]=route.split('|');
+  const pattern=patternCtx.publishedServicePattern(origin,destination);
+  assert(pattern&&pattern.sourceUrl&&pattern.checkedAsOf==='2026-11-21','Verified airport or carrier source accompanies '+route);
+  assert(patternCtx.patternAppliesOnDate(pattern,'2026-12-08'),'Published December schedule supports '+route);
+  assert(!patternCtx.patternAppliesOnDate(pattern,'2027-01-05'),'Sourced 2026 schedule does not claim unverified 2027 service on '+route);
+  assert.equal(pattern.count,1,'At least one published daily service is supported for '+route);
+}
+assert(source.includes("'ELD|DFW','DFW|ELD','GRI|DFW','DFW|GRI'"),'Sourced EAS routes retain a two-date automatic fare request cap');
+console.log('PASS: El Dorado and Grand Island first legs have bounded, source-attributed daily schedule evidence');
