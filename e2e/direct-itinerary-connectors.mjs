@@ -36,6 +36,26 @@ try{
   assert.equal((await page.locator('#content .leg').count()),state.route.length-1,'Rendered itinerary reflects repaired route');
   assert.deepEqual(errors,[],'No uncaught browser errors');
   console.log('PASS: Direct itinerary URL inserts verified connector and preserves traveler intent');
+  // MRI and ANC are separate airports: the connection must render as a
+  // ground transfer and never become a fabricated scheduled flight.
+  const transferPage=await context.newPage();
+  const transferErrors=[];
+  transferPage.on('pageerror',error=>transferErrors.push(String(error)));
+  await transferPage.goto(base+'/itinerary.html?route=MCG%2CMRI%2CANC&date='+date,{waitUntil:'domcontentloaded',timeout:60000});
+  await transferPage.waitForFunction(()=>window.NTA&&window.NTA.load().route.join(',')==='MCG,MRI,ANC',null,{timeout:15000});
+  const transferEvidence=await transferPage.evaluate(()=>{
+    const N=window.NTA,s=N.load();
+    const edge=N.getTransferLink('MRI','ANC');
+    return {route:s.route,transfer:edge,hasFlight:N.hasFlightLink('MRI','ANC'),
+      hasTravelLink:N.hasTravelLink('MRI','ANC'),
+      content:document.getElementById('content')?.textContent||''};
+  });
+  assert.equal(transferEvidence.hasTravelLink,true,'Merrill Field has modeled road access to ANC');
+  assert.equal(transferEvidence.hasFlight,false,'MRI–ANC is never counted as a flight');
+  assert.equal(transferEvidence.transfer?.mode,'ground','Airport-to-airport transfer retains ground mode');
+  assert.match(transferEvidence.content,/transfer/i,'Itinerary visibly distinguishes airport transfer from flight');
+  assert.deepEqual(transferErrors,[],'MRI–ANC transfer itinerary has no uncaught errors');
+  console.log('PASS: Merrill Field to Anchorage International renders as a ground transfer, not an invented flight');
   await context.close();
 }finally{
   await browser.close();
