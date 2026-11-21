@@ -906,7 +906,9 @@
   }
   function fetchFare(a,b,date,priority=false){
     const key=fareKey(a,b,date);
-    if(fareCoverageBlockedLegs.has(fareLegKey(a,b))){
+    // A few empty provider dates limit automated scanning, but must not
+    // prevent a traveler's explicit date selection from trying a real fare.
+    if(fareCoverageBlockedLegs.has(fareLegKey(a,b))&&!priority){
       const data=coverageFallbackData(a,b,date);
       liveFareData.set(key,data);
       const p=Promise.resolve(data);liveFareCache.set(key,p);return p;
