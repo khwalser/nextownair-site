@@ -30,7 +30,7 @@ function httpsRequestJson(options, body = null) {
 
 function validCode(v){return /^[A-Z]{3}$/.test(v);}
 function validDate(v){
-  const m=/^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(v);
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
   if(!m)return false;
   const year=Number(m[1]),month=Number(m[2]),day=Number(m[3]);
   return month>=1&&month<=12&&day>=1&&day<=new Date(Date.UTC(year,month,0)).getUTCDate();
