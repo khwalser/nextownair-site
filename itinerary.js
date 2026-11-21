@@ -793,7 +793,8 @@
   function coverageFallbackData(a,b,date){return {provider:'external-search',liveMode:false,checkedAt:new Date().toISOString(),origin:a,destination:b,departureDate:date,offers:[],coverageLimited:true,externalSearchUrl:externalFareSearchUrl(a,b,date)};}
   function lowestOffer(data){
     const offers=(data&&Array.isArray(data.offers))?data.offers:[];
-    return offers.reduce((best,o)=>!best||Number(o.amount)<Number(best.amount)?o:best,null);
+    const priced=offers.filter(o=>o&&o.amount!==null&&o.amount!==undefined&&o.amount!==''&&Number.isFinite(Number(o.amount))&&Number(o.amount)>=0);
+    return priced.reduce((best,o)=>!best||Number(o.amount)<Number(best.amount)?o:best,null);
   }
   function formatMoney(amount,currency){
     try{return new Intl.NumberFormat(undefined,{style:'currency',currency:currency||'USD',maximumFractionDigits:0}).format(amount);}
@@ -975,6 +976,10 @@
       return;
     }
     const cheapest=live.map(lowestOffer).filter(Boolean);
+    if(!cheapest.length){
+      node.innerHTML='<strong>No verified fares yet</strong><span>Provider responses did not include usable prices. This is not a free flight.</span>';
+      return;
+    }
     const currency=cheapest[0]&&cheapest[0].currency||'USD';
     const same=cheapest.every(x=>(x.currency||'USD')===currency);
     const total=same?formatMoney(cheapest.reduce((sum,x)=>sum+Number(x.amount||0),0),currency):'Multiple currencies';
