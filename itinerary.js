@@ -941,7 +941,8 @@
   }
   function updateLiveTripFare(){
     const node=document.getElementById('liveTripFare');if(!node)return;
-    const legs=Math.max(0,state.route.length-1);
+    // A ferry or ground transfer is a route segment, not a flight fare.
+    const legs=state.route.slice(0,-1).reduce((count,a,i)=>count+(isTransferLeg(a,state.route[i+1])?0:1),0);
     const selected=[...selectedFareByLeg.values()].filter(x=>x&&Number.isFinite(Number(x.amount)));
     if(selected.length){
       const currency=selected[0].currency||'USD';
