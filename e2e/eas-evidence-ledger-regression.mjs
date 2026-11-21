@@ -109,4 +109,15 @@ for(const [community,hub] of [['DVL','DEN'],['DEC','ORD']]){
     assert(p.sourceUrl.endsWith(from+'-'+to));
   }
 }
+for(const [community,hub] of [['HYS','DEN'],['GCK','DFW']]){
+  assert(!ledger.missing.some(e=>e.pair===community+'-'+hub),'Audited daily nonstop removed from the open evidence register');
+  for(const [from,to] of [[community,hub],[hub,community]]){
+    const p=D.servicePatterns[from+'|'+to];
+    assert(p,'Published holiday week covers route in both directions: '+from+' to '+to);
+    assert.deepEqual([...p.days],[0,1,2,3,4,5,6]);
+    assert.equal(p.activeFrom,'2026-11-23');
+    assert.equal(p.activeThrough,'2026-11-29','No unsupported dates beyond sourced week');
+    assert(p.sourceUrl.endsWith(from+'-'+to));
+  }
+}
 console.log('PASS: '+ledger.missing.length+' EAS operating-day evidence gaps individually tracked; no fabricated schedule dates');
