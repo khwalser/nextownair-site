@@ -322,7 +322,7 @@ assert(source.includes('data-external-onward-fares href="${externalFareSearchUrl
 console.log('PASS: Unavailable first and onward legs offer dated external fare-search recovery');
 
 const dataSource=fs.readFileSync(new URL('../data.js',import.meta.url),'utf8');
-const patternCtx={window:{},parseYmd:value=>{const p=/^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(value);return p?{y:Number(p[1]),m:Number(p[2]),d:Number(p[3])}:null;}};
+const patternCtx={window:{},parseYmd:value=>{const p=/^(\d{4})-(\d{2})-(\d{2})$/.exec(value);return p?{y:Number(p[1]),m:Number(p[2]),d:Number(p[3])}:null;}};
 vm.createContext(patternCtx);vm.runInContext(dataSource,patternCtx);
 patternCtx.D=patternCtx.window.NTA_DATA;
 patternCtx.fareLegKey=(a,b)=>a+'|'+b;
