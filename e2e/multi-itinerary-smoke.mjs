@@ -120,7 +120,7 @@ try{
         }
         row.completedFlightLegs=await page.evaluate(()=>Object.keys(window.NTA.load().selections||{}).length);
         row.complete=row.completedFlightLegs===row.totalFlightLegs;
-        console.log('INFO: '+tc.name+' — '+row.completedFlightLegs+'/'+row.totalFlightLegs+' flight legs selected');
+        check(row.complete,'Round trip reaches fully selected state',row.completedFlightLegs+'/'+row.totalFlightLegs+' flight legs selected');
         if(row.complete){
           await page.reload({waitUntil:'domcontentloaded',timeout:60000});
           const persistedCount=await page.evaluate(()=>Object.keys(window.NTA.load().selections||{}).length);
@@ -143,5 +143,6 @@ try{
   await browser.close();
   fs.writeFileSync(out+'/multi-itinerary-results.json',JSON.stringify({base,cases:evidence},null,2));
 }
-console.log('SUMMARY: '+evidence.filter(r=>r.ok).length+'/'+evidence.length+' itinerary cases passed');
+console.log('SUMMARY: '+evidence.filter(r=>r.ok).length+'/'+evidence.length+' itinerary cases passed; '+evidence.filter(r=>r.complete).length+' completed round trips');
+console.log('COVERAGE: '+evidence.map(r=>r.name+': '+(r.completedFlightLegs||0)+'/'+(r.totalFlightLegs||r.route.split(' → ').length-1)+' selected').join('; '));
 if(failures||evidence.some(r=>!r.ok))process.exitCode=1;
