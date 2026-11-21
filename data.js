@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-21.35",
+  "mvpRevision": "2026-11-21.36",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-21",
@@ -6284,6 +6284,94 @@ window.NTA_DATA = {
       "label": "Observed nonstop operating days in Nov 23–29, 2026 timetable, subject to live flight and fare confirmation",
       "sourceLabel": "Directflights.com directional November 23–29 timetable (corroborated by current carrier schedules)",
       "sourceUrl": "https://www.directflights.com/BIL-GDV",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "FOD|ORD": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Nov 23–29, 2026 timetable shows at least one nonstop each day, including holiday substitution; provider confirmation required for flight and fare",
+      "sourceLabel": "Directflights Week 48 directional daily flight grid, updated November 9, 2026",
+      "sourceUrl": "https://www.directflights.com/FOD-ORD",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "ORD|FOD": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Nov 23–29, 2026 timetable shows at least one nonstop each day, including holiday substitution; provider confirmation required for flight and fare",
+      "sourceLabel": "Directflights Week 48 directional daily flight grid, updated November 9, 2026",
+      "sourceUrl": "https://www.directflights.com/ORD-FOD",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "CGI|ORD": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Contour Aviation",
+      "label": "Nov 23–29, 2026 timetable shows at least one nonstop each day, including holiday substitution; provider confirmation required for flight and fare",
+      "sourceLabel": "Directflights Week 48 directional daily flight grid, updated November 9, 2026",
+      "sourceUrl": "https://www.directflights.com/CGI-ORD",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "ORD|CGI": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Contour Aviation",
+      "label": "Nov 23–29, 2026 timetable shows at least one nonstop each day, including holiday substitution; provider confirmation required for flight and fare",
+      "sourceLabel": "Directflights Week 48 directional daily flight grid, updated November 9, 2026",
+      "sourceUrl": "https://www.directflights.com/ORD-CGI",
       "checkedAsOf": "2026-11-21",
       "verifiedWeekStart": "2026-11-23",
       "verifiedWeekEnd": "2026-11-29",
