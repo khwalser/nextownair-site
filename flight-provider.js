@@ -59,7 +59,17 @@
     const timer=setTimeout(()=>controller.abort(),timeoutMs);
     try{
       const res=await fetch(url,{headers:{Accept:'application/json'},signal:controller.signal});
-      return {res,data:await res.json().catch(error=>{if(controller.signal.aborted)throw error;return {};})};
+      let data;
+      try{data=await res.json();}
+      catch(error){
+        if(controller.signal.aborted)throw error;
+        // Rate-limited providers may return 429 without JSON. Preserve its
+        // status so the queue can apply the cooldown rather than treating it
+        // as a generic network failure.
+        if(res.status===429)data={};
+        else throw new Error('Flight data endpoint returned invalid JSON');
+      }
+      return {res,data};
     }finally{
       clearTimeout(timer);
     }
