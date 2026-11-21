@@ -670,6 +670,7 @@
       const providerDuration=Number(o.durationMinutes);
       const fallbackDuration=Math.max(1,Math.round((new Date(o.arrivalTime)-new Date(o.departureTime))/60000));
       const elapsed=Number.isFinite(providerDuration)&&providerDuration>0?providerDuration:fallbackDuration;
+      if(!Number.isFinite(elapsed)||elapsed<=0)return null;
       return {
         id:`provider|${o.offerId||idx}|${a}|${b}|${date}`,
         date,departMin,arrivalMin,arrivalDayOffset:dayOffset,duration:elapsed,
