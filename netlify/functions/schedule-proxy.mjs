@@ -10,7 +10,7 @@ function json(data,status=200,cache=true){
 }
 
 function validCode(v){return /^[A-Z]{3}$/.test(v);}
-function validMonth(v){return /^\d{4}-(0[1-9]|1[0-2])$/.test(v);}
+function validMonth(v){return /^(?:[1-9]\d{3})-(0[1-9]|1[0-2])$/.test(v);}
 function validDate(v){return /^\d{4}-\d{2}-\d{2}$/.test(v);}
 function pad(n){return String(n).padStart(2,"0");}
 function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
