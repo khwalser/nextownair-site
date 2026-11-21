@@ -21,6 +21,22 @@ try{
   assert.equal(result.partial,false,'Completed upstream checks are not partial');
   assert(result.checkedDates.includes('2026-12-10'),'Successfully checked no-service date is explicitly represented');
   assert.match(complete.headers.get('Cache-Control')||'',/max-age/,'Complete schedules may use response caching');
+  // A generic 429 must stop a multi-day request immediately even when the
+  // upstream message does not contain a special quota-exhaustion phrase.
+  let quotaCalls=0;
+  globalThis.fetch=async()=>{
+    quotaCalls++;
+    return {status:429,ok:false,headers:{get:()=> '3600'},json:async()=>({message:'Too Many Requests'})};
+  };
+  const multiDay=new Request('https://nextownair.com/api/schedule-calendar?origin=DTW&destination=ROC&month=2026-12&dates=2026-12-10,2026-12-11,2026-12-12');
+  const limited=await handler(multiDay);
+  const quota=await limited.json();
+  assert.equal(limited.status,200,'Rate limit yields a partial response instead of a stuck month');
+  assert.equal(quota.partial,true,'Rate-limited dates remain unknown');
+  assert.equal(quota.unknownDates.length,3,'All unattempted dates remain unknown');
+  assert.equal(quota.checkedDates.length,0,'No rate-limited day is incorrectly marked checked');
+  assert.equal(quotaCalls,1,'Generic 429 stops scanning dates instead of hammering the provider');
+  assert.equal(limited.headers.get('Cache-Control'),'no-store','Quota failure is never CDN cached');
   console.log('PASS: Schedule failures are uncached and complete date checks remain cacheable');
 }finally{
   globalThis.fetch=previousFetch;
