@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-21.42",
+  "mvpRevision": "2026-11-21.43",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-21",
@@ -6814,6 +6814,50 @@ window.NTA_DATA = {
       "label": "Nonstop published Nov 23–29, 2026 with one or more flights daily; holiday reduction on Nov 26; times and fares require provider verification",
       "sourceLabel": "Directflights November 2026 directional United flight grid with Thanksgiving reduction",
       "sourceUrl": "https://www.directflights.com/DEN-LBL",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "JMS|DEN": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Published Nov 23–29, 2026 nonstop week with daily service, reduced frequency Thanksgiving; live flight and fare confirmation required",
+      "sourceLabel": "Directflights.com United Week48 flight-by-day grid (both directions, Nov9 update)",
+      "sourceUrl": "https://www.directflights.com/JMS-DEN",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "DEN|JMS": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Published Nov 23–29, 2026 nonstop week with daily service, reduced frequency Thanksgiving; live flight and fare confirmation required",
+      "sourceLabel": "Directflights.com United Week48 flight-by-day grid (both directions, Nov9 update)",
+      "sourceUrl": "https://www.directflights.com/DEN-JMS",
       "checkedAsOf": "2026-11-21",
       "verifiedWeekStart": "2026-11-23",
       "verifiedWeekEnd": "2026-11-29",
