@@ -25,12 +25,13 @@
       "communityCode": "ADK",
       "hub": "ANC",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "AGN-JNU",
@@ -38,12 +39,16 @@
       "communityCode": "AGN",
       "hub": "JNU",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "candidateTimetableUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "candidateEvidence": "Carrier schedule page lists flights and operating-day labels, but contains multiple seasonal tables and must be matched to a documented effective period before being used for future calendar dates.",
+      "timetableReviewState": "candidate_effective_period_unresolved",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "AKB-DUT",
@@ -51,12 +56,13 @@
       "communityCode": "AKB",
       "hub": "DUT",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "ALO-ORD",
@@ -90,12 +96,13 @@
       "communityCode": "ALZ",
       "hub": "ADQ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "AOO-CLT",
@@ -116,12 +123,13 @@
       "communityCode": "AOS",
       "hub": "ADQ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "ART-PHL",
@@ -285,12 +293,13 @@
       "communityCode": "CDV",
       "hub": "ANC",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "CDV-JNU",
@@ -298,12 +307,13 @@
       "communityCode": "CDV",
       "hub": "JNU",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "CEC-HHR",
@@ -337,12 +347,13 @@
       "communityCode": "CEM",
       "hub": "FAI",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "CEZ-DEN",
@@ -428,12 +439,13 @@
       "communityCode": "CLP",
       "hub": "DLG",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "CNM-ABQ",
@@ -506,12 +518,13 @@
       "communityCode": "CZN",
       "hub": "TKJ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "DDC-DEN",
@@ -623,12 +636,13 @@
       "communityCode": "EGX",
       "hub": "AKN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "ELV-JNU",
@@ -636,12 +650,16 @@
       "communityCode": "ELV",
       "hub": "JNU",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "candidateTimetableUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "candidateEvidence": "Carrier schedule page lists flights and operating-day labels, but contains multiple seasonal tables and must be matched to a documented effective period before being used for future calendar dates.",
+      "timetableReviewState": "candidate_effective_period_unresolved",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "ESC-MSP",
@@ -662,12 +680,13 @@
       "communityCode": "EXI",
       "hub": "JNU",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "FOD-ORD",
@@ -727,12 +746,13 @@
       "communityCode": "GKN",
       "hub": "ANC",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "GLH-ATL",
@@ -753,12 +773,16 @@
       "communityCode": "GST",
       "hub": "JNU",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "candidateTimetableUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "candidateEvidence": "Carrier schedule page lists flights and operating-day labels, but contains multiple seasonal tables and must be matched to a documented effective period before being used for future calendar dates.",
+      "timetableReviewState": "candidate_effective_period_unresolved",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "HIB-MSP",
@@ -857,12 +881,13 @@
       "communityCode": "IGG",
       "hub": "AKN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "IKO-DUT",
@@ -870,12 +895,13 @@
       "communityCode": "IKO",
       "hub": "DUT",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "IMT-MSP",
@@ -935,12 +961,13 @@
       "communityCode": "IRC",
       "hub": "FAI",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "IRK-ORD",
@@ -1078,12 +1105,16 @@
       "communityCode": "KAE",
       "hub": "JNU",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "candidateTimetableUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "candidateEvidence": "Carrier schedule page lists flights and operating-day labels, but contains multiple seasonal tables and must be matched to a documented effective period before being used for future calendar dates.",
+      "timetableReviewState": "candidate_effective_period_unresolved",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KCG-AKN",
@@ -1091,12 +1122,13 @@
       "communityCode": "KCG",
       "hub": "AKN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KCQ-AKN",
@@ -1104,12 +1136,13 @@
       "communityCode": "KCQ",
       "hub": "AKN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KEK-DLG",
@@ -1117,12 +1150,13 @@
       "communityCode": "KEK",
       "hub": "DLG",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KFP-CDB",
@@ -1130,12 +1164,13 @@
       "communityCode": "KFP",
       "hub": "CDB",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KGK-DLG",
@@ -1143,12 +1178,13 @@
       "communityCode": "KGK",
       "hub": "DLG",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KKB-ADQ",
@@ -1156,12 +1192,13 @@
       "communityCode": "KKB",
       "hub": "ADQ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KLL-AKN",
@@ -1169,12 +1206,13 @@
       "communityCode": "KLL",
       "hub": "AKN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KLN-ADQ",
@@ -1182,12 +1220,13 @@
       "communityCode": "KLN",
       "hub": "ADQ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KMO-DLG",
@@ -1195,12 +1234,13 @@
       "communityCode": "KMO",
       "hub": "DLG",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KMY-ADQ",
@@ -1208,12 +1248,13 @@
       "communityCode": "KMY",
       "hub": "ADQ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KNW-DLG",
@@ -1221,12 +1262,13 @@
       "communityCode": "KNW",
       "hub": "DLG",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KOY-ADQ",
@@ -1234,12 +1276,13 @@
       "communityCode": "KOY",
       "hub": "ADQ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KPR-ADQ",
@@ -1247,12 +1290,13 @@
       "communityCode": "KPR",
       "hub": "ADQ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KPV-AKN",
@@ -1260,12 +1304,13 @@
       "communityCode": "KPV",
       "hub": "AKN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KPY-ADQ",
@@ -1273,12 +1318,13 @@
       "communityCode": "KPY",
       "hub": "ADQ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KQA-DUT",
@@ -1286,12 +1332,13 @@
       "communityCode": "KQA",
       "hub": "DUT",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KSM-ANC",
@@ -1299,12 +1346,13 @@
       "communityCode": "KSM",
       "hub": "ANC",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KVC-CDB",
@@ -1312,12 +1360,13 @@
       "communityCode": "KVC",
       "hub": "CDB",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KWP-ADQ",
@@ -1325,12 +1374,13 @@
       "communityCode": "KWP",
       "hub": "ADQ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KYK-ADQ",
@@ -1338,12 +1388,13 @@
       "communityCode": "KYK",
       "hub": "ADQ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KZB-ADQ",
@@ -1351,12 +1402,13 @@
       "communityCode": "KZB",
       "hub": "ADQ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "LAR-DEN",
@@ -1559,12 +1611,13 @@
       "communityCode": "MCG",
       "hub": "MRI",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "MCK-DEN",
@@ -1741,12 +1794,13 @@
       "communityCode": "MXY",
       "hub": "GKN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "MYK-GKN",
@@ -1754,12 +1808,13 @@
       "communityCode": "MYK",
       "hub": "GKN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "NCN-MRI",
@@ -1767,12 +1822,13 @@
       "communityCode": "NCN",
       "hub": "MRI",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "OGS-IAD",
@@ -1884,12 +1940,16 @@
       "communityCode": "PEC",
       "hub": "JNU",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "candidateTimetableUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "candidateEvidence": "Carrier schedule page lists flights and operating-day labels, but contains multiple seasonal tables and must be matched to a documented effective period before being used for future calendar dates.",
+      "timetableReviewState": "candidate_effective_period_unresolved",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "PGA-PHX",
@@ -1923,12 +1983,13 @@
       "communityCode": "PIP",
       "hub": "AKN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "PIR-DEN",
@@ -2001,12 +2062,13 @@
       "communityCode": "PSG",
       "hub": "JNU",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "PSG-KTN",
@@ -2014,12 +2076,13 @@
       "communityCode": "PSG",
       "hub": "KTN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "PTD-SIT",
@@ -2027,12 +2090,13 @@
       "communityCode": "PTD",
       "hub": "SIT",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "PTH-AKN",
@@ -2040,12 +2104,13 @@
       "communityCode": "PTH",
       "hub": "AKN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "PUB-DEN",
@@ -2105,12 +2170,13 @@
       "communityCode": "SKW",
       "hub": "MRI",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "SLK-JFK",
@@ -2157,12 +2223,13 @@
       "communityCode": "SNP",
       "hub": "ANC",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "SOW-PHX",
@@ -2183,12 +2250,13 @@
       "communityCode": "STG",
       "hub": "DUT",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "SUX-DEN",
@@ -2248,12 +2316,13 @@
       "communityCode": "SWD",
       "hub": "ANC",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "SYB-ADQ",
@@ -2261,12 +2330,13 @@
       "communityCode": "SYB",
       "hub": "ADQ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "TBN-DFW",
@@ -2300,12 +2370,13 @@
       "communityCode": "TEK",
       "hub": "MRI",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "TKE-JNU",
@@ -2313,12 +2384,16 @@
       "communityCode": "TKE",
       "hub": "JNU",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "candidateTimetableUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "candidateEvidence": "Carrier schedule page lists flights and operating-day labels, but contains multiple seasonal tables and must be matched to a documented effective period before being used for future calendar dates.",
+      "timetableReviewState": "candidate_effective_period_unresolved",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "TUP-BNA",
@@ -2365,12 +2440,13 @@
       "communityCode": "TWA",
       "hub": "DLG",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "UGI-ADQ",
@@ -2378,12 +2454,13 @@
       "communityCode": "UGI",
       "hub": "ADQ",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "UGS-AKN",
@@ -2391,12 +2468,13 @@
       "communityCode": "UGS",
       "hub": "AKN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "UIN-ORD",
@@ -2430,12 +2508,13 @@
       "communityCode": "UNK",
       "hub": "ANC",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "VCT-IAH",
@@ -2456,12 +2535,13 @@
       "communityCode": "VDZ",
       "hub": "ANC",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "VEL-PHX",
@@ -2482,12 +2562,13 @@
       "communityCode": "WRG",
       "hub": "JNU",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "WRG-KTN",
@@ -2495,12 +2576,13 @@
       "communityCode": "WRG",
       "hub": "KTN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "WSN-AKN",
@@ -2508,12 +2590,13 @@
       "communityCode": "WSN",
       "hub": "AKN",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "WYS-DEN",
@@ -2547,12 +2630,13 @@
       "communityCode": "YAK",
       "hub": "ANC",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "YAK-JNU",
@@ -2560,12 +2644,19 @@
       "communityCode": "YAK",
       "hub": "JNU",
       "state": "AK",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/May%202026_Report_Alaska_PDF",
+      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
+      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     }
-  ]
+  ],
+  "notes": [
+    "A contracted EAS route is not a verified operating-day timetable.",
+    "Alaska DOT attachment linked from the report index displays May-25 in its heading; do not infer 2026 validity without a current order.",
+    "The Alaska Seaplanes public schedule combines seasonal tables; candidate days are not promoted without effective-year boundaries."
+  ],
+  "candidateTimetablePairs": 6
 }
