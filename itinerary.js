@@ -1231,12 +1231,15 @@
     let providerOpts=providerOptions(fareData,a,b,departDate);
     let usingProvider=Array.isArray(providerOpts)&&providerOpts.length>0;
     const providerMissing=Boolean(fareData)&&(fareData.error||!fareData.offers||!fareData.offers.length);
-    let verifiedScheduleOpts=providerMissing?scheduleOptions(a,b,departDate):[];
-    let usingVerifiedSchedule=verifiedScheduleOpts.length>0;
-    let opts=usingProvider?providerOpts:(usingVerifiedSchedule?verifiedScheduleOpts:(providerMissing?prototypeOptions(a,b,departDate):[]));
+    const selectedAvailability=scheduleState(a,b,departDate);
+    // Published flight evidence is independent of live fare inventory.
+    // Permit explicitly marked planning options while provider pricing is pending.
+    const publishedDate=knownRoute&&selectedAvailability.status==='yes';
+    let verifiedScheduleOpts=publishedDate?scheduleOptions(a,b,departDate):[];
+    let usingVerifiedSchedule=!usingProvider&&verifiedScheduleOpts.length>0;
+    let opts=usingProvider?providerOpts:(usingVerifiedSchedule?verifiedScheduleOpts:(publishedDate?prototypeOptions(a,b,departDate):[]));
     let usingPrototype=opts.some(o=>o.prototype);
     let hasPrototypeFields=opts.some(o=>o.timeStatus==='prototype'||o.fareStatus==='prototype');
-    const selectedAvailability=scheduleState(a,b,departDate);
     let note=knownRoute?(usingVerifiedSchedule?'Choose an available published flight. Times are verified; fares beginning with ? are prototype values.':(usingPrototype?'Choose an available service. Values beginning with ? are prototype values used to complete the MVP itinerary.':(usingProvider?'Choose one flight to continue.':selectedAvailability.status==='yes'?'Published flight service is reported for this date, but a selectable flight has not been returned.':'The route is known, but flight operation on this date has not been verified. Check another date or current fares.'))):'No verified route is available for this pair.';
 
     if(!locked&&i>0&&plan&&plan.notBefore!=null){
@@ -1303,8 +1306,8 @@
       if(state.selections[String(i)]){delete state.selections[String(i)];save();}
       return {section:leg,chosen:null,departDate,options:[]};
     }
-    if(!fareData){
-      box.innerHTML='<div class="pending-flights">Loading flight offers…</div>';
+    if(!fareData&&!opts.length){
+      box.innerHTML='<div class="pending-flights">Checking published service and live flight offers…</div>';
       return {section:leg,chosen:null,departDate,options:[]};
     }
     if(!opts.length){
