@@ -81,6 +81,22 @@ async function waitForFare(origin,destination,date,timeoutMs=90000,minIndex=0){
   }
   return matchingFare(origin,destination,date,minIndex);
 }
+async function gotoWithTransientRetry(targetPage,url,timeout=30000){
+  let lastError=null;
+  for(let attempt=1;attempt<=2;attempt++){
+    try{
+      const response=await targetPage.goto(url,{waitUntil:'domcontentloaded',timeout});
+      if(response&&response.status()>=500)throw new Error('Production server returned HTTP '+response.status()+' for '+url);
+      await targetPage.waitForFunction(()=>document.readyState!=='loading'&&Boolean(document.body),null,{timeout:10000});
+      return response;
+    }catch(error){
+      lastError=error;
+      if(attempt===2)break;
+      pass('Retrying transient production navigation once',url+' — '+String(error.message||error).slice(0,160));
+    }
+  }
+  throw lastError;
+}
 async function waitForAnySchedule(timeoutMs=30000){
   const started=Date.now();
   while(Date.now()-started<timeoutMs){
@@ -182,7 +198,7 @@ try{
 
   // A previously saved itinerary must not reopen in the past.
   const pastDatePage=await context.newPage();
-  await pastDatePage.goto(BASE_URL+'/index.html?fresh=1',{waitUntil:'domcontentloaded'});
+  await gotoWithTransientRetry(pastDatePage,BASE_URL+'/index.html?fresh=1');
   await pastDatePage.evaluate(()=>{
     const s=window.NTA.load();
     s.route=['DTW','ORD','CMX','ORD','DTW'];
@@ -190,7 +206,7 @@ try{
     s.selections={'0':'stale-flight'};
     window.NTA.save(s);
   });
-  await pastDatePage.goto(BASE_URL+'/itinerary.html',{waitUntil:'domcontentloaded'});
+  await gotoWithTransientRetry(pastDatePage,BASE_URL+'/itinerary.html');
   await pastDatePage.waitForFunction(()=>window.NTA&&window.NTA.load().startDate>=window.NTA.todayLocal(),null,{timeout:15000});
   const revisedPast=await pastDatePage.evaluate(()=>window.NTA.load());
   assert(revisedPast.route.join(',')==='DTW,ORD,CMX,ORD,DTW','Stale-date correction preserves chosen itinerary');
