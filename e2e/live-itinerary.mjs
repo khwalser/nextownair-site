@@ -324,7 +324,7 @@ try{
     await page.goto(target,{waitUntil:'domcontentloaded',timeout:60000});
     await page.waitForFunction(()=>document.querySelectorAll('.calendar-day:not(.past)').length>0,null,{timeout:30000});
     const futureLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
-    assert(futureLabels.some(t=>/flight ✓|\\$[0-9]|fare unavailable|pricing/i.test(t)),'DTW-CIU calendar renders flight/fare status instead of blank price cells',futureLabels.join(' | '));
+    assert(futureLabels.some(t=>/flight ✓|[$][0-9]|fare unavailable|pricing/i.test(t)),'DTW-CIU calendar renders flight/fare status instead of blank price cells',futureLabels.join(' | '));
     assert(await page.locator('#calendarServiceKey').isVisible(),'Published DTW-CIU service-day legend remains visible');
     const start=Date.now();
     let ciuRequests=[];
