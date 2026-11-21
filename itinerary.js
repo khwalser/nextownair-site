@@ -47,7 +47,10 @@
   const KNOWN_FARE_COVERAGE_GAPS=new Set([
     'DTW|APN','APN|DTW',
     'DTW|CIU','CIU|DTW',
-    'ORD|CMX','CMX|ORD'
+    'ORD|CMX','CMX|ORD',
+    // Published service exists, but the connected live-fare feed did not
+    // return selectable offers in the long-chain production smoke tests.
+    'ELD|DFW','DFW|ELD','GRI|DFW','DFW|GRI'
   ]);
   const PUBLISHED_SERVICE_PATTERNS={
     'DTW|APN':{days:[0,1,2,3,4,5,6],count:1,label:'Daily nonstop service',source:'Alpena County Regional Airport / Delta Connection published service'},
