@@ -63,4 +63,16 @@ for(const direction of ['BKW|CLT','CLT|BKW']){
   assert(p.sourceUrl.endsWith(direction.replace('|','-')),'Directional evidence source required');
 }
 assert(!ledger.missing.some(x=>x.pair==='BKW-CLT'));
+for(const [community,hub] of [['ALS','DEN'],['MCK','DEN'],['COD','DEN'],['GDV','BIL']]){
+  const pair=[community,hub].sort().join('-');
+  assert(!ledger.missing.some(e=>e.pair===pair),'Newly source-verified pair is removed from outstanding ledger: '+pair);
+  for(const direction of [community+'|'+hub,hub+'|'+community]){
+    const p=D.servicePatterns[direction];
+    assert(p,'Both published timetable directions are modeled: '+direction);
+    assert.deepEqual([...p.days],[0,1,2,3,4,5,6]);
+    assert.equal(p.activeFrom,'2026-11-23');
+    assert.equal(p.activeThrough,'2026-11-29','Do not project a single timetable week beyond its published dates');
+    assert(p.sourceUrl.endsWith(direction.replace('|','-')),'Source URL corresponds to departure direction');
+  }
+}
 console.log('PASS: '+ledger.missing.length+' EAS operating-day evidence gaps individually tracked; no fabricated schedule dates');
