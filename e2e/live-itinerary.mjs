@@ -581,7 +581,9 @@ try{
     pass('Phase 5 cascading invalidation survives a full page reload');
 
     // Changing the trip start date invalidates all selected flights, including Leg 1.
-    await page.locator('#startDateButton').click();
+    // A saved-trip reload may already leave the calendar open: never toggle it shut.
+    if(await page.locator('#startDateCalendar').isHidden())await page.locator('#startDateButton').click();
+    await page.locator('#startDateCalendar').waitFor({state:'visible',timeout:15000});
     const alternateDay=page.locator('.calendar-day[data-calendar-date]:not([disabled]):not(.selected)').first();
     await alternateDay.waitFor({state:'visible',timeout:15000});
     const alternateDate=await alternateDay.getAttribute('data-calendar-date');
