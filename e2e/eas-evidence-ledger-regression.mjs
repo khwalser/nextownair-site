@@ -54,4 +54,13 @@ for(const [community,airline] of [['ABR','Delta Air Lines'],['BJI','Delta Air Li
     assert.equal(pattern.activeThrough,community==='TVF'?(from==='TVF'?'2027-01-21':'2027-01-30'):'2026-11-29','Do not extrapolate dates beyond sourced period');
   }
 }
+for(const direction of ['BKW|CLT','CLT|BKW']){
+  const p=D.servicePatterns[direction];
+  assert(p,'Beckley-Charlotte operating-day source is present in both directions');
+  assert.deepEqual([...p.days],[0,1,2,3,4,5,6]);
+  assert.equal(p.activeFrom,'2026-11-23');
+  assert.equal(p.activeThrough,'2026-11-29','No extrapolation beyond published Thanksgiving week');
+  assert(p.sourceUrl.endsWith(direction.replace('|','-')),'Directional evidence source required');
+}
+assert(!ledger.missing.some(x=>x.pair==='BKW-CLT'));
 console.log('PASS: '+ledger.missing.length+' EAS operating-day evidence gaps individually tracked; no fabricated schedule dates');
