@@ -115,3 +115,9 @@ console.log('PASS: Automatic next-service-day connector selections are not clear
 
 assert(source.includes('const batchLimit=isKnownFareCoverageGap(a,b)?2:5;'),'Manual check label and route-specific pricing limits stay aligned');
 console.log('PASS: Manual fare-check batch label matches two-date known gap and five-date general provider caps');
+
+assert(source.includes('function nextConfirmedFlightDate(a,b,afterDate,days=14)'),'Onward search uses a bounded 14-day horizon');
+assert(source.includes("status==='yes'||Boolean(lowestOffer"),'Onward service dates require published schedule or genuine provider offer evidence');
+assert(source.includes('data-open-departure-calendar'),'Missing initial flight has a one-click calendar recovery');
+assert(source.includes('data-next-service-date'),'Missing onward flight has a next-confirmed-date action');
+console.log('PASS: Missing flight choices provide only verified-date recovery actions');
