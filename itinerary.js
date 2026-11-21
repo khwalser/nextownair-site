@@ -790,7 +790,7 @@
         fareCount:0,
         fareChoices:[],
         intermediateStops:servicePatternStops(a,b),
-        carrier:'Service confirmed',
+        carrier:publishedServicePattern(a,b)?.airline||'Published service carrier',
         flightNo:`Option ${idx+1}`,
         sample:false,
         provider:'nta-prototype',
