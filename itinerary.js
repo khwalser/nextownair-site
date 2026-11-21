@@ -342,9 +342,10 @@
     const pending=dates.filter(date=>calendarFareJobs.has(fareKey(a,b,date))).length;
     button.hidden=!remaining.length||fareCoverageBlockedLegs.has(fareLegKey(a,b));
     button.disabled=pending>0;
+    const batchLimit=isKnownFareCoverageGap(a,b)?2:5;
     button.textContent=pending>0
       ?`Checking ${pending} queued date${pending===1?'':'s'}…`
-      :`Check next ${Math.min(5,remaining.length)} of ${remaining.length} unchecked date${remaining.length===1?'':'s'}`;
+      :`Check next ${Math.min(batchLimit,remaining.length)} of ${remaining.length} unchecked date${remaining.length===1?'':'s'}`;
   }
   function updateCalendarFareStatus(){
     const leg=firstLeg();if(!leg||!calendarMonthDate)return;
@@ -457,7 +458,7 @@
       return !liveFareData.has(key)&&!calendarFareJobs.has(key);
     });
     if(!remaining.length)return;
-    queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,Math.min(5,remaining.length));
+    queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,Math.min(isKnownFareCoverageGap(leg.a,leg.b)?2:5,remaining.length));
     updateCalendarFareStatus();
   });
   function updateCalendarCell(date){
