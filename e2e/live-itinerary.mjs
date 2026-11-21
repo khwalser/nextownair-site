@@ -43,7 +43,7 @@ let browser,page,failure=null;
 
 function attachDiagnostics(p){
   p.on('console',msg=>diagnostics.console.push({type:msg.type(),text:msg.text()}));
-  p.on('pageerror',err=>diagnostics.pageErrors.push(String(err)));
+  p.on('pageerror',err=>diagnostics.pageErrors.push(err&&err.stack?String(err.stack):String(err)));
   p.on('requestfailed',req=>diagnostics.requestFailures.push({url:req.url(),error:req.failure()?.errorText||'request failed'}));
   p.on('response',async res=>{
     const url=res.url();
