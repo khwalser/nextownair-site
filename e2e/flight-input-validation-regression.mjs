@@ -12,7 +12,7 @@ vm.runInContext(source.slice(start,end)+'\nthis.validDate=validDate;this.validMo
 for(const date of ['2026-11-21','2028-02-29','2026-12-31']){
   assert.equal(context.validDate(date),true,'Calendar date must be accepted: '+date);
 }
-for(const date of ['2026-02-29','2026-02-31','2026-13-01','2026-00-10','2026-11-00','not-a-date']){
+for(const date of ['2026-02-29','2026-02-31','2026-13-01','2026-00-10','2026-11-00','0000-01-01','not-a-date']){
   assert.equal(context.validDate(date),false,'Impossible date must be rejected: '+date);
 }
 for(const amount of [null,undefined,'',' ', 'not-a-number', '-1',Infinity]){
