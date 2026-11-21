@@ -340,3 +340,20 @@ for(const route of ['ELD|DFW','DFW|ELD','GRI|DFW','DFW|GRI']){
 }
 assert(source.includes("'ELD|DFW','DFW|ELD','GRI|DFW','DFW|GRI'"),'Sourced EAS routes retain a two-date automatic fare request cap');
 console.log('PASS: El Dorado and Grand Island first legs have bounded, source-attributed daily schedule evidence');
+for(const route of ['DFW|CVN','CVN|DFW','DFW|HOT','HOT|DFW']){
+  const [origin,destination]=route.split('|');
+  const pattern=patternCtx.publishedServicePattern(origin,destination);
+  assert(pattern&&pattern.sourceUrl&&pattern.checkedAsOf==='2026-11-21','Published EAS service pattern cites a current source for '+route);
+  assert(patternCtx.patternAppliesOnDate(pattern,'2026-12-08'),'Published Tuesday flight supports '+route);
+  assert(!patternCtx.patternAppliesOnDate(pattern,'2027-01-05'),'Sourced December schedule does not claim unverified January service for '+route);
+}
+for(const route of ['DFW|CVN','CVN|DFW']){
+  const [origin,destination]=route.split('|');
+  const p=patternCtx.publishedServicePattern(origin,destination);
+  assert(!patternCtx.patternAppliesOnDate(p,'2026-12-09'),'Clovis route does not invent Wednesday nonstop service on '+route);
+  assert(patternCtx.patternAppliesOnDate(p,'2026-12-10'),'Clovis route resumes published Thursday service on '+route);
+}
+assert(patternCtx.patternAppliesOnDate(patternCtx.publishedServicePattern('HOT','DFW'),'2026-12-09'),'Hot Springs daily service includes Wednesday');
+assert(source.includes("'DFW|CVN','CVN|DFW','DFW|HOT','HOT|DFW'"),'Newly sourced legs keep background fare lookups bounded');
+console.log('PASS: Clovis six-day and Hot Springs daily December schedules remain source-backed without invented Wednesdays');
+
