@@ -1238,6 +1238,15 @@
     let verifiedScheduleOpts=publishedDate?scheduleOptions(a,b,departDate):[];
     let usingVerifiedSchedule=!usingProvider&&verifiedScheduleOpts.length>0;
     let opts=usingProvider?providerOpts:(usingVerifiedSchedule?verifiedScheduleOpts:(publishedDate?prototypeOptions(a,b,departDate):[]));
+    // A late fare response must not silently erase a chosen published-service
+    // planning option. Retain that option, explicitly marked prototype, alongside
+    // the newly available real offers until the traveler changes their choice.
+    const pinnedId=state.selections[String(i)];
+    if(usingProvider&&publishedDate&&pinnedId){
+      const pinnedFallback=(pinnedId.startsWith('prototype|')?prototypeOptions(a,b,departDate):pinnedId.startsWith('schedule|')?scheduleOptions(a,b,departDate):[])
+        .find(o=>o.id===pinnedId);
+      if(pinnedFallback&&!opts.some(o=>o.id===pinnedId))opts=[...opts,pinnedFallback];
+    }
     let usingPrototype=opts.some(o=>o.prototype);
     let hasPrototypeFields=opts.some(o=>o.timeStatus==='prototype'||o.fareStatus==='prototype');
     let note=knownRoute?(usingVerifiedSchedule?'Choose an available published flight. Times are verified; fares beginning with ? are prototype values.':(usingPrototype?'Choose an available service. Values beginning with ? are prototype values used to complete the MVP itinerary.':(usingProvider?'Choose one flight to continue.':selectedAvailability.status==='yes'?'Published flight service is reported for this date, but a selectable flight has not been returned.':'The route is known, but flight operation on this date has not been verified. Check another date or current fares.'))):'No verified route is available for this pair.';
