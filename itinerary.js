@@ -1382,7 +1382,7 @@
       const stillChecking=!fareData;
       if(i===0){
         const next=nextConfirmedFlightDate(a,b,departDate);
-        box.innerHTML=`<div class="${stillChecking?'pending-flights':'no-flights'}">${stillChecking?'Checking published service and live offers for this date.':'No selectable offer was returned for this date; this does not prove the flight does not operate.'} ${next?`<button type="button" class="btn tertiary" data-first-next-date>Try confirmed flight date ${window.NTA.fmtDate(next,{weekday:'short',month:'short',day:'numeric'})}</button>`:''} <button type="button" class="btn tertiary" data-open-departure-calendar>Explore other departure dates</button></div>`;
+        box.innerHTML=`<div class="${stillChecking?'pending-flights':'no-flights'}">${stillChecking?'Checking published service and live offers for this date.':'No selectable offer was returned for this date; this does not prove the flight does not operate.'} ${next?`<button type="button" class="btn tertiary" data-first-next-date>Try confirmed flight date ${window.NTA.fmtDate(next,{weekday:'short',month:'short',day:'numeric'})}</button>`:''} <button type="button" class="btn tertiary" data-open-departure-calendar>Explore other departure dates</button> <a class="btn tertiary" data-external-first-fares href="${externalFareSearchUrl(a,b,departDate)}" target="_blank" rel="noopener">Check airline fares for this date</a></div>`;
         const nextButton=box.querySelector('[data-first-next-date]');
         if(nextButton)nextButton.addEventListener('click',()=>{
           state.startDate=next;state.selections={};save();
@@ -1397,7 +1397,7 @@
       }else{
         const next=nextConfirmedFlightDate(a,b,departDate);
         const explanation=stillChecking?'Checking onward service and fares.':'No selectable flight fits the selected connection date.';
-        box.innerHTML=`<div class="${stillChecking?'pending-flights':'no-flights'}">${explanation} ${next?`<button type="button" class="btn tertiary" data-next-service-date>Try confirmed service on ${window.NTA.fmtDate(next,{weekday:'short',month:'short',day:'numeric'})}</button>`:'Check the stay dates above or look up current fares; no later confirmed service date is available in the next 14 days.'}</div>`;
+        box.innerHTML=`<div class="${stillChecking?'pending-flights':'no-flights'}">${explanation} ${next?`<button type="button" class="btn tertiary" data-next-service-date>Try confirmed service on ${window.NTA.fmtDate(next,{weekday:'short',month:'short',day:'numeric'})}</button>`:'Check the stay dates above; no later confirmed service date is available in the next 14 days.'} <a class="btn tertiary" data-external-onward-fares href="${externalFareSearchUrl(a,b,departDate)}" target="_blank" rel="noopener">Check airline fares for this date</a></div>`;
         const moveButton=box.querySelector('[data-next-service-date]');
         if(moveButton)moveButton.addEventListener('click',()=>{
           setStay(i,{mode:'date',date:next,nights:0});
