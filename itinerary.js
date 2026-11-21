@@ -883,29 +883,30 @@
       lastFareStartAt=Date.now();
       F.fetchOffers(task.a,task.b,task.date)
         .then(({ok,status,data})=>{
-          // Provider transport can return HTTP success with an empty or null
-          // JSON body. Normalize once before reading offers or error details.
+          // A 429 response may legitimately have no JSON body. Handle it
+          // before validating provider payloads, so its cooldown still applies.
+          if(!ok&&status===429){
+            const suggestedMs=Number(data&&typeof data==='object'&&!Array.isArray(data)?data.retryAfterMs:null);
+            const retryAfterMs=Number.isFinite(suggestedMs)&&suggestedMs>0?Math.max(5000,suggestedMs):30000;
+            fareBlockedUntil=Math.max(fareBlockedUntil,Date.now()+retryAfterMs);
+            task.rateLimitRetries=(task.rateLimitRetries||0)+1;
+            if(task.rateLimitRetries<=2){
+              // Preserve this request's original promise and date.
+              fareQueue.unshift(task);
+              updateCalendarCell(task.date);
+              return;
+            }
+            task.resolve({...coverageFallbackData(task.a,task.b,task.date),temporaryUnavailable:true,message:'Pricing remains rate-limited after two automatic retries; use Check current fares or retry the selected date later.'});
+            updateCalendarCell(task.date);
+            return;
+          }
+          // Successful replies and other HTTP errors must contain valid JSON.
           if(data===null||typeof data!=='object'||Array.isArray(data)){
             const err=new Error('Pricing provider returned an invalid response body');
             err.status=status||0;
             throw err;
           }
           if(!ok){
-            if(status===429){
-              const retryAfterMs=Math.max(5000,Number(data?.retryAfterMs)||30000);
-              fareBlockedUntil=Math.max(fareBlockedUntil,Date.now()+retryAfterMs);
-              task.rateLimitRetries=(task.rateLimitRetries||0)+1;
-              if(task.rateLimitRetries<=2){
-                // Keep the same promise unresolved and retry this exact date
-                // after provider cooldown, rather than caching a false miss.
-                fareQueue.unshift(task);
-                updateCalendarCell(task.date);
-                return;
-              }
-              task.resolve({...coverageFallbackData(task.a,task.b,task.date),temporaryUnavailable:true,message:'Pricing remains rate-limited after two automatic retries; use Check current fares or retry the selected date later.'});
-              updateCalendarCell(task.date);
-              return;
-            }
             const err=new Error(data.message||data.error||'Pricing lookup failed');err.status=status;throw err;
           }
           if(!Array.isArray(data.offers)||data.offers.length===0){
