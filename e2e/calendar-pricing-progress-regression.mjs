@@ -179,3 +179,14 @@ fareCtx.updateLiveTripFare();
 assert.match(fareNode.innerHTML,/Selected fare subtotal \$160/,'Mixed-mode trip missing one flight shows partial subtotal');
 assert.match(fareNode.innerHTML,/1 of 2 selected fare/,'Subtotal counts only flight legs');
 console.log('PASS: Mixed-mode itineraries exclude ferry transfers from airfare totals and completion counts');
+
+const rateLimitStart=source.indexOf('  function pumpFareQueue()');
+const rateLimitEnd=source.indexOf('  function fetchFare(',rateLimitStart);
+const rateLimitBlock=source.slice(rateLimitStart,rateLimitEnd);
+assert(rateLimitStart>=0&&rateLimitEnd>rateLimitStart,'Live fare queue implementation is present');
+assert(rateLimitBlock.includes("if(status===429){"),'Rate-limit logic handles retry instructions with or without Retry-After');
+assert(rateLimitBlock.includes('task.rateLimitRetries<=2'),'Rate-limited date receives no more than two automatic retries');
+assert(rateLimitBlock.includes('fareQueue.unshift(task)'),'Retry preserves the original date and existing fare promise');
+assert(rateLimitBlock.indexOf('fareQueue.unshift(task)')<rateLimitBlock.indexOf('task.resolve({...coverageFallbackData'),'Rate-limit retry happens before recording temporary unavailability');
+assert(rateLimitBlock.includes('fareBlockedUntil=Math.max(fareBlockedUntil,Date.now()+retryAfterMs)'),'Retries respect provider cooldown');
+console.log('PASS: Rate-limited flight dates requeue twice after provider cooldown without falsely claiming a checked fare');
