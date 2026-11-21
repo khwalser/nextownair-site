@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-21.36",
+  "mvpRevision": "2026-11-21.37",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-21",
@@ -6372,6 +6372,92 @@ window.NTA_DATA = {
       "label": "Nov 23–29, 2026 timetable shows at least one nonstop each day, including holiday substitution; provider confirmation required for flight and fare",
       "sourceLabel": "Directflights Week 48 directional daily flight grid, updated November 9, 2026",
       "sourceUrl": "https://www.directflights.com/ORD-CGI",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "LAR|DEN": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Published Nov 23–29 daily nonstop timetable; fares and inventory still require provider confirmation",
+      "sourceLabel": "Directflights week 48 directional flight grid, updated Nov 9, 2026",
+      "sourceUrl": "https://www.directflights.com/LAR-DEN",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "DEN|LAR": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Published Nov 23–29 daily nonstop timetable; fares and inventory still require provider confirmation",
+      "sourceLabel": "Directflights week 48 directional flight grid, updated Nov 9, 2026",
+      "sourceUrl": "https://www.directflights.com/DEN-LAR",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "PUB|DEN": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Denver Air Connection / Key Lime Air",
+      "label": "Published Nov 23–29 nonstop timetable excludes Thanksgiving Thursday Nov 26; fares and inventory still require provider confirmation",
+      "sourceLabel": "Directflights week 48 directional flight grid, updated Nov 9, 2026",
+      "sourceUrl": "https://www.directflights.com/PUB-DEN",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "DEN|PUB": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Denver Air Connection / Key Lime Air",
+      "label": "Published Nov 23–29 nonstop timetable excludes Thanksgiving Thursday Nov 26; fares and inventory still require provider confirmation",
+      "sourceLabel": "Directflights week 48 directional flight grid, updated Nov 9, 2026",
+      "sourceUrl": "https://www.directflights.com/DEN-PUB",
       "checkedAsOf": "2026-11-21",
       "verifiedWeekStart": "2026-11-23",
       "verifiedWeekEnd": "2026-11-29",
