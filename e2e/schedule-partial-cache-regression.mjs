@@ -42,6 +42,21 @@ try{
   assert.equal(quota.checkedDates.length,0,'No rate-limited day is incorrectly marked checked');
   assert.equal(quotaCalls,1,'Generic 429 stops scanning dates instead of hammering the provider');
   assert.equal(limited.headers.get('Cache-Control'),'no-store','Quota failure is never CDN cached');
+  // Dates already confirmed before a 429 must remain checked, while all
+  // subsequent dates stay unknown and no further provider calls are made.
+  let mixedCalls=0;
+  globalThis.fetch=async()=>{
+    mixedCalls++;
+    if(mixedCalls<=2)return {status:204,ok:true};
+    return {status:429,ok:false,headers:{get:()=> '3600'},json:async()=>({message:'Too Many Requests'})};
+  };
+  const mixed=await handler(multiDay);
+  const mixedBody=await mixed.json();
+  assert.deepEqual(mixedBody.checkedDates,['2026-12-10'],'Previously confirmed service-date checks survive a later 429');
+  assert.deepEqual(mixedBody.unknownDates,['2026-12-11','2026-12-12'],'Remaining dates are unknown after rate limit');
+  assert.equal(mixedCalls,3,'No new provider calls after rate limit in middle of month');
+  assert.equal(mixed.headers.get('Cache-Control'),'no-store','Partially completed month is not cached');
+
   console.log('PASS: Schedule failures are uncached and complete date checks remain cacheable');
 }finally{
   globalThis.fetch=previousFetch;
