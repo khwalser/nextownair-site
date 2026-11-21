@@ -6,6 +6,11 @@ const priorKey=process.env.AERODATABOX_API_MARKET_KEY;
 process.env.AERODATABOX_API_MARKET_KEY='test-schedule-key';
 const request=new Request('https://nextownair.com/api/schedule-calendar?origin=DTW&destination=ROC&month=2026-12&dates=2026-12-10');
 try{
+  for(const month of ['0000-12','0099-12','2026-13','2026-00']){
+    const invalid=new Request('https://nextownair.com/api/schedule-calendar?origin=DTW&destination=ROC&month='+month);
+    const response=await handler(invalid);
+    assert.equal(response.status,400,'Invalid month must be rejected before calling provider: '+month);
+  }
   globalThis.fetch=async()=>({status:503,ok:false,json:async()=>({message:'Upstream outage'})});
   const incomplete=await handler(request);
   const partial=await incomplete.json();
