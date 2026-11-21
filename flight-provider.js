@@ -52,10 +52,21 @@
       }))
     };
   }
+  // Bound the full response, including JSON decoding, so a stalled connection
+  // cannot leave the fare queue or schedule calendar pending indefinitely.
+  async function fetchJsonWithTimeout(url,timeoutMs=25000){
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),timeoutMs);
+    try{
+      const res=await fetch(url,{headers:{Accept:'application/json'},signal:controller.signal});
+      return {res,data:await res.json().catch(()=>({}))};
+    }finally{
+      clearTimeout(timer);
+    }
+  }
   async function fetchOffers(origin,destination,date){
     const query=new URLSearchParams({origin,destination,date});
-    const res=await fetch('/api/flights?'+query.toString(),{headers:{Accept:'application/json'}});
-    const payload=await res.json().catch(()=>({}));
+    const {res,data:payload}=await fetchJsonWithTimeout('/api/flights?'+query.toString());
     const data=normalizeFlightsContract(payload);
     return {ok:res.ok,status:res.status,data};
   }
@@ -63,8 +74,7 @@
     const normalizedDates=Array.isArray(dates)?[...new Set(dates)].sort():[];
     const query=new URLSearchParams({origin,destination,month});
     if(normalizedDates.length)query.set('dates',normalizedDates.join(','));
-    const res=await fetch('/api/schedule-calendar?'+query.toString(),{headers:{Accept:'application/json'}});
-    const data=await res.json().catch(()=>({}));
+    const {res,data}=await fetchJsonWithTimeout('/api/schedule-calendar?'+query.toString());
     if(!res.ok){
       const err=new Error(data.message||data.error||'Schedule lookup failed');
       err.status=res.status;
