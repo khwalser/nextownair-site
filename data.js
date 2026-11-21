@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-21.41",
+  "mvpRevision": "2026-11-21.42",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-21",
@@ -6770,6 +6770,50 @@ window.NTA_DATA = {
       "sourceLabel": "Directional published nonstop timetable and date-specific schedule; holiday departures vary",
       "sourceUrl": "https://www.directflights.com/DEN-ATY",
       "secondarySourceUrl": "https://zbordirect.com/en/tools/schedule/DEN/ATY",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "LBL|DEN": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Nonstop published Nov 23–29, 2026 with one or more flights daily; holiday reduction on Nov 26; times and fares require provider verification",
+      "sourceLabel": "Directflights November 2026 directional United flight grid with Thanksgiving reduction",
+      "sourceUrl": "https://www.directflights.com/LBL-DEN",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "DEN|LBL": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Nonstop published Nov 23–29, 2026 with one or more flights daily; holiday reduction on Nov 26; times and fares require provider verification",
+      "sourceLabel": "Directflights November 2026 directional United flight grid with Thanksgiving reduction",
+      "sourceUrl": "https://www.directflights.com/DEN-LBL",
       "checkedAsOf": "2026-11-21",
       "verifiedWeekStart": "2026-11-23",
       "verifiedWeekEnd": "2026-11-29",
