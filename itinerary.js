@@ -858,9 +858,18 @@
       F.fetchOffers(task.a,task.b,task.date)
         .then(({ok,status,data})=>{
           if(!ok){
-            if(status===429&&Number(data.retryAfterMs)>0){
-              fareBlockedUntil=Math.max(fareBlockedUntil,Date.now()+Number(data.retryAfterMs));
-              task.resolve({...coverageFallbackData(task.a,task.b,task.date),temporaryUnavailable:true,message:'Live pricing is temporarily rate-limited; use a prototype value or check current fares externally.'});
+            if(status===429){
+              const retryAfterMs=Math.max(5000,Number(data?.retryAfterMs)||30000);
+              fareBlockedUntil=Math.max(fareBlockedUntil,Date.now()+retryAfterMs);
+              task.rateLimitRetries=(task.rateLimitRetries||0)+1;
+              if(task.rateLimitRetries<=2){
+                // Keep the same promise unresolved and retry this exact date
+                // after provider cooldown, rather than caching a false miss.
+                fareQueue.unshift(task);
+                updateCalendarCell(task.date);
+                return;
+              }
+              task.resolve({...coverageFallbackData(task.a,task.b,task.date),temporaryUnavailable:true,message:'Pricing remains rate-limited after two automatic retries; use Check current fares or retry the selected date later.'});
               updateCalendarCell(task.date);
               return;
             }
