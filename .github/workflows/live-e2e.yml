@@ -14,6 +14,7 @@ on:
       - "styles.css"
       - "netlify/functions/**"
       - "e2e/live-itinerary.mjs"
+      - "e2e/multi-itinerary-smoke.mjs"
       - "e2e/phase4-regression.mjs"
       - "e2e/network-audit.mjs"
       - "e2e/schedule-coverage-audit.mjs"
@@ -43,7 +44,7 @@ permissions:
 jobs:
   live-e2e:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 16
     env:
       E2E_BASE_URL: ${{ inputs.base_url || 'https://nextownair.com' }}
       E2E_ROUTE: ${{ inputs.route || 'DTW,ROC,DTW' }}
@@ -127,6 +128,9 @@ jobs:
           npm install --no-save playwright@1.55.0
           which google-chrome
           google-chrome --version
+
+      - name: Exercise four distinct production itineraries
+        run: node e2e/multi-itinerary-smoke.mjs
 
       - name: Run live rendered itinerary test
         run: node e2e/live-itinerary.mjs
