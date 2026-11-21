@@ -64,9 +64,21 @@ try{
         row.selection='no selectable first-leg offer; provider or schedule may be unavailable';
         const explore=page.locator('#flight-options-0 [data-open-departure-calendar]');
         check(await explore.count()===1,'Missing first-leg offer provides direct calendar navigation');
-        await explore.click();
-        check(await page.locator('#startDateCalendar').isVisible(),'Departure calendar opens from missing-flight guidance');
-        console.log('INFO: '+tc.name+' — '+row.selection);
+        const nextDateAction=page.locator('#flight-options-0 [data-first-next-date]');
+        if(await nextDateAction.count()){
+          await nextDateAction.click();
+          const nextState=await page.evaluate(()=>window.NTA.load());
+          check(nextState.startDate>tc.date,'Suggested confirmed departure advances itinerary date',nextState.startDate);
+          const nextOptions=page.locator('#flight-options-0 .flight');
+          await nextOptions.first().waitFor({state:'visible',timeout:12000});
+          await nextOptions.first().click();
+          row.selection=await page.evaluate(()=>window.NTA.load().selections?.['0']);
+          check(Boolean(row.selection),'Suggested confirmed date offers selectable flight',row.selection||'');
+        }else{
+          await explore.click();
+          check(await page.locator('#startDateCalendar').isVisible(),'Departure calendar opens from missing-flight guidance');
+          console.log('INFO: '+tc.name+' — '+row.selection);
+        }
       }
       row.totalFlightLegs=tc.route.length-1;
       row.completedFlightLegs=await page.evaluate(()=>Object.keys(window.NTA.load().selections||{}).length);
