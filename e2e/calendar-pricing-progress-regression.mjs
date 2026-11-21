@@ -556,3 +556,29 @@ absoluteStayCtx.setStayByDate(2,'2026-12-08','2026-12-11');
 assert.equal(absoluteStaySaved.mode,'date','A chosen onward date is stored absolutely, not as an inbound-relative number of nights');
 assert.equal(absoluteStaySaved.date,'2026-12-11','Traveler-selected date is preserved when preceding travel timing changes');
 console.log('PASS: Explicit onward dates do not silently move when inbound flight dates shift');
+
+const repeatedFareStart=source.indexOf('  async function hydrateLivePricing(');
+const repeatedFareEnd=source.indexOf('  async function hydrateScheduleAvailability(',repeatedFareStart);
+assert(repeatedFareStart>=0&&repeatedFareEnd>repeatedFareStart,'Per-leg fare hydration is present');
+const repeatedFareKey='DFW|HOT|2026-12-13';
+const repeatedFareData={liveMode:true,offers:[{amount:175,currency:'USD'}]};
+const repeatedLegFares=new Map();
+let repeatedRequests=0;
+const repeatedFareCtx={
+  document:{querySelectorAll:()=>[
+    {dataset:{origin:'DFW',destination:'HOT',date:'2026-12-13',legIndex:'1'}},
+    {dataset:{origin:'DFW',destination:'HOT',date:'2026-12-13',legIndex:'4'}}
+  ]},
+  fareKey:(a,b,d)=>a+'|'+b+'|'+d,
+  liveFareData:new Map([[repeatedFareKey,repeatedFareData]]),
+  liveFareByLeg:repeatedLegFares,
+  fetchFare:async()=>{repeatedRequests++;return repeatedFareData;},
+  renderVersion:1,rememberFareData:()=>{},render:()=>{},updateLiveTripFare:()=>{}
+};
+vm.createContext(repeatedFareCtx);
+vm.runInContext(source.slice(repeatedFareStart,repeatedFareEnd)+'\nthis.hydrateLivePricing=hydrateLivePricing;',repeatedFareCtx);
+await repeatedFareCtx.hydrateLivePricing(1);
+assert.equal(repeatedLegFares.size,2,'Both itinerary legs sharing the same fare key receive pricing');
+assert.deepEqual([...repeatedLegFares.keys()].sort(),[1,4],'Repeated route/date pricing is attached to the correct leg indexes');
+assert.equal(repeatedRequests,0,'Cached fare is not refetched for repeated legs');
+console.log('PASS: Multi-stop open-jaw trips retain per-leg fare accounting for duplicate route-date keys');
