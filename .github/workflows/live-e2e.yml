@@ -26,6 +26,7 @@ on:
       - "e2e/trip-date-validation-regression.mjs"
       - "e2e/direct-itinerary-connectors.mjs"
       - "e2e/all-pairs-routing-regression.mjs"
+      - "e2e/schedule-provider-timeout-regression.mjs"
       - "e2e/live-flight-validation.mjs"
       - "e2e/schedule-full-day-regression.mjs"
       - "docs/data-architecture.md"
@@ -101,6 +102,9 @@ jobs:
       - name: Confirm full-day published schedule retrieval
         id: schedule
         run: node e2e/schedule-full-day-regression.mjs
+
+      - name: Regress schedule provider timeout and quota exhaustion
+        run: node e2e/schedule-provider-timeout-regression.mjs
 
       - name: Audit schedule fallback coverage
         id: coverage
