@@ -24,6 +24,7 @@ on:
       - "e2e/flight-request-timeout-regression.mjs"
       - "e2e/flight-input-validation-regression.mjs"
       - "e2e/trip-date-validation-regression.mjs"
+      - "e2e/direct-itinerary-connectors.mjs"
       - "e2e/live-flight-validation.mjs"
       - "e2e/schedule-full-day-regression.mjs"
       - "docs/data-architecture.md"
@@ -156,6 +157,9 @@ jobs:
           npm install --no-save playwright@1.55.0
           which google-chrome
           google-chrome --version
+
+      - name: Verify direct itinerary connector repair in live browser
+        run: node e2e/direct-itinerary-connectors.mjs
 
       - name: Exercise four distinct production itineraries
         id: multi
