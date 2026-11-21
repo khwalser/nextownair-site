@@ -49,6 +49,9 @@ try{
       check(!/No flight offers match this timing/i.test(overview.legText),'First leg avoids incorrect connection-timing explanation');
       // Try an actual planner interaction: select a first-leg flight where published service exists.
       const first=page.locator('#flight-options-0 .flight');
+      // Give asynchronous schedule and fare providers a bounded opportunity
+      // to populate the first flight before recording a missing offer.
+      try{await first.first().waitFor({state:'visible',timeout:12000});}catch(_){}
       if(await first.count()){
         await first.first().click();
         await page.waitForFunction(()=>Boolean(window.NTA.load().selections?.['0']),null,{timeout:10000});
