@@ -462,3 +462,40 @@ assert.equal(statusContext.scheduleState('DFW','CVN','2026-12-25').status,'none'
 assert.equal(statusContext.scheduleState('DFW','CVN','2027-01-05').status,'fallback','Expired published timetable cannot verify flights next year');
 assert.equal(statusContext.scheduleState('DFW','CVN','2026-11-20').status,'fallback','Flight before published timetable validity is unverified');
 console.log('PASS: Calendar availability respects timetable date windows, exclusions and weekdays');
+
+const empty429QueueStart=source.indexOf('  function pumpFareQueue()');
+const empty429QueueEnd=source.indexOf('  function fetchFare(',empty429QueueStart);
+assert(empty429QueueStart>=0&&empty429QueueEnd>empty429QueueStart,'Fare provider queue is present for 429 regression');
+let empty429Resolved=null,empty429Rejected=null,empty429Requests=0;
+const empty429Task={a:'ELD',b:'DFW',date:'2026-12-08',key:'ELD|DFW|2026-12-08',
+  resolve:value=>{empty429Resolved=value;},reject:error=>{empty429Rejected=error;}};
+const empty429Context={
+  clearTimeout:()=>{},setTimeout:()=>null,Date,
+  farePumpTimer:null,fareQueue:[empty429Task],fareActive:0,
+  FARE_MAX_CONCURRENT:1,FARE_START_GAP_MS:0,lastFareStartAt:0,fareBlockedUntil:0,
+  fareActiveKeys:new Set(),updateCalendarCell:()=>{},
+  F:{fetchOffers:async()=>{empty429Requests++;return {ok:false,status:429,data:null};}},
+  fareNoOfferCounts:new Map(),fareCoverageBlockedLegs:new Set(),
+  fareLegKey:(a,b)=>a+'|'+b,
+  coverageFallbackData:()=>({coverageLimited:true,offers:[]}),
+  externalFareSearchUrl:()=>'',firstLeg:()=>null,el:{calendarStatus:null},
+  updateCalendarFareStatus:()=>{}
+};
+vm.createContext(empty429Context);
+vm.runInContext(source.slice(empty429QueueStart,empty429QueueEnd)+'\nthis.pumpFareQueue=pumpFareQueue;',empty429Context);
+for(let attempt=1;attempt<=3;attempt++){
+  empty429Context.fareBlockedUntil=0;
+  empty429Context.pumpFareQueue();
+  await new Promise(resolve=>setTimeout(resolve,5));
+  assert.equal(empty429Requests,attempt,'Exactly one provider request per permitted attempt');
+  assert.equal(empty429Rejected,null,'Empty 429 body never throws a malformed-payload error');
+  assert.equal(empty429Task.rateLimitRetries,attempt,'Rate limits increment attempt count');
+  if(attempt<3){
+    assert.equal(empty429Context.fareQueue.length,1,'First two 429 replies requeue the same date');
+    assert.equal(empty429Resolved,null,'Original fare promise remains unresolved before final retry');
+  }
+}
+assert.equal(empty429Context.fareQueue.length,0,'Third 429 does not requeue indefinitely');
+assert.equal(empty429Resolved?.temporaryUnavailable,true,'After bounded retries, fallback reports temporary rate-limit unavailability');
+assert(empty429Context.fareBlockedUntil>Date.now(),'Empty rate-limit response still schedules provider cooldown');
+console.log('PASS: Empty-body HTTP 429 respects cooldown and retries twice without a false malformed-provider error');
