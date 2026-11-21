@@ -140,4 +140,15 @@ for(const community of ['DIK','ATY']){
     assert(p.sourceUrl.endsWith(from+'-'+to));
   }
 }
+for(const community of ['JMS','LBL']){
+  assert(!ledger.missing.some(x=>x.pair===community+'-DEN'),'Date-confirmed published week no longer missing');
+  for(const [from,to] of [[community,'DEN'],['DEN',community]]){
+    const p=D.servicePatterns[from+'|'+to];
+    assert(p,'Week48 directional route evidence is stored');
+    assert.deepEqual([...p.days],[0,1,2,3,4,5,6]);
+    assert.equal(p.activeFrom,'2026-11-23');
+    assert.equal(p.activeThrough,'2026-11-29');
+    assert(p.sourceUrl.endsWith(from+'-'+to));
+  }
+}
 console.log('PASS: '+ledger.missing.length+' EAS operating-day evidence gaps individually tracked; no fabricated schedule dates');
