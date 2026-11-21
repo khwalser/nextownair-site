@@ -277,3 +277,7 @@ assert.equal(optionCtx.providerOptions(null,'ELD','DFW','2026-12-08').length,0,'
 assert.equal(optionCtx.providerOptions({offers:null},'ELD','DFW','2026-12-08').length,0,'Null offers list safely yields zero flight options');
 assert(source.includes('previousChosen.price!=null')&&source.includes('o.price!=null')&&source.includes('x.amount!=null'),'Flight cards, selection and subtotal consistently exclude missing price amounts');
 console.log('PASS: Null provider rows and missing amounts never become $0 flight selections or fare totals');
+
+assert(source.includes('${checked} of ${dates.length} published-service dates checked for live prices'),'Completed calendar batch reports exact checked count');
+assert(source.includes('${Math.max(0,dates.length-checked)} remain unchecked'),'Incomplete monthly fare coverage is never silently portrayed as complete');
+console.log('PASS: Calendar completion reports checked, priced and unchecked service dates');
