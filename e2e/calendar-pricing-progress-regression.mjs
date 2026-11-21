@@ -379,3 +379,31 @@ assert.equal(eldPrototype.timeStatus,'prototype','Source-backed flight date neve
 assert.equal(eldPrototype.fareStatus,'prototype','Planning fare remains explicitly unverified');
 assert.equal(servicePrototypeContext.prototypeOptions('CVN','DFW','2026-12-09').length,0,'No prototype Clovis flight is invented on unsupported Wednesday');
 console.log('PASS: Published carrier names are useful while estimated fares, times and unsupported dates stay clearly marked');
+
+const scheduleOptionStart=source.indexOf('  function scheduleOptions(');
+const scheduleOptionEnd=source.indexOf('  function prototypeOptions(',scheduleOptionStart);
+assert(scheduleOptionStart>=0&&scheduleOptionEnd>scheduleOptionStart,'Published schedule option mapper is present');
+const scheduleOptionContext={
+  scheduleMonthData:new Map([['ELD|DFW|2026-12',{
+    provider:'published-schedule',days:{'2026-12-08':{flights:[
+      {ident:'WRONG',scheduledOut:'2026-12-09T08:00:00',scheduledIn:'2026-12-09T09:00:00'},
+      {ident:'ZERO',scheduledOut:'2026-12-08T08:00:00',scheduledIn:'2026-12-08T08:00:00'},
+      {ident:'BACKWARD',scheduledOut:'2026-12-08T09:00:00',scheduledIn:'2026-12-08T08:00:00'},
+      {ident:'VALID',scheduledOut:'2026-12-08T08:00:00',scheduledIn:'2026-12-08T09:00:00'}
+    ]}}
+  }]]),
+  scheduleMonthKey:(a,b,m)=>a+'|'+b+'|'+m,
+  monthKeyFromDate:d=>d.slice(0,7),
+  isoMinutes:iso=>iso?Number(iso.slice(11,13))*60+Number(iso.slice(14,16)):null,
+  isoDate:iso=>iso?.slice(0,10)||null,
+  window:{NTA:{diffDays:(a,b)=>Math.round((Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/86400000)}},
+  deterministicPrototypeFare:()=>165,
+  servicePatternStops:()=>[]
+};
+vm.createContext(scheduleOptionContext);
+vm.runInContext(source.slice(scheduleOptionStart,scheduleOptionEnd)+'\nthis.scheduleOptions=scheduleOptions;',scheduleOptionContext);
+const validPublished=Array.from(scheduleOptionContext.scheduleOptions('ELD','DFW','2026-12-08'));
+assert.equal(validPublished.length,1,'Wrong-day, zero-minute and backward published flights are discarded');
+assert.equal(validPublished[0].flightNo,'VALID','Actual correctly dated published flight remains selectable');
+assert.equal(validPublished[0].duration,60,'Published flight duration is not fabricated');
+console.log('PASS: Published flight mapper excludes off-date and invalid-duration schedule rows');
