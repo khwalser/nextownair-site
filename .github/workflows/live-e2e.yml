@@ -39,7 +39,7 @@ on:
         default: ""
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   live-e2e:
@@ -61,24 +61,31 @@ jobs:
           node-version: "22"
 
       - name: Phase 4 deterministic prototype regression
+        id: phase4
         run: node e2e/phase4-regression.mjs
 
       - name: Calendar coverage uncertainty regression
+        id: calendar
         run: node e2e/calendar-coverage-regression.mjs
 
       - name: Verify calendar pricing progress and completion
+        id: pricing
         run: node e2e/calendar-pricing-progress-regression.mjs
 
       - name: Audit route graph
+        id: network
         run: node e2e/network-audit.mjs
 
       - name: Confirm full-day published schedule retrieval
+        id: schedule
         run: node e2e/schedule-full-day-regression.mjs
 
       - name: Audit schedule fallback coverage
+        id: coverage
         run: node e2e/schedule-coverage-audit.mjs
 
       - name: Wait for production deploy containing this exact MVP revision
+        id: deployed
         if: ${{ !inputs.base_url || inputs.base_url == 'https://nextownair.com' }}
         run: |
           EXPECTED="$(grep -o '"mvpRevision": "[^"]*"' data.js | head -1 | cut -d'"' -f4)"
@@ -99,6 +106,7 @@ jobs:
           exit 1
 
       - name: Verify exact deployed frontend assets
+        id: assets
         if: ${{ !inputs.base_url || inputs.base_url == 'https://nextownair.com' }}
         run: |
           for attempt in {1..48}; do
@@ -130,9 +138,11 @@ jobs:
           google-chrome --version
 
       - name: Exercise four distinct production itineraries
+        id: multi
         run: node e2e/multi-itinerary-smoke.mjs
 
       - name: Run live rendered itinerary test
+        id: browser
         run: node e2e/live-itinerary.mjs
 
       - name: Upload browser evidence
@@ -143,3 +153,38 @@ jobs:
           path: artifacts/
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Publish machine-readable acceptance result
+        if: always()
+        env:
+          PHASE4: ${{ steps.phase4.outcome }}
+          CALENDAR: ${{ steps.calendar.outcome }}
+          PRICING: ${{ steps.pricing.outcome }}
+          NETWORK: ${{ steps.network.outcome }}
+          SCHEDULE: ${{ steps.schedule.outcome }}
+          COVERAGE: ${{ steps.coverage.outcome }}
+          DEPLOYED: ${{ steps.deployed.outcome }}
+          ASSETS: ${{ steps.assets.outcome }}
+          MULTI: ${{ steps.multi.outcome }}
+          BROWSER: ${{ steps.browser.outcome }}
+        run: |
+          # Never overwrite an acceptance result for a newer application commit.
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$GITHUB_SHA" ]; then
+            echo "A newer commit supersedes this run; not publishing a stale result."
+            exit 0
+          fi
+          mkdir -p .github
+          node - <<'NODE'
+          const fs=require('fs');
+          const steps=Object.fromEntries(['phase4','calendar','pricing','network','schedule','coverage','deployed','assets','multi','browser'].map(k=>[k,process.env[k.toUpperCase()]||'unknown']));
+          const passed=Object.values(steps).every(v=>v==='success'||v==='skipped')&&steps.multi==='success'&&steps.browser==='success';
+          const report={testedCommit:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,runUrl:'https://github.com/'+process.env.GITHUB_REPOSITORY+'/actions/runs/'+process.env.GITHUB_RUN_ID,result:passed?'pass':'fail',steps,checkedAt:new Date().toISOString()};
+          fs.writeFileSync('.github/last-live-e2e.json',JSON.stringify(report,null,2)+'\n');
+          console.log(JSON.stringify(report));
+          NODE
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/last-live-e2e.json
+          git commit -m "Record verified live E2E result [skip ci]" || exit 0
+          git push origin HEAD:main
