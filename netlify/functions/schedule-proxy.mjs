@@ -48,7 +48,7 @@ let lastStartAt=0;
 function scheduleRetryDelayMs(header){
   const raw=String(header||"").trim();
   if(!raw)return 1500;
-  if(/^\\d+(?:\\.\\d+)?$/.test(raw))return Math.max(0,Number(raw)*1000);
+  if(/^\d+(?:\.\d+)?$/.test(raw))return Math.max(0,Number(raw)*1000);
   const until=Date.parse(raw);
   return Number.isFinite(until)?Math.max(0,until-Date.now()):1500;
 }
