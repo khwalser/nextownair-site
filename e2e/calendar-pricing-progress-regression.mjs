@@ -541,3 +541,18 @@ assert(!retainedPriorityCalls.includes('2026-12-10'),'Automatic background date 
 assert(priorityOutcomes.some(([name])=>name==='manual'),'Traveler priority promise resolves after automatic coverage cap');
 assert(priorityOutcomes.some(([name,data])=>name==='background'&&data.coverageLimited),'Background date resolves with a truthful coverage gap');
 console.log('PASS: Traveler-priority fare checks survive automatic coverage limits, invalid prior-day flights are rejected, and unverified totals are marked');
+
+const absoluteStayStart=source.indexOf('  function setStayByDate(');
+const absoluteStayEnd=source.indexOf('  function stayPlan(',absoluteStayStart);
+assert(absoluteStayStart>=0&&absoluteStayEnd>absoluteStayStart,'Explicit onward date handler exists');
+let absoluteStaySaved=null;
+const absoluteStayCtx={
+  window:{NTA:{validDate:()=>true,diffDays:(a,b)=>Math.round((Date.parse(b)-Date.parse(a))/86400000)}},
+  setStay:(i,stay)=>{absoluteStaySaved=stay;}
+};
+vm.createContext(absoluteStayCtx);
+vm.runInContext(source.slice(absoluteStayStart,absoluteStayEnd)+'\nthis.setStayByDate=setStayByDate;',absoluteStayCtx);
+absoluteStayCtx.setStayByDate(2,'2026-12-08','2026-12-11');
+assert.equal(absoluteStaySaved.mode,'date','A chosen onward date is stored absolutely, not as an inbound-relative number of nights');
+assert.equal(absoluteStaySaved.date,'2026-12-11','Traveler-selected date is preserved when preceding travel timing changes');
+console.log('PASS: Explicit onward dates do not silently move when inbound flight dates shift');
