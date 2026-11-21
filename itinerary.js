@@ -1257,7 +1257,7 @@
 
     if(!locked&&i>0&&plan&&plan.notBefore!=null){
       opts=opts.filter(o=>o.departMin>=plan.notBefore);
-      if(opts.length===0&&usingPrototype&&autoConnector&&plan.mode==='asap'){
+      if(opts.length===0&&knownRoute&&autoConnector&&plan.mode==='asap'){
         // A published service may next operate several days from now; do not
         // assume that tomorrow has a flight or stop looking after one day.
         const nextDate=nextConfirmedFlightDate(a,b,departDate,14);
