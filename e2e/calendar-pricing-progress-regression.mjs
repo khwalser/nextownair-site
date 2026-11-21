@@ -190,3 +190,28 @@ assert(rateLimitBlock.includes('fareQueue.unshift(task)'),'Retry preserves the o
 assert(rateLimitBlock.indexOf('fareQueue.unshift(task)')<rateLimitBlock.indexOf('task.resolve({...coverageFallbackData'),'Rate-limit retry happens before recording temporary unavailability');
 assert(rateLimitBlock.includes('fareBlockedUntil=Math.max(fareBlockedUntil,Date.now()+retryAfterMs)'),'Retries respect provider cooldown');
 console.log('PASS: Rate-limited flight dates requeue twice after provider cooldown without falsely claiming a checked fare');
+
+const fetchStart=source.indexOf('  function fetchFare(');
+const fetchEnd=source.indexOf('  function prioritizeFareCheck(',fetchStart);
+assert(fetchStart>=0&&fetchEnd>fetchStart,'Fare queue entry point is present');
+const fetchCtx={
+  fareCoverageBlockedLegs:new Set(['ELD|DFW']),
+  fareLegKey:(a,b)=>a+'|'+b,
+  fareKey:(a,b,d)=>a+'|'+b+'|'+d,
+  coverageFallbackData:()=>({coverageLimited:true,offers:[]}),
+  liveFareData:new Map(),
+  liveFareCache:new Map(),
+  fareQueue:[],
+  pumpFareQueue:()=>{}
+};
+vm.createContext(fetchCtx);
+vm.runInContext(source.slice(fetchStart,fetchEnd)+'\nthis.fetchFare=fetchFare;',fetchCtx);
+const limitedFare=await fetchCtx.fetchFare('ELD','DFW','2026-12-12',false);
+assert.equal(limitedFare.coverageLimited,true,'Automated scan remains limited after route-wide empty provider responses');
+const explicit=fetchCtx.fetchFare('ELD','DFW','2026-12-13',true);
+assert.equal(fetchCtx.fareQueue.length,1,'Explicitly chosen new date queues a real provider request despite route coverage gap');
+assert.equal(fetchCtx.fareQueue[0].date,'2026-12-13','User-selected date is not replaced by a synthetic coverage result');
+fetchCtx.fareQueue[0].resolve({offers:[{amount:277,currency:'USD'}]});
+const explicitFare=await explicit;
+assert.equal(explicitFare.offers[0].amount,277,'Explicit fare query is allowed to return provider pricing');
+console.log('PASS: Automatic route-coverage cap does not suppress a traveler-initiated live price lookup');
