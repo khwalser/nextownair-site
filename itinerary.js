@@ -1218,6 +1218,14 @@
     section.innerHTML=`<div class="leghead"><div><div class="eyebrow">Transfer · ${a} → ${b}</div><h2>Ground + airport ferry transfer</h2><p class="small">${transfer&&transfer.label?transfer.label:'Required local transfer between airports.'}</p></div><span class="transfer-badge">Not a flight</span></div><div class="transfer-card"><div><strong>${timeText}</strong><span>Prototype transfer allowance · <span class="prototype-value">?${durationText}</span></span></div><div class="small">No airfare is attached to this segment. NexTownAir uses the transfer allowance only to keep downstream flight timing coherent.</div></div>`;
     return {section,chosen:{transfer:true,duration,departMin:startMin,arrivalMin,arrivalDayOffset:dayOffset,timeStatus:'prototype',fareStatus:'not-applicable',flightNo:'Ground + airport ferry',carrier:'Ketchikan local transfer'},departDate:hasInbound?inboundArrivalDate:departDate,arrivalDate,arrivalMin,transfer};
   }
+  function nextConfirmedFlightDate(a,b,afterDate,days=14){
+    for(let offset=1;offset<=days;offset++){
+      const date=window.NTA.addDays(afterDate,offset);
+      const status=scheduleState(a,b,date).status;
+      if(status==='yes'||Boolean(lowestOffer(liveFareData.get(fareKey(a,b,date)))))return date;
+    }
+    return null;
+  }
   function renderLeg(i,a,b,departDate,plan,priorSelected){
     const knownRoute=F.hasKnownRoute(a,b);
     const locked=i>0&&!priorSelected;
@@ -1319,14 +1327,25 @@
       if(state.selections[String(i)]){delete state.selections[String(i)];save();}
       return {section:leg,chosen:null,departDate,options:[]};
     }
-    if(!fareData&&!opts.length){
-      box.innerHTML='<div class="pending-flights">Checking published service and live flight offers…</div>';
-      return {section:leg,chosen:null,departDate,options:[]};
-    }
     if(!opts.length){
-      box.innerHTML=i===0
-        ?'<div class="no-flights">No selectable flight offer was returned for this departure date. This does not confirm that the flight does not operate. Choose a priced date on the calendar or check current fares.</div>'
-        :'<div class="no-flights">No flight offers match this connection timing. Change the stay or departure date to see more choices.</div>';
+      const stillChecking=!fareData;
+      if(i===0){
+        box.innerHTML=`<div class="${stillChecking?'pending-flights':'no-flights'}">${stillChecking?'Checking published service and live offers for this date.':'No selectable offer was returned for this date; this does not prove the flight does not operate.'} <button type="button" class="btn tertiary" data-open-departure-calendar>Explore other departure dates</button></div>`;
+        box.querySelector('[data-open-departure-calendar]').addEventListener('click',()=>{
+          showStartCalendar(false);
+          el.startDateCalendar.scrollIntoView({behavior:'smooth',block:'start'});
+        });
+      }else if(locked){
+        box.innerHTML='<div class="pending-flights">Choose the inbound flight first to unlock onward dates.</div>';
+      }else{
+        const next=nextConfirmedFlightDate(a,b,departDate);
+        const explanation=stillChecking?'Checking onward service and fares.':'No selectable flight fits the selected connection date.';
+        box.innerHTML=`<div class="${stillChecking?'pending-flights':'no-flights'}">${explanation} ${next?`<button type="button" class="btn tertiary" data-next-service-date>Try confirmed service on ${window.NTA.fmtDate(next,{weekday:'short',month:'short',day:'numeric'})}</button>`:'Check the stay dates above or look up current fares; no later confirmed service date is available in the next 14 days.'}</div>`;
+        const moveButton=box.querySelector('[data-next-service-date]');
+        if(moveButton)moveButton.addEventListener('click',()=>{
+          setStay(i,{mode:'date',date:next,nights:0});
+        });
+      }
       return {section:leg,chosen:null,departDate,options:[]};
     }
 
