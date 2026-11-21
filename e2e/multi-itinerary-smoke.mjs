@@ -64,6 +64,10 @@ try{
         row.selection='no selectable first-leg offer; provider or schedule may be unavailable';
         const explore=page.locator('#flight-options-0 [data-open-departure-calendar]');
         check(await explore.count()===1,'Missing first-leg offer provides direct calendar navigation');
+        const external=page.locator('#flight-options-0 [data-external-first-fares]');
+        check(await external.count()===1,'Missing first flight gives a dated external fare search');
+        const externalUrl=await external.getAttribute('href');
+        check(externalUrl.includes(tc.route[0])&&externalUrl.includes(tc.route[1])&&externalUrl.includes(tc.date),'External fare lookup uses the requested route and date',externalUrl);
         const nextDateAction=page.locator('#flight-options-0 [data-first-next-date]');
         if(await nextDateAction.count()){
           await nextDateAction.click();
@@ -82,6 +86,18 @@ try{
       }
       row.totalFlightLegs=tc.route.length-1;
       row.completedFlightLegs=await page.evaluate(()=>Object.keys(window.NTA.load().selections||{}).length);
+      row.legDiagnostics=[];
+      for(let legIndex=0;legIndex<row.totalFlightLegs;legIndex++){
+        const legPanel=page.locator('#flight-options-'+legIndex);
+        row.legDiagnostics.push({
+          leg:legIndex+1,
+          route:tc.route[legIndex]+' → '+tc.route[legIndex+1],
+          selectable:await legPanel.locator('.flight').count(),
+          recoveryLink:await legPanel.locator('[data-external-first-fares],[data-external-onward-fares]').count(),
+          locked:await page.locator('#content .leg').nth(legIndex).evaluate(el=>el.classList.contains('leg-locked'))
+        });
+      }
+      console.log('DIAGNOSTICS: '+tc.name+' — '+JSON.stringify(row.legDiagnostics));
       // Exercise downstream flight and stay choices on the two shorter round trips.
       if(tc.route.length===3&&row.completedFlightLegs>=1){
         for(let legIndex=1;legIndex<row.totalFlightLegs;legIndex++){
