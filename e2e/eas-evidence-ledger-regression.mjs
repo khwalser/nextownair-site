@@ -151,4 +151,13 @@ for(const community of ['JMS','LBL']){
     assert(p.sourceUrl.endsWith(from+'-'+to));
   }
 }
+for(const [from,to] of [['PIR','DEN'],['DEN','PIR']]){
+  const p=D.servicePatterns[from+'|'+to];
+  assert(p,'Daily Pierre Denver source pattern must exist in each direction');
+  assert.deepEqual([...p.days],[0,1,2,3,4,5,6]);
+  assert.equal(p.activeFrom,'2026-11-23');
+  assert.equal(p.activeThrough,'2026-11-29','No unsourced continuation');
+  assert(p.sourceUrl.endsWith(from+'-'+to),'Directional source URL required');
+}
+assert(!ledger.missing.some(x=>x.pair==='PIR-DEN'),'Pierre Denver no longer unresolved within published week');
 console.log('PASS: '+ledger.missing.length+' EAS operating-day evidence gaps individually tracked; no fabricated schedule dates');
