@@ -55,6 +55,7 @@ const queueCtx={
   scheduleMonthKey:(a,b,m)=>a+'|'+b+'|'+m,
   scheduleMonthData:new Map([['DTW|ORD|2026-11',{days:{}}]]),
   isScheduleFallbackCode:code=>code==='schedule_quota_exhausted',
+  isKnownFareCoverageGap:(a,b)=>a==='DTW'&&b==='CIU',
   scheduleState:()=>({status:'yes'}),
   liveFareData:new Map(),calendarFareJobs:new Set(),
   fetchFare:(a,b,date)=>{queuedDates.push(date);return new Promise(()=>{});},
@@ -76,3 +77,14 @@ queueCtx.scheduleMonthData.set('DTW|ORD|2026-11',{error:true,code:'schedule_quot
 queueCtx.queueCalendarFarePricing('DTW','ORD',allDates,2);
 assert.equal(queuedDates.length,5,'Unavailable schedule feed limits speculative automatic fare queries to five');
 console.log('PASS: Production fare queue prices all confirmed dates, prioritizes selected date, and bounds fallback checks');
+
+queueCtx.calendarFareJobs.clear();
+queuedDates.length=0;
+queueCtx.scheduleMonthData.set('DTW|ORD|2026-11',{days:{}});
+queueCtx.scheduleMonthData.set('DTW|CIU|2026-11',{days:{}});
+queueCtx.queueCalendarFarePricing('DTW','CIU',allDates,3);
+assert.equal(queuedDates.length,2,'Known fare coverage gaps get two live fare probes rather than zero or a full-month scan');
+assert.equal(queuedDates[0],'2026-11-20','A known coverage gap checks the selected date first');
+assert.doesNotMatch(source,/if\\(leg&&isKnownFareCoverageGap\\(leg\\.a,leg\\.b\\)\\)fareCoverageBlockedLegs\\.add/,'Known coverage gaps must not be unconditionally blocked by firstLeg');
+assert.doesNotMatch(source,/if\\(isKnownFareCoverageGap\\(a,b\\)\\)fareCoverageBlockedLegs\\.add/,'A known gap must not suppress live pricing from fetchFare');
+console.log('PASS: DTW-CIU calendar attempts bounded real pricing instead of suppressing all fare lookups');
