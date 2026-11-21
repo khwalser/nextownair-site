@@ -994,7 +994,8 @@
     const currency=cheapest[0]&&cheapest[0].currency||'USD';
     const same=cheapest.every(x=>(x.currency||'USD')===currency);
     const total=same?formatMoney(cheapest.reduce((sum,x)=>sum+Number(x.amount||0),0),currency):'Multiple currencies';
-    node.innerHTML=`<strong>Lowest available total ${total}</strong><span>${live.length===legs?'planned-date live fare estimate':`live quotes for ${live.length} of ${legs} legs`} · sum of the lowest returned nonstop one-way fares · updates as trip timing changes</span>`;
+    const complete=cheapest.length===legs;
+    node.innerHTML=`<strong>${complete?'Lowest live fare estimate':'Partial live fare subtotal'} ${total}</strong><span>${complete?'All flight legs have priced offers':`priced offers for ${cheapest.length} of ${legs} flight legs`} · sum of the lowest returned nonstop one-way fares · updates as trip timing changes</span>`;
   }
   async function hydrateLivePricing(version){
     const legNodes=[...document.querySelectorAll('.live-fare[data-leg-index]')];
