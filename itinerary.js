@@ -1164,8 +1164,9 @@
     if(!window.NTA.validDate(chosen))return;
     let diff=window.NTA.diffDays(arrivalDate,chosen);
     if(diff<0){chosen=arrivalDate;diff=0;}
-    if(diff>=1&&diff<=4)setStay(i,{mode:'nights',nights:diff,date:null});
-    else setStay(i,{mode:'date',nights:Math.max(0,diff),date:chosen});
+    // The date picker expresses an absolute traveler choice, not a relative
+    // number of nights. Preserve that calendar date if an inbound leg changes.
+    setStay(i,{mode:'date',nights:Math.max(0,diff),date:chosen});
   }
   function stayPlan(i,arrivalDate,arrivalMin,hasExactArrival){
     let s=defaultStay(i);
