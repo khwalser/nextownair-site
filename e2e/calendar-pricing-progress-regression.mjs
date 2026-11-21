@@ -226,3 +226,27 @@ assert.equal(amountCtx.lowestOffer({offers:[{amount:null},{amount:''},{amount:'N
 assert.equal(amountCtx.lowestOffer({offers:[null,{amount:333},{amount:199}]}).amount,199,'Valid offer selection still finds the lowest numeric price');
 assert(source.includes('if(!cheapest.length){'),'Trip fare summary does not show zero when all quotes lack valid amounts');
 console.log('PASS: Provider fare validation rejects null, malformed and fabricated zero fares');
+
+const pumpStart=source.indexOf('  function pumpFareQueue()');
+const pumpEnd=source.indexOf('  function fetchFare(',pumpStart);
+assert(pumpStart>=0&&pumpEnd>pumpStart,'Provider queue body exists');
+let providerError=null;
+const queueCtx={
+  clearTimeout:()=>{},
+  setTimeout:()=>null,
+  farePumpTimer:null, fareQueue:[{a:'ELD',b:'DFW',date:'2026-12-08',key:'ELD|DFW|2026-12-08',resolve:()=>{},reject:e=>{providerError=e;}}],
+  fareActive:0,FARE_MAX_CONCURRENT:1,FARE_START_GAP_MS:0,lastFareStartAt:0,fareBlockedUntil:0,
+  fareActiveKeys:new Set(),updateCalendarCell:()=>{},
+  F:{fetchOffers:async()=>({ok:true,status:200,data:null})},
+  fareNoOfferCounts:new Map(),fareCoverageBlockedLegs:new Set(),
+  fareLegKey:(a,b)=>a+'|'+b,
+  coverageFallbackData:()=>({offers:[],coverageLimited:true}),
+  externalFareSearchUrl:()=>'',firstLeg:()=>null,el:{calendarStatus:null},updateCalendarFareStatus:()=>{}
+};
+vm.createContext(queueCtx);
+vm.runInContext(source.slice(pumpStart,pumpEnd)+'\nthis.pumpFareQueue=pumpFareQueue;',queueCtx);
+queueCtx.pumpFareQueue();
+await new Promise(resolve=>setTimeout(resolve,10));
+assert(providerError&&/invalid response body/.test(providerError.message),'Null provider JSON is safely rejected as malformed, not dereferenced');
+assert.equal(queueCtx.fareActive,0,'Malformed provider response releases the active request slot');
+console.log('PASS: Null provider responses reject cleanly and release the fare queue');
