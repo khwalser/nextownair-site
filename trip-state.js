@@ -40,7 +40,11 @@
     return day<=new Date(Date.UTC(year,month,0)).getUTCDate();
   }
   function normalizeRoute(route){
-    return Array.isArray(route)?route.map(x=>String(x).trim().toUpperCase()).filter(c=>airportCodes.has(c)):[];
+    if(!Array.isArray(route))return [];
+    const cleaned=route.map(x=>String(x).trim().toUpperCase()).filter(c=>airportCodes.has(c));
+    // Keep revisits (DTW → ROC → DTW), but never create a flight from an
+    // airport to itself because an imported URL repeats a stop.
+    return cleaned.filter((code,index)=>index===0||code!==cleaned[index-1]);
   }
   function airportByCode(code){return (D.airports||[]).find(a=>a.code===code)||null;}
   function hasListedRoute(a,b){return Boolean(listedAdj.get(a)&&listedAdj.get(a).has(b));}
