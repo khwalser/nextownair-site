@@ -677,7 +677,10 @@
       // Never place a provider flight from another day on the requested date.
       if(!departDay||departDay!==date)return null;
       const arrivalDay=isoDate(o.arrivalTime)||departDay;
-      const dayOffset=Math.max(0,window.NTA.diffDays(departDay,arrivalDay));
+      const dayOffset=window.NTA.diffDays(departDay,arrivalDay);
+      // A positive advertised duration cannot make an arrival on an earlier
+      // calendar day a valid domestic flight.
+      if(!Number.isFinite(dayOffset)||dayOffset<0)return null;
       const providerDuration=Number(o.durationMinutes);
       const fallbackDuration=Math.round((new Date(o.arrivalTime)-new Date(o.departureTime))/60000);
       const elapsed=Number.isFinite(providerDuration)&&providerDuration>0?providerDuration:fallbackDuration;
