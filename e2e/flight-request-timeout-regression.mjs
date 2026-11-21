@@ -43,7 +43,7 @@ for(const stallMode of ['stall','stalled-body']){
     assert.equal(typeof timeoutCallback,'function','Request sets a timeout');
     assert.equal(lastSignal.aborted,false,'Request starts with active signal');
     // Let the mocked fetch resolve headers so the stalled-body test enters JSON parsing.
-    if(stallMode==='stalled-body')await Promise.resolve();
+    if(stallMode==='stalled-body')await new Promise(resolve=>setImmediate(resolve));
     timeoutCallback();
     await assert.rejects(pending,/aborted/,'Stalled '+stallMode+' request is rejected after timeout');
     assert.equal(lastSignal.aborted,true,'Request aborts the in-flight fetch');
