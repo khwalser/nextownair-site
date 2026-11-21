@@ -14,7 +14,8 @@ const ctx={
   document:{getElementById:id=>id==='calendarMoreFares'?button:null},
   liveFareData:data,calendarFareJobs:jobs,fareCoverageBlockedLegs:blocked,
   fareKey:(a,b,date)=>a+'|'+b+'|'+date,
-  fareLegKey:(a,b)=>a+'|'+b
+  fareLegKey:(a,b)=>a+'|'+b,
+  isKnownFareCoverageGap:(a,b)=>a==='DTW'&&b==='CIU'
 };
 vm.createContext(ctx);
 vm.runInContext(source.slice(start,end)+'\nthis.showMore=calendarMoreFareControl',ctx);
@@ -23,6 +24,9 @@ ctx.showMore('DTW','ORD','2026-11',dates,0);
 assert.equal(button.hidden,false,'Unpriced confirmed dates have a visible action');
 assert.equal(button.disabled,false);
 assert.match(button.textContent,/Check next 3 of 3 unchecked dates/);
+ctx.showMore('DTW','CIU','2026-11',dates,0);
+assert.match(button.textContent,/Check next 2 of 3 unchecked dates/,'Known coverage gap offers only two live fare checks');
+ctx.showMore('DTW','ORD','2026-11',dates,0);
 jobs.add('DTW|ORD|2026-11-25');
 ctx.showMore('DTW','ORD','2026-11',dates,1);
 assert.equal(button.disabled,true,'Pending checks show an ongoing state');
@@ -90,7 +94,7 @@ assert(!source.includes('if(isKnownFareCoverageGap(a,b))fareCoverageBlockedLegs.
 console.log('PASS: DTW-CIU calendar attempts bounded real pricing instead of suppressing all fare lookups');
 
 assert(source.includes('calendarMoreFareControl(leg.a,leg.b,month,monthCells.map(cell=>cell.dataset.calendarDate),queued)'),'Schedule-quota fallback exposes manual checks for unchecked calendar days');
-assert(source.includes('queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,Math.min(5,remaining.length))'),'Manual checks remain bounded to five dates');
+assert(source.includes('queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,Math.min(isKnownFareCoverageGap(leg.a,leg.b)?2:5,remaining.length))'),'Manual checks are capped at five dates, or two for known coverage gaps');
 assert(source.includes('dates checked;')&&source.includes('remain\' unchecked')===false,'Partial fallback scan uses checked counts instead of announcing completion');
 assert(source.includes('No selectable flight offer was returned for this departure date'),'First-leg missing inventory must not masquerade as a connection timing conflict');
 console.log('PASS: Partial scan remains truthful, additional checks are available, and first-leg empty results are explained');
@@ -108,3 +112,6 @@ const rolloverPosition=source.indexOf('departDate=nextDate;');
 const selectionGuardPosition=source.indexOf('if(storedSelection&&!String(storedSelection).endsWith(');
 assert(rolloverPosition>=0&&selectionGuardPosition>rolloverPosition,'Selection validity is checked after automatic connector departure-date rollover');
 console.log('PASS: Automatic next-service-day connector selections are not cleared on rerender');
+
+assert(source.includes('const batchLimit=isKnownFareCoverageGap(a,b)?2:5;'),'Manual check label and route-specific pricing limits stay aligned');
+console.log('PASS: Manual fare-check batch label matches two-date known gap and five-date general provider caps');
