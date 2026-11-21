@@ -250,3 +250,22 @@ await new Promise(resolve=>setTimeout(resolve,10));
 assert(providerError&&/invalid response body/.test(providerError.message),'Null provider JSON is safely rejected as malformed, not dereferenced');
 assert.equal(queueCtx.fareActive,0,'Malformed provider response releases the active request slot');
 console.log('PASS: Null provider responses reject cleanly and release the fare queue');
+
+const optionStart=source.indexOf('  function providerOptions(');
+const optionEnd=source.indexOf('  function estimatedFlightMinutes(',optionStart);
+assert(optionStart>=0&&optionEnd>optionStart,'Flight provider option mapping is present');
+const optionCtx={
+  isoMinutes:iso=>iso?Number(iso.slice(11,13))*60+Number(iso.slice(14,16)):null,
+  isoDate:iso=>iso?iso.slice(0,10):null,
+  window:{NTA:{diffDays:(a,b)=>Math.round((Date.parse(b+'T12:00:00Z')-Date.parse(a+'T12:00:00Z'))/86400000)}}
+};
+vm.createContext(optionCtx);
+vm.runInContext(source.slice(optionStart,optionEnd)+'\nthis.providerOptions=providerOptions;',optionCtx);
+const offerBase={departureTime:'2026-12-08T08:00:00',arrivalTime:'2026-12-08T09:00:00',durationMinutes:60,flightNumber:'XY123'};
+const mapped=optionCtx.providerOptions({offers:[null,{...offerBase,amount:null},{...offerBase,amount:'invalid'},{...offerBase,amount:213}]},'ELD','DFW','2026-12-08');
+assert.equal(mapped.length,3,'Malformed null offer row does not crash option mapping');
+assert.equal(mapped[0].price,null,'Missing amount is not converted to free airfare');
+assert.equal(mapped[1].price,null,'Nonnumeric amount is not converted to a valid flight fare');
+assert.equal(mapped[2].price,213,'Valid provider amount remains usable');
+assert(source.includes('previousChosen.price!=null')&&source.includes('o.price!=null')&&source.includes('x.amount!=null'),'Flight cards, selection and subtotal consistently exclude missing price amounts');
+console.log('PASS: Null provider rows and missing amounts never become $0 flight selections or fare totals');
