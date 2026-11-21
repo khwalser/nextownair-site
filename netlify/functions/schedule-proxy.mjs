@@ -179,6 +179,12 @@ export default async(req)=>{
         return json({error:"schedule_quota_exhausted",message:"AeroDataBox API.Market quota is exhausted.",upstreamStatus:429},503,false);
       }
       lastUpstreamError={status:Number(err?.status||0),message:message.slice(0,300)};
+      // On any 429, stop the batch. Retrying each remaining day compounds
+      // quota exhaustion and can leave the month stuck loading.
+      if(err?.status===429){
+        unknownDates.push(...targetDates.slice(i));
+        break;
+      }
       unknownDates.push(date);
     }
   }
