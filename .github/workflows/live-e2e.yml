@@ -27,6 +27,7 @@ on:
       - "e2e/direct-itinerary-connectors.mjs"
       - "e2e/all-pairs-routing-regression.mjs"
       - "e2e/schedule-provider-timeout-regression.mjs"
+      - "e2e/schedule-malformed-response-regression.mjs"
       - "e2e/live-flight-validation.mjs"
       - "e2e/schedule-full-day-regression.mjs"
       - "docs/data-architecture.md"
@@ -105,6 +106,9 @@ jobs:
 
       - name: Regress schedule provider timeout and quota exhaustion
         run: node e2e/schedule-provider-timeout-regression.mjs
+
+      - name: Regress malformed schedule response treatment
+        run: node e2e/schedule-malformed-response-regression.mjs
 
       - name: Audit schedule fallback coverage
         id: coverage
