@@ -20,6 +20,7 @@ const context={
   serviceCountForDate:()=>count,
   estimatedFlightMinutes:()=>95,
   servicePatternStops:()=>[],
+  publishedServicePattern:()=>null,
 };
 vm.createContext(context);
 vm.runInContext(snippets+'\nthis.api={stableHash,deterministicPrototypeFare,prototypeOptions};',context);
