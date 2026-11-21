@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-21.32",
+  "mvpRevision": "2026-11-21.33",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-21",
@@ -5804,6 +5804,270 @@ window.NTA_DATA = {
       "sourceUrl": "https://zbordirect.com/en/tools/schedule/HPN/LEB",
       "authorityUrl": "https://lebanonnh.gov/158/Book-Your-Flight",
       "checkedAsOf": "2026-11-21"
+    },
+    "ABR|MSP": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Nov 23–29, 2026 published nonstop week only; exact flight and fare require date-specific confirmation",
+      "sourceLabel": "Directflights.com published Week 48, Nov 23–29, 2026 plus corroborating daily schedule",
+      "sourceUrl": "https://www.directflights.com/ABR-MSP",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "MSP|ABR": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Nov 23–29, 2026 published nonstop week only; exact flight and fare require date-specific confirmation",
+      "sourceLabel": "Directflights.com published Week 48, Nov 23–29, 2026 plus corroborating daily schedule",
+      "sourceUrl": "https://www.directflights.com/MSP-ABR",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "BJI|MSP": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Nov 23–29, 2026 published nonstop week only; exact flight and fare require date-specific confirmation",
+      "sourceLabel": "Directflights.com published Week 48, Nov 23–29, 2026 plus corroborating daily schedule",
+      "sourceUrl": "https://www.directflights.com/BJI-MSP",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "MSP|BJI": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Nov 23–29, 2026 published nonstop week only; exact flight and fare require date-specific confirmation",
+      "sourceLabel": "Directflights.com published Week 48, Nov 23–29, 2026 plus corroborating daily schedule",
+      "sourceUrl": "https://www.directflights.com/MSP-BJI",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "BRD|MSP": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Nov 23–29, 2026 published nonstop week only; exact flight and fare require date-specific confirmation",
+      "sourceLabel": "Directflights.com published Week 48, Nov 23–29, 2026 plus corroborating daily schedule",
+      "sourceUrl": "https://www.directflights.com/BRD-MSP",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "MSP|BRD": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Nov 23–29, 2026 published nonstop week only; exact flight and fare require date-specific confirmation",
+      "sourceLabel": "Directflights.com published Week 48, Nov 23–29, 2026 plus corroborating daily schedule",
+      "sourceUrl": "https://www.directflights.com/MSP-BRD",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "RHI|MSP": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Nov 23–29, 2026 published nonstop week only; exact flight and fare require date-specific confirmation",
+      "sourceLabel": "Directflights.com published Week 48, Nov 23–29, 2026 plus corroborating daily schedule",
+      "sourceUrl": "https://www.directflights.com/RHI-MSP",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "MSP|RHI": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Nov 23–29, 2026 published nonstop week only; exact flight and fare require date-specific confirmation",
+      "sourceLabel": "Directflights.com published Week 48, Nov 23–29, 2026 plus corroborating daily schedule",
+      "sourceUrl": "https://www.directflights.com/MSP-RHI",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "INL|MSP": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Nov 23–29, 2026 published nonstop week only; exact flight and fare require date-specific confirmation",
+      "sourceLabel": "Directflights.com published Week 48, Nov 23–29, 2026 plus corroborating daily schedule",
+      "sourceUrl": "https://www.directflights.com/INL-MSP",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "MSP|INL": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Delta Air Lines",
+      "label": "Nov 23–29, 2026 published nonstop week only; exact flight and fare require date-specific confirmation",
+      "sourceLabel": "Directflights.com published Week 48, Nov 23–29, 2026 plus corroborating daily schedule",
+      "sourceUrl": "https://www.directflights.com/MSP-INL",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "TVF|MSP": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2027-01-21",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Denver Air Connection",
+      "label": "Daily nonstop timetable, with explicitly published January 2027 end date; actual schedule and fare require live verification",
+      "sourceLabel": "WhatFliesWhere published daily nonstop timetable with Jan 2027 cutoff",
+      "sourceUrl": "https://whatflieswhere.com/from/tvf/to/msp",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "daily-with-specified-valid-through"
+    },
+    "MSP|TVF": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2027-01-30",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Denver Air Connection",
+      "label": "Daily nonstop timetable, with explicitly published January 2027 end date; actual schedule and fare require live verification",
+      "sourceLabel": "WhatFliesWhere published daily nonstop timetable with Jan 2027 cutoff",
+      "sourceUrl": "https://whatflieswhere.com/from/msp/to/tvf",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "daily-with-specified-valid-through"
     }
   }
 };
