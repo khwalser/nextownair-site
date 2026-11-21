@@ -31,7 +31,14 @@
     const day=String(d.getDate()).padStart(2,'0');
     return `${y}-${m}-${day}`;
   }
-  function validDate(s){return /^\d{4}-\d{2}-\d{2}$/.test(String(s||''));}
+  function validDate(s){
+    if(typeof s!=='string')return false;
+    const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    if(!match)return false;
+    const year=Number(match[1]),month=Number(match[2]),day=Number(match[3]);
+    if(year<1000||month<1||month>12||day<1)return false;
+    return day<=new Date(Date.UTC(year,month,0)).getUTCDate();
+  }
   function normalizeRoute(route){
     return Array.isArray(route)?route.map(x=>String(x).trim().toUpperCase()).filter(c=>airportCodes.has(c)):[];
   }
