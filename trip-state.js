@@ -102,17 +102,38 @@
   function sanitize(raw){
     const b=baseState();
     if(!raw||typeof raw!=='object')return b;
-    b.route=normalizeRoute(raw.route);
+    // Imported URLs and older saved trips can contain duplicate or unknown
+    // stops. Preserve stay positions while normalizing their route indices.
+    const source=Array.isArray(raw.route)?raw.route:[];
+    const positionMap=[];
+    const normalized=[];
+    source.forEach((value,index)=>{
+      const code=String(value).trim().toUpperCase();
+      if(!airportCodes.has(code)){positionMap[index]=null;return;}
+      if(normalized[normalized.length-1]!==code)normalized.push(code);
+      positionMap[index]=normalized.length-1;
+    });
+    b.route=normalized;
+    const changed=source.length!==normalized.length;
     b.autoConnectors=normalizeRoute(raw.autoConnectors).filter(code=>b.route.includes(code));
     const legacyCodes=new Set(b.autoConnectors);
     const rawIndices=Array.isArray(raw.autoConnectorIndices)?raw.autoConnectorIndices.map(Number).filter(Number.isInteger):[];
-    b.autoConnectorIndices=[...new Set(rawIndices.filter(i=>i>0&&i<b.route.length-1))];
+    b.autoConnectorIndices=[...new Set(rawIndices.map(i=>changed?positionMap[i]:i).filter(i=>Number.isInteger(i)&&i>0&&i<b.route.length-1))];
     if(!b.autoConnectorIndices.length&&legacyCodes.size){
       b.autoConnectorIndices=b.route.map((code,i)=>({code,i})).filter(x=>x.i>0&&x.i<b.route.length-1&&legacyCodes.has(x.code)).map(x=>x.i);
     }
     b.startDate=validDate(raw.startDate)?raw.startDate:b.startDate;
-    b.stays=(raw.stays&&typeof raw.stays==='object')?raw.stays:{};
-    b.selections=(raw.selections&&typeof raw.selections==='object')?raw.selections:{};
+    const stays=(raw.stays&&typeof raw.stays==='object'&&!Array.isArray(raw.stays))?raw.stays:{};
+    if(changed){
+      b.stays={};
+      for(const [index,stay] of Object.entries(stays)){
+        const mapped=positionMap[Number(index)];
+        if(Number.isInteger(mapped)&&mapped>0&&mapped<b.route.length)b.stays[String(mapped)]=stay;
+      }
+    }else b.stays=stays;
+    // Flight selections are keyed by leg index. After removing a stop,
+    // none of the original leg keys are reliable inventory references.
+    b.selections=changed?{}:(raw.selections&&typeof raw.selections==='object'&&!Array.isArray(raw.selections)?raw.selections:{});
     return b;
   }
   function clearSavedAppState(){
