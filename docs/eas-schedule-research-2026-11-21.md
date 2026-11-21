@@ -2,11 +2,11 @@
 
 ## Scope and definitions
 
-NexTownAir models 225 contracted EAS community–hub route pairs. The schedule coverage audit initially identified 28 pairs with published operating-day fallback patterns and **197 pairs without an equivalent verified day-level fallback**. The November 21 research pass added a time-bounded LEB–HPN pattern, bringing verified coverage to **29 of 225** and reducing the missing-day register to **196 pairs**. Contracted route existence is **not** proof that a particular flight operates on a particular date. See [the machine-readable 196-pair open evidence register](../data/eas-schedule-evidence-gap.json).
+NexTownAir models 225 contracted EAS community–hub route pairs. The schedule coverage audit initially identified 28 pairs with published operating-day fallback patterns and **197 pairs without an equivalent verified day-level fallback**. The November 21 research pass added a time-bounded LEB–HPN pattern, bringing verified coverage to **29 of 225** and reducing the missing-day register to **196 pairs**. A subsequent source-backed batch added ABR, BJI, BRD, RHI, INL and TVF via MSP, bringing coverage to **35 of 225** and leaving **190 pairs**. Contracted route existence is **not** proof that a particular flight operates on a particular date. See [the machine-readable 190-pair open evidence register](../data/eas-schedule-evidence-gap.json).
 
 The newly verified LEB–HPN directions have a bounded November 21–December 31, 2026 daily service window supported by [Lebanon Airport](https://lebanonnh.gov/158/Book-Your-Flight), [Cape Air future offers](https://flights.capeair.com/en/flights-from-lebanon-nh-to-white-plains-new-york), and [the published LEB–HPN timetable](https://zbordirect.com/en/tools/schedule/LEB/HPN). The pattern is not extended into 2027 without fresh evidence.
 
-Each register entry records its community, airport codes, modeled hub, geographic region, DOT source/index, and whether a future operating day has actually been confirmed. All 196 remaining entries remain `not_verified` for exact operating-day fallback; **none** is filled with an invented daily/weekly pattern.
+Each register entry records its community, airport codes, modeled hub, geographic region, DOT source/index, and whether a future operating day has actually been confirmed. All 190 remaining entries remain `not_verified` for exact operating-day fallback; **none** is filled with an invented daily/weekly pattern.
 
 Primary DOT references:
 - [Current and historical EAS reports](https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports)
@@ -22,6 +22,10 @@ Primary DOT references:
 | MRI (Merrill Field) | MRI–ANC **ground transfer** | [Driving/rideshare route evidence](https://www.rome2rio.com/s/Anchorage-Airport-ANC/Anchorage-Merrill-Field-Airport-MRI), [Alaska DOT ANC ground transportation](https://dot.alaska.gov/anc/passengers-parking-transport.shtml) | Distinct Anchorage airports, **never** represented as a nonstop flight. The 45-minute planning allowance is a prototype, not a published end-to-end travel time |
 
 All these additions have dedicated graph validation; the existing all-pairs audit continues to verify only declared flight and ground-transfer edges.
+
+### Minneapolis EAS spoke timetable batch (verified November 21, 2026)
+
+Published Week 48 (November 23–29, 2026) directional nonstop schedules justify seven-day fallback windows only for **ABR–MSP, BJI–MSP, BRD–MSP, RHI–MSP, and INL–MSP**. Each direction is cited in its service pattern and remains unverified outside the published week. The **TVF–MSP** Denver Air Connection schedules explicitly mark daily service through January 21, 2027 outbound and January 30, 2027 inbound, so the two direction-specific windows are longer. Sources are [Directflights](https://www.directflights.com/ABR-MSP), [Bemidji schedule](https://www.directflights.com/BJI-MSP), [Brainerd schedule](https://www.directflights.com/BRD-MSP), [Rhinelander schedule](https://www.directflights.com/RHI-MSP), [International Falls schedule](https://www.directflights.com/INL-MSP), and [Thief River Falls](https://whatflieswhere.com/from/tvf/to/msp). These are timetable indications, not purchased inventory or guaranteed operations.
 
 ## Carrier timetable research leads
 
