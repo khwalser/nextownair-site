@@ -29,7 +29,15 @@ function httpsRequestJson(options, body = null) {
 }
 
 function validCode(v){return /^[A-Z]{3}$/.test(v);}
-function validDate(v){return /^\d{4}-\d{2}-\d{2}$/.test(v);}
+function validDate(v){
+  const m=/^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(v);
+  if(!m)return false;
+  const year=Number(m[1]),month=Number(m[2]),day=Number(m[3]);
+  return month>=1&&month<=12&&day>=1&&day<=new Date(Date.UTC(year,month,0)).getUTCDate();
+}
+function validMoneyAmount(v){
+  return v!==null&&v!==undefined&&String(v).trim()!==''&&Number.isFinite(Number(v))&&Number(v)>=0;
+}
 function parseIsoDuration(v){
   const m=String(v||'').match(/^P(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);
   if(!m)return null;
@@ -84,8 +92,8 @@ async function searchDuffel(origin,destination,departureDate){
       if(segments.length!==1)return null;
       const seg=segments[0]||{};
       const carrier=seg.operating_carrier||{};
+      if(!validMoneyAmount(offer.total_amount))return null;
       const amount=Number(offer.total_amount);
-      if(!Number.isFinite(amount))return null;
       return {
         provider:'duffel',
         liveMode:Boolean(offer.live_mode),
