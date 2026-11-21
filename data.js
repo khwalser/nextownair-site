@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-21.33",
+  "mvpRevision": "2026-11-21.34",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-21",
@@ -6068,6 +6068,50 @@ window.NTA_DATA = {
       "verifiedWeekStart": "2026-11-23",
       "verifiedWeekEnd": "2026-11-29",
       "evidenceScope": "daily-with-specified-valid-through"
+    },
+    "BKW|CLT": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Contour Airlines",
+      "label": "Published Nov 23–29, 2026 nonstop flights every day (individual departures vary); fares and inventory require provider confirmation",
+      "sourceLabel": "Directflights.com Contour Week 48: day-by-day BKW–CLT departures including holiday adjustment",
+      "sourceUrl": "https://www.directflights.com/BKW-CLT",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "CLT|BKW": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Contour Airlines",
+      "label": "Published Nov 23–29, 2026 nonstop flights every day (individual departures vary); fares and inventory require provider confirmation",
+      "sourceLabel": "Directflights.com Contour Week 48: day-by-day BKW–CLT departures including holiday adjustment",
+      "sourceUrl": "https://www.directflights.com/CLT-BKW",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
     }
   }
 };
