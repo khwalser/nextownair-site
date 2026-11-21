@@ -193,7 +193,7 @@ export default async(req)=>{
     unknownDates:[...new Set(unknownDates)],
     days,
     ...(lastUpstreamError?{lastUpstreamError}: {})
-  });
+  },200,unknownDates.length===0&&!lastUpstreamError);
 };
 
 export const config={path:"/api/schedule-calendar"};
