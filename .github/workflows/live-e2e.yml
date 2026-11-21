@@ -26,6 +26,9 @@ on:
       - "e2e/trip-date-validation-regression.mjs"
       - "e2e/direct-itinerary-connectors.mjs"
       - "e2e/all-pairs-routing-regression.mjs"
+      - "e2e/three-hub-continuity-regression.mjs"
+      - "e2e/eas-evidence-ledger-regression.mjs"
+      - "data/eas-schedule-evidence-gap.json"
       - "e2e/schedule-provider-timeout-regression.mjs"
       - "e2e/schedule-malformed-response-regression.mjs"
       - "e2e/schedule-partial-cache-regression.mjs"
@@ -96,6 +99,12 @@ jobs:
 
       - name: Verify every modeled origin-destination path
         run: node e2e/all-pairs-routing-regression.mjs
+
+      - name: Verify three hub connections and ground-transfer semantics
+        run: node e2e/three-hub-continuity-regression.mjs
+
+      - name: Reconcile all EAS schedule-evidence gaps
+        run: node e2e/eas-evidence-ledger-regression.mjs
 
       - name: Audit route graph
         id: network
