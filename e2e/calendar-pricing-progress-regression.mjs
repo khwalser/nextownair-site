@@ -499,3 +499,45 @@ assert.equal(empty429Context.fareQueue.length,0,'Third 429 does not requeue inde
 assert.equal(empty429Resolved?.temporaryUnavailable,true,'After bounded retries, fallback reports temporary rate-limit unavailability');
 assert(empty429Context.fareBlockedUntil>Date.now(),'Empty rate-limit response still schedules provider cooldown');
 console.log('PASS: Empty-body HTTP 429 respects cooldown and retries twice without a false malformed-provider error');
+
+const beforeArrival=optionCtx.providerOptions({offers:[
+  {...offerBase,departureTime:'2026-12-08T23:30:00',arrivalTime:'2026-12-07T23:00:00',durationMinutes:90,amount:75},
+  {...offerBase,amount:215}
+]},'ELD','DFW','2026-12-08');
+assert.equal(beforeArrival.length,1,'Provider flight arriving on previous day cannot be selected despite a positive duration');
+assert.equal(beforeArrival[0].price,215,'Valid flight survives invalid prior-day arrival filtering');
+
+fareCtx.liveFareByLeg.clear();
+fareCtx.selectedFareByLeg.set(1,{amount:160,currency:'USD',fareStatus:'unverified'});
+fareCtx.selectedFareByLeg.set(2,{amount:180,currency:'USD',fareStatus:'verified'});
+fareCtx.updateLiveTripFare();
+assert.match(fareNode.innerHTML,/Itinerary fare total \?340/,'Non-prototype unverified fares cannot appear as a confirmed dollar total');
+assert.match(fareNode.innerHTML,/Includes unverified or prototype fare values/,'Fare summary explains why estimated totals are not bookable quotes');
+assert.doesNotMatch(fareNode.innerHTML,/All selected fares are verified provider values/,'Mixed verification status never claims all fares verified');
+
+const retainedPriorityCalls=[],priorityOutcomes=[];
+const priorityQueueCtx={
+  clearTimeout:()=>{},setTimeout:()=>null,
+  farePumpTimer:null,
+  fareQueue:[
+    {a:'ELD',b:'DFW',date:'2026-12-08',key:'auto',priority:false,resolve:x=>priorityOutcomes.push(['auto',x]),reject:e=>{throw e;}},
+    {a:'ELD',b:'DFW',date:'2026-12-09',key:'manual',priority:true,resolve:x=>priorityOutcomes.push(['manual',x]),reject:e=>{throw e;}},
+    {a:'ELD',b:'DFW',date:'2026-12-10',key:'background',priority:false,resolve:x=>priorityOutcomes.push(['background',x]),reject:e=>{throw e;}}
+  ],
+  fareActive:0,FARE_MAX_CONCURRENT:1,FARE_START_GAP_MS:0,lastFareStartAt:0,fareBlockedUntil:0,
+  fareActiveKeys:new Set(),updateCalendarCell:()=>{},
+  F:{fetchOffers:async(a,b,date)=>{retainedPriorityCalls.push(date);return {ok:true,status:200,data:{offers:[],liveMode:true}};}},
+  fareNoOfferCounts:new Map([['ELD|DFW',2]]),fareCoverageBlockedLegs:new Set(),
+  fareLegKey:(a,b)=>a+'|'+b,
+  coverageFallbackData:()=>({offers:[],coverageLimited:true}),
+  externalFareSearchUrl:()=>'',firstLeg:()=>null,el:{calendarStatus:null},updateCalendarFareStatus:()=>{}
+};
+vm.createContext(priorityQueueCtx);
+vm.runInContext(source.slice(pumpStart,pumpEnd)+'\nthis.pumpFareQueue=pumpFareQueue;',priorityQueueCtx);
+priorityQueueCtx.pumpFareQueue();
+await new Promise(resolve=>setTimeout(resolve,30));
+assert(retainedPriorityCalls.includes('2026-12-09'),'Coverage cap does not prevent explicit traveler-selected date from reaching fare provider');
+assert(!retainedPriorityCalls.includes('2026-12-10'),'Automatic background date is capped after repeated misses');
+assert(priorityOutcomes.some(([name])=>name==='manual'),'Traveler priority promise resolves after automatic coverage cap');
+assert(priorityOutcomes.some(([name,data])=>name==='background'&&data.coverageLimited),'Background date resolves with a truthful coverage gap');
+console.log('PASS: Traveler-priority fare checks survive automatic coverage limits, invalid prior-day flights are rejected, and unverified totals are marked');
