@@ -54,7 +54,7 @@ assert.equal(dtwOrd.days.length,7,'DTW-ORD published flight must operate on all 
 assert(/^https:\/\//.test(dtwOrd.sourceUrl),'Schedule pattern must retain a published citation');
 console.log('PASS: November DTW–ORD uses sourced operating-day coverage rather than unverified placeholder dates');
 assert.match(source,/const AUTO_PRICE_WINDOW=31;/,'Calendar automatically scans all published flight dates in a month');
-assert(source.includes('return fallback?Math.min(5,'),'Unverified schedule-provider fallback stays limited to five speculative fare requests');
+assert(source.includes('const bounded=fallback?5:isKnownFareCoverageGap(a,b)?2:AUTO_PRICE_WINDOW;'),'Unverified provider fallback limits to five checks and known fare gaps limit to two');
 assert.match(source,/Checking live prices: /,'Calendar reports checked, priced, and queued counts during full-month scan');
 console.log('PASS: Calendar automatically prices published service dates and bounds unverified schedule fallback');
 console.log('PASS: Calendar availability distinguishes confirmed service, priced flight, and unverified dates');
