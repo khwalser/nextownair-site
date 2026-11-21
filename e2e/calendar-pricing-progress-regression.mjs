@@ -99,3 +99,7 @@ assert(source.includes("const publishedDate=knownRoute&&selectedAvailability.sta
 assert(source.includes("publishedDate?prototypeOptions(a,b,departDate):[]"),'Published service offers explicitly marked planning choices while live prices are pending');
 assert(source.includes("if(!fareData&&!opts.length)"),'The pending panel is shown only when no published service choice is available');
 console.log('PASS: Published-service choices do not depend on slow fare-provider responses');
+
+assert(source.includes("const pinnedFallback=(pinnedId.startsWith('prototype|')"),'Late live pricing preserves previously selected published-service planning choices');
+assert(source.includes('opts=[...opts,pinnedFallback]'),'Real fare options remain visible without silently discarding a still-valid prototype choice');
+console.log('PASS: Late provider responses retain explicit prototype selections alongside real fares');
