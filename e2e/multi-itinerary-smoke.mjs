@@ -9,7 +9,8 @@ const cases=[
   {name:'Michigan EAS round trip',route:['DTW','APN','DTW'],date:'2026-12-09'},
   {name:'Upper Peninsula via Chicago',route:['ORD','CMX','ORD'],date:'2026-12-10'},
   {name:'Nebraska and Arkansas EAS',route:['GRI','DFW','HOT','DFW'],date:'2026-12-11'},
-  {name:'Open-jaw cycle 1 ELD to GRI',route:['ELD','DFW','CVN','DFW','HOT','DFW','GRI'],date:'2026-12-08'}
+  {name:'Open-jaw cycle 1 ELD to GRI',route:['ELD','DFW','CVN','DFW','HOT','DFW','GRI'],date:'2026-12-08'},
+  {name:'Open-jaw cycle 2 GRI to ELD',route:['GRI','DFW','HOT','DFW','CVN','DFW','ELD'],date:'2026-12-10'}
 ];
 const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome'});
 const evidence=[];
