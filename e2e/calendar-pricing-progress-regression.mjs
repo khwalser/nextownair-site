@@ -140,3 +140,9 @@ assert.equal(dateCtx.nextConfirmedFlightDate('ELD','DFW','2026-12-09'),'2026-12-
 dateCtx.scheduleState=()=>({status:'fallback'});
 assert.equal(dateCtx.nextConfirmedFlightDate('ELD','DFW','2026-12-09'),null,'No service date is invented when all evidence is unverified');
 console.log('PASS: Next-date recovery respects actual flight/schedule evidence and returns no invented date');
+
+const connectorRollover=source.slice(source.indexOf('if(opts.length===0&&usingPrototype&&autoConnector'),source.indexOf('// Automatic connectors may advance'));
+assert(connectorRollo.includes('const nextFareData=liveFareData.get(fareKey(a,b,nextDate))'),'Next-day connector reads fares using its effective date');
+assert(connectorRollo.includes('fareData=nextFareData;'),'Next-day connector price panel is bound to next-day fare data');
+assert(connectorRollo.includes('providerOptions(nextFareData,a,b,nextDate)'),'Real next-day offers supersede prototypes when available');
+console.log('PASS: Automatic connector rollover cannot display prior-date provider fare as next-day price');
