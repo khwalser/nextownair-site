@@ -161,6 +161,7 @@ try{
         row.completedFlightLegs=await page.evaluate(()=>Object.keys(window.NTA.load().selections||{}).length);
         row.complete=row.completedFlightLegs===row.totalFlightLegs;
         if(tc.route.length===3)check(row.complete,'Round trip reaches fully selected state',row.completedFlightLegs+'/'+row.totalFlightLegs+' flight legs selected');
+        else check(row.complete,'All sourced EAS planning legs reach selectable flight options',row.completedFlightLegs+'/'+row.totalFlightLegs+' flight legs selected');
         if(row.complete){
           await page.reload({waitUntil:'domcontentloaded',timeout:60000});
           const persistedCount=await page.evaluate(()=>Object.keys(window.NTA.load().selections||{}).length);
