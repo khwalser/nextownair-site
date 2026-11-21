@@ -121,3 +121,22 @@ assert(source.includes("status==='yes'||Boolean(lowestOffer"),'Onward service da
 assert(source.includes('data-open-departure-calendar'),'Missing initial flight has a one-click calendar recovery');
 assert(source.includes('data-next-service-date'),'Missing onward flight has a next-confirmed-date action');
 console.log('PASS: Missing flight choices provide only verified-date recovery actions');
+
+const nextStart=source.indexOf('  function nextConfirmedFlightDate(');
+const nextEnd=source.indexOf('  function renderLeg(',nextStart);
+assert(nextStart>=0&&nextEnd>nextStart,'Next confirmed date helper exists');
+const dateCtx={
+  window:{NTA:{addDays:(date,offset)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+offset);return d.toISOString().slice(0,10);}}},
+  scheduleState:(a,b,d)=>({status:d==='2026-12-13'?'yes':'fallback'}),
+  liveFareData:new Map([['ELD|DFW|2026-12-12',{offers:[{amount:200,currency:'USD'}]}]]),
+  fareKey:(a,b,date)=>a+'|'+b+'|'+date,
+  lowestOffer:data=>data?.offers?.[0]||null
+};
+vm.createContext(dateCtx);
+vm.runInContext(source.slice(nextStart,nextEnd)+'\nthis.nextConfirmedFlightDate=nextConfirmedFlightDate;',dateCtx);
+assert.equal(dateCtx.nextConfirmedFlightDate('ELD','DFW','2026-12-09'),'2026-12-12','Provider-confirmed date is selected before a later published day');
+dateCtx.liveFareData.clear();
+assert.equal(dateCtx.nextConfirmedFlightDate('ELD','DFW','2026-12-09'),'2026-12-13','Unverified days are skipped until published service date');
+dateCtx.scheduleState=()=>({status:'fallback'});
+assert.equal(dateCtx.nextConfirmedFlightDate('ELD','DFW','2026-12-09'),null,'No service date is invented when all evidence is unverified');
+console.log('PASS: Next-date recovery respects actual flight/schedule evidence and returns no invented date');
