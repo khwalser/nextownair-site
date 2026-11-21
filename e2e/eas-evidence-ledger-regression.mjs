@@ -87,4 +87,15 @@ for(const [community,hub] of [['FOD','ORD'],['CGI','ORD']]){
     assert(p.sourceUrl.endsWith(from+'-'+to),'Directional source required');
   }
 }
+for(const [community,days] of [['LAR',[0,1,2,3,4,5,6]],['PUB',[0,1,2,4,5,6]]]){
+  assert(!ledger.missing.some(x=>x.pair===community+'-DEN'),'Published Denver service pair is no longer an evidence gap');
+  for(const direction of [community+'|DEN','DEN|'+community]){
+    const p=D.servicePatterns[direction];
+    assert(p,'Direction is documented: '+direction);
+    assert.deepEqual([...p.days],days,'Operating days match the week including Thanksgiving exception');
+    assert.equal(p.activeFrom,'2026-11-23');
+    assert.equal(p.activeThrough,'2026-11-29');
+    assert(p.sourceUrl.endsWith(direction.replace('|','-')),'Per-direction published schedule cited');
+  }
+}
 console.log('PASS: '+ledger.missing.length+' EAS operating-day evidence gaps individually tracked; no fabricated schedule dates');
