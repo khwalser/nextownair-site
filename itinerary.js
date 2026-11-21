@@ -396,7 +396,7 @@
     calendarMoreFareControl(leg.a,leg.b,month,dates,queued);
     el.calendarStatus.textContent=queued
       ?`Published flights confirmed on ${dates.length} dates. Checking live prices: ${checked} of ${dates.length} checked, ${priced} priced, ${queued} queued or in progress. Selected and nearby dates go first.`
-      :`Published flights confirmed on ${dates.length} dates. Live fares found on ${priced}; dates without fares are not necessarily unavailable. Select a date to request its price.`;
+      :`${checked} of ${dates.length} published-service dates checked for live prices; ${priced} returned a valid fare. ${Math.max(0,dates.length-checked)} remain unchecked. A missing fare does not mean a flight is unavailable. Select an unchecked date to request its price.`;
   }
   function queueCalendarFarePricing(a,b,dates,token,limit=AUTO_PRICE_WINDOW){
     if(fareCoverageBlockedLegs.has(fareLegKey(a,b))){
