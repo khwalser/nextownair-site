@@ -52,6 +52,11 @@ try{
       // Give asynchronous schedule and fare providers a bounded opportunity
       // to populate the first flight before recording a missing offer.
       try{await first.first().waitFor({state:'visible',timeout:12000});}catch(_){}
+      if(['ELD','GRI'].includes(tc.route[0])){
+        check(await first.count()>0,'Airport-sourced December service produces a selectable first-leg planning option');
+        const firstOption=await first.first().innerText();
+        check(/Known service|Published flight|Live flight|Provider flight/i.test(firstOption),'First-leg evidence is labeled as service, not a fabricated live fare',firstOption.slice(0,130));
+      }
       if(await first.count()){
         await first.first().click();
         await page.waitForFunction(()=>Boolean(window.NTA.load().selections?.['0']),null,{timeout:10000});
