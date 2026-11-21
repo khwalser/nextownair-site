@@ -340,11 +340,11 @@
       return !liveFareData.has(key)&&!calendarFareJobs.has(key);
     });
     const pending=dates.filter(date=>calendarFareJobs.has(fareKey(a,b,date))).length;
-    button.hidden=!remaining.length||Boolean(queued)&&remaining.length===0||fareCoverageBlockedLegs.has(fareLegKey(a,b));
+    button.hidden=!remaining.length||fareCoverageBlockedLegs.has(fareLegKey(a,b));
     button.disabled=pending>0;
     button.textContent=pending>0
       ?`Checking ${pending} queued date${pending===1?'':'s'}…`
-      :`Check prices for ${remaining.length} more date${remaining.length===1?'':'s'}`;
+      :`Check next ${Math.min(5,remaining.length)} of ${remaining.length} unchecked date${remaining.length===1?'':'s'}`;
   }
   function updateCalendarFareStatus(){
     const leg=firstLeg();if(!leg||!calendarMonthDate)return;
@@ -367,15 +367,16 @@
       const checked=monthCells.filter(cell=>liveFareData.has(fareKey(leg.a,leg.b,cell.dataset.calendarDate))).length;
       const queued=monthCells.filter(cell=>calendarFareJobs.has(fareKey(leg.a,leg.b,cell.dataset.calendarDate))).length;
       const total=monthCells.length;
+      calendarMoreFareControl(leg.a,leg.b,month,monthCells.map(cell=>cell.dataset.calendarDate),queued);
       el.calendarStatus.textContent=queued
         ?checked
           ?`Loading live fares across the month: ${checked} of ${total} dates checked, ${priced} with a fare so far. Selected and nearby dates go first.`
           :`Live fare scan started for ${total} dates. Selected and nearby dates go first; prices will fill in automatically.`
         :priced
-          ?`Live fare scan complete: ${checked} of ${total} dates checked, ${priced} with a fare. Select any date to refresh it first.`
+          ?`${checked} of ${total} dates checked; ${priced} with a live fare. ${total-checked} date${total-checked===1?' remains':'s remain'} unchecked. Choose another date or use Check next dates to continue.`
           :checked
-            ?`Fare scan complete: ${checked} of ${total} dates checked. The connected provider returned no nonstop prices; this does not mean the airline has no fare.`
-            :`Loading live fares across the month. Selected and nearby dates go first.`;
+            ?`${checked} of ${total} dates checked; no live nonstop fares returned. ${total-checked} date${total-checked===1?' remains':'s remain'} unchecked. This does not prove those flights do not operate.`
+            :`No live fares checked yet. Selected and nearby dates are prioritized.`;
       return;
     }
     const dates=scheduledCalendarDates(leg.a,leg.b,month);
@@ -447,13 +448,16 @@
     const leg=firstLeg();
     if(!leg||!calendarMonthDate)return;
     const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
-    const dates=scheduledCalendarDates(leg.a,leg.b,month);
+    const schedule=scheduleMonthData.get(scheduleMonthKey(leg.a,leg.b,month));
+    const dates=schedule?.error&&isScheduleFallbackCode(schedule.code)
+      ?[...el.calendarGrid.querySelectorAll('.calendar-day[data-calendar-date]:not(.past)')].map(cell=>cell.dataset.calendarDate)
+      :scheduledCalendarDates(leg.a,leg.b,month);
     const remaining=dates.filter(date=>{
       const key=fareKey(leg.a,leg.b,date);
       return !liveFareData.has(key)&&!calendarFareJobs.has(key);
     });
     if(!remaining.length)return;
-    queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,remaining.length);
+    queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,Math.min(5,remaining.length));
     updateCalendarFareStatus();
   });
   function updateCalendarCell(date){
@@ -1232,7 +1236,8 @@
     let opts=usingProvider?providerOpts:(usingVerifiedSchedule?verifiedScheduleOpts:(providerMissing?prototypeOptions(a,b,departDate):[]));
     let usingPrototype=opts.some(o=>o.prototype);
     let hasPrototypeFields=opts.some(o=>o.timeStatus==='prototype'||o.fareStatus==='prototype');
-    let note=knownRoute?(usingVerifiedSchedule?'Choose an available published flight. Times are verified; fares beginning with ? are prototype values.':(usingPrototype?'Choose an available service. Values beginning with ? are prototype values used to complete the MVP itinerary.':(usingProvider?'Choose one flight to continue.':'Waiting for verified service availability for this date.'))):'No verified route is available for this pair.';
+    const selectedAvailability=scheduleState(a,b,departDate);
+    let note=knownRoute?(usingVerifiedSchedule?'Choose an available published flight. Times are verified; fares beginning with ? are prototype values.':(usingPrototype?'Choose an available service. Values beginning with ? are prototype values used to complete the MVP itinerary.':(usingProvider?'Choose one flight to continue.':selectedAvailability.status==='yes'?'Published flight service is reported for this date, but a selectable flight has not been returned.':'The route is known, but flight operation on this date has not been verified. Check another date or current fares.'))):'No verified route is available for this pair.';
 
     if(!locked&&i>0&&plan&&plan.notBefore!=null){
       opts=opts.filter(o=>o.departMin>=plan.notBefore);
@@ -1303,7 +1308,9 @@
       return {section:leg,chosen:null,departDate,options:[]};
     }
     if(!opts.length){
-      box.innerHTML='<div class="no-flights">No flight offers match this timing. Change the stay or departure date to see more choices.</div>';
+      box.innerHTML=i===0
+        ?'<div class="no-flights">No selectable flight offer was returned for this departure date. This does not confirm that the flight does not operate. Choose a priced date on the calendar or check current fares.</div>'
+        :'<div class="no-flights">No flight offers match this connection timing. Change the stay or departure date to see more choices.</div>';
       return {section:leg,chosen:null,departDate,options:[]};
     }
 
