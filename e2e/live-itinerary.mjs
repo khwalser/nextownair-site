@@ -316,6 +316,26 @@ try{
     pass('Published schedule path is usable','schedule response '+scheduleResponse.status+(scheduleResponse.body?.error?' · '+scheduleResponse.body.error:''));
   }
 
+  // Screenshot regression: ELD -> DFW -> CVN -> DFW -> HOT must not confuse
+  // an unverified first-leg date with a connection-timing conflict.
+  {
+    const elDDate=tripDate;
+    const route='ELD,DFW,CVN,DFW,HOT';
+    await page.goto(BASE_URL+'/itinerary.html?route='+encodeURIComponent(route)+'&date='+encodeURIComponent(elDDate),{waitUntil:'domcontentloaded',timeout:60000});
+    await page.waitForFunction(()=>document.querySelectorAll('.calendar-day[data-calendar-date]').length>=28,null,{timeout:20000});
+    const firstLegHeading=await page.locator('.leg').first().innerText();
+    assert(/El Dorado/i.test(firstLegHeading)&&/Dallas-Fort Worth/i.test(firstLegHeading),'Screenshot route starts with ELD to DFW');
+    const scanText=await page.locator('#calendarStatus').innerText();
+    assert(!/scan complete: [0-9]+ of [0-9]+ dates checked/i.test(scanText),'ELD calendar never calls a partial scan complete',scanText);
+    assert(!/No flight offers match this timing/i.test(firstLegHeading),'ELD first leg does not blame connection timing for missing inventory');
+    const state=await page.evaluate(()=>({
+      fareLabels:[...document.querySelectorAll('.calendar-day:not(.past) .calendar-fare')].map(x=>x.textContent.trim()),
+      status:document.querySelector('#calendarStatus')?.textContent?.trim()||''
+    }));
+    assert(state.fareLabels.length>0,'ELD calendar continues to expose dated service and pricing status');
+    pass('ELD-DFW-CVN-DFW-HOT screenshot regression keeps flight evidence distinct from fare completion',state.status);
+  }
+
   // 3) Known fare-coverage gaps must still attempt a bounded real fare lookup.
   {
     const coverageDate=tripDate;
