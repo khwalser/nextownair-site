@@ -2,8 +2,8 @@
   "basis": "Existing NexTownAir May 2026 DOT EAS community–hub model; NOT a verified operating-day timetable",
   "generated": "2026-11-21",
   "totalContractedPairs": 225,
-  "existingDayPatternCovered": 35,
-  "missingDayPatterns": 190,
+  "existingDayPatternCovered": 36,
+  "missingDayPatterns": 189,
   "contractSourceMeaning": "Reported EAS contracted community/hub evidence at the report date; does not prove daily operations, contract renewal or bookability.",
   "missing": [
     {
@@ -179,19 +179,6 @@
       "communityCode": "BFD",
       "hub": "PIT",
       "state": "PA",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
-      "pair": "BKW-CLT",
-      "community": "Raleigh County Memorial Airport",
-      "communityCode": "BKW",
-      "hub": "CLT",
-      "state": "WV",
       "contractEvidence": "May 2026 DOT contracted EAS route list",
       "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
       "scheduleDayEvidence": "not_verified",
@@ -2620,6 +2607,13 @@
       "timeWindow": "Nov 23, 2026 – Jan 21/30, 2027 (direction-dependent)",
       "status": "time_bounded_published_operating_days",
       "note": "Directions separately verified; no inferred schedule outside the source-supported window"
+    },
+    {
+      "pair": "BKW-CLT",
+      "source": "https://www.directflights.com/BKW-CLT",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Both directions confirmed individually including Thanksgiving exception; not extrapolated beyond this week"
     }
   ]
 }
