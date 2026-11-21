@@ -85,6 +85,6 @@ queueCtx.scheduleMonthData.set('DTW|CIU|2026-11',{days:{}});
 queueCtx.queueCalendarFarePricing('DTW','CIU',allDates,3);
 assert.equal(queuedDates.length,2,'Known fare coverage gaps get two live fare probes rather than zero or a full-month scan');
 assert.equal(queuedDates[0],'2026-11-20','A known coverage gap checks the selected date first');
-assert.doesNotMatch(source,/if\\(leg&&isKnownFareCoverageGap\\(leg\\.a,leg\\.b\\)\\)fareCoverageBlockedLegs\\.add/,'Known coverage gaps must not be unconditionally blocked by firstLeg');
-assert.doesNotMatch(source,/if\\(isKnownFareCoverageGap\\(a,b\\)\\)fareCoverageBlockedLegs\\.add/,'A known gap must not suppress live pricing from fetchFare');
+assert(!source.includes('if(leg&&isKnownFareCoverageGap(leg.a,leg.b))fareCoverageBlockedLegs.add'),'Known gaps must not be unconditionally blocked by firstLeg');
+assert(!source.includes('if(isKnownFareCoverageGap(a,b))fareCoverageBlockedLegs.add'),'Known gaps must not suppress live pricing from fetchFare');
 console.log('PASS: DTW-CIU calendar attempts bounded real pricing instead of suppressing all fare lookups');
