@@ -858,6 +858,13 @@
       lastFareStartAt=Date.now();
       F.fetchOffers(task.a,task.b,task.date)
         .then(({ok,status,data})=>{
+          // Provider transport can return HTTP success with an empty or null
+          // JSON body. Normalize once before reading offers or error details.
+          if(data===null||typeof data!=='object'||Array.isArray(data)){
+            const err=new Error('Pricing provider returned an invalid response body');
+            err.status=status||0;
+            throw err;
+          }
           if(!ok){
             if(status===429){
               const retryAfterMs=Math.max(5000,Number(data?.retryAfterMs)||30000);
