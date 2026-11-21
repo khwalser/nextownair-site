@@ -179,6 +179,16 @@ fareCtx.updateLiveTripFare();
 assert.match(fareNode.innerHTML,/Selected fare subtotal \$160/,'Mixed-mode trip missing one flight shows partial subtotal');
 assert.match(fareNode.innerHTML,/1 of 2 selected fare/,'Subtotal counts only flight legs');
 console.log('PASS: Mixed-mode itineraries exclude ferry transfers from airfare totals and completion counts');
+fareCtx.selectedFareByLeg.clear();
+fareCtx.liveFareByLeg.set(0,{liveMode:true,offers:[{amount:198,currency:'USD'}]});
+fareCtx.updateLiveTripFare();
+assert.match(fareNode.innerHTML,/Partial live fare subtotal \$198/,'A single provider quote is not misrepresented as a complete trip fare total');
+assert.match(fareNode.innerHTML,/1 of 2 flight legs/,'Partial subtotal reports number of priced flight legs');
+fareCtx.liveFareByLeg.set(1,{liveMode:true,offers:[{amount:212,currency:'USD'}]});
+fareCtx.updateLiveTripFare();
+assert.match(fareNode.innerHTML,/Lowest live fare estimate \$410/,'Complete provider quote set can be labeled estimate');
+console.log('PASS: Provider pricing labels partial and complete fare totals correctly');
+
 
 const rateLimitStart=source.indexOf('  function pumpFareQueue()');
 const rateLimitEnd=source.indexOf('  function fetchFare(',rateLimitStart);
