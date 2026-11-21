@@ -2,8 +2,8 @@
   "basis": "Existing NexTownAir May 2026 DOT EAS community–hub model; NOT a verified operating-day timetable",
   "generated": "2026-11-21",
   "totalContractedPairs": 225,
-  "existingDayPatternCovered": 36,
-  "missingDayPatterns": 189,
+  "existingDayPatternCovered": 40,
+  "missingDayPatterns": 185,
   "contractSourceMeaning": "Reported EAS contracted community/hub evidence at the report date; does not prove daily operations, contract renewal or bookability.",
   "missing": [
     {
@@ -66,19 +66,6 @@
       "candidateTimetableUrl": "https://flyalo.com/traveler-information/faqs/",
       "candidateEvidence": "Airport's service page says daily flights, but its FAQ specifies twice-daily round trips on most days; exact skipped operating dates need explicit verification before any seven-day fallback.",
       "timetableReviewState": "candidate_specific_weekdays_unresolved"
-    },
-    {
-      "pair": "ALS-DEN",
-      "community": "San Luis Valley Regional Bergman Field",
-      "communityCode": "ALS",
-      "hub": "DEN",
-      "state": "CO",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
       "pair": "ALZ-ADQ",
@@ -438,19 +425,6 @@
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
-      "pair": "COD-DEN",
-      "community": "Yellowstone Regional Airport",
-      "communityCode": "COD",
-      "hub": "DEN",
-      "state": "WY",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
       "pair": "CVN-DEN",
       "community": "Clovis Municipal Airport",
       "communityCode": "CVN",
@@ -658,19 +632,6 @@
       "communityCode": "GCK",
       "hub": "DFW",
       "state": "KS",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
-      "pair": "GDV-BIL",
-      "community": "Dawson Community Airport",
-      "communityCode": "GDV",
-      "hub": "BIL",
-      "state": "MT",
       "contractEvidence": "May 2026 DOT contracted EAS route list",
       "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
       "scheduleDayEvidence": "not_verified",
@@ -1543,19 +1504,6 @@
       "reviewedOn": "2026-11-21",
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
       "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
-    },
-    {
-      "pair": "MCK-DEN",
-      "community": "Mc Cook Ben Nelson Regional Airport",
-      "communityCode": "MCK",
-      "hub": "DEN",
-      "state": "NE",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
       "pair": "MCN-BWI",
@@ -2614,6 +2562,34 @@
       "timeWindow": "Nov 23–29, 2026",
       "status": "time_bounded_published_operating_days",
       "note": "Both directions confirmed individually including Thanksgiving exception; not extrapolated beyond this week"
+    },
+    {
+      "pair": "ALS-DEN",
+      "source": "https://www.directflights.com/ALS-DEN",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Both directional week-specific timetables cited; no extrapolation beyond this published week"
+    },
+    {
+      "pair": "MCK-DEN",
+      "source": "https://www.directflights.com/MCK-DEN",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Both directional week-specific timetables cited; no extrapolation beyond this published week"
+    },
+    {
+      "pair": "COD-DEN",
+      "source": "https://www.directflights.com/COD-DEN",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Both directional week-specific timetables cited; no extrapolation beyond this published week"
+    },
+    {
+      "pair": "GDV-BIL",
+      "source": "https://www.directflights.com/GDV-BIL",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Both directional week-specific timetables cited; no extrapolation beyond this published week"
     }
   ]
 }
