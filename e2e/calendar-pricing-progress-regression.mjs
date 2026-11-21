@@ -22,7 +22,7 @@ const dates=['2026-11-25','2026-11-26','2026-11-27'];
 ctx.showMore('DTW','ORD','2026-11',dates,0);
 assert.equal(button.hidden,false,'Unpriced confirmed dates have a visible action');
 assert.equal(button.disabled,false);
-assert.match(button.textContent,/3 more dates/);
+assert.match(button.textContent,/Check next 3 of 3 unchecked dates/);
 jobs.add('DTW|ORD|2026-11-25');
 ctx.showMore('DTW','ORD','2026-11',dates,1);
 assert.equal(button.disabled,true,'Pending checks show an ongoing state');
@@ -30,7 +30,7 @@ assert.match(button.textContent,/Checking 1 queued date/);
 jobs.clear();data.set('DTW|ORD|2026-11-25',{offers:[{amount:241}]});
 ctx.showMore('DTW','ORD','2026-11',dates,0);
 assert.equal(button.disabled,false,'The action reactivates after queued prices finish');
-assert.match(button.textContent,/2 more dates/);
+assert.match(button.textContent,/Check next 2 of 2 unchecked dates/);
 data.set('DTW|ORD|2026-11-26',{offers:[]});data.set('DTW|ORD|2026-11-27',{offers:[]});
 ctx.showMore('DTW','ORD','2026-11',dates,0);
 assert.equal(button.hidden,true,'No more-price button when all dates have returned');
@@ -88,3 +88,9 @@ assert.equal(queuedDates[0],'2026-11-20','A known coverage gap checks the select
 assert(!source.includes('if(leg&&isKnownFareCoverageGap(leg.a,leg.b))fareCoverageBlockedLegs.add'),'Known gaps must not be unconditionally blocked by firstLeg');
 assert(!source.includes('if(isKnownFareCoverageGap(a,b))fareCoverageBlockedLegs.add'),'Known gaps must not suppress live pricing from fetchFare');
 console.log('PASS: DTW-CIU calendar attempts bounded real pricing instead of suppressing all fare lookups');
+
+assert(source.includes('calendarMoreFareControl(leg.a,leg.b,month,monthCells.map(cell=>cell.dataset.calendarDate),queued)'),'Schedule-quota fallback exposes manual checks for unchecked calendar days');
+assert(source.includes('queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,Math.min(5,remaining.length))'),'Manual checks remain bounded to five dates');
+assert(source.includes('dates checked;')&&source.includes('remain\' unchecked')===false,'Partial fallback scan uses checked counts instead of announcing completion');
+assert(source.includes('No selectable flight offer was returned for this departure date'),'First-leg missing inventory must not masquerade as a connection timing conflict');
+console.log('PASS: Partial scan remains truthful, additional checks are available, and first-leg empty results are explained');
