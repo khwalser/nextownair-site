@@ -2,9 +2,9 @@
 
 ## Scope and definitions
 
-NexTownAir models 225 contracted EAS community–hub route pairs. The schedule coverage audit currently identifies 28 pairs with existing published operating-day fallback patterns and **197 pairs without an equivalent verified day-level fallback**. Contracted route existence is **not** proof that a particular flight operates on a particular date. See [the machine-readable 197-pair review register](../data/eas-schedule-evidence-gap.json).
+NexTownAir models 225 contracted EAS community–hub route pairs. The schedule coverage audit initially identified 28 pairs with published operating-day fallback patterns and **197 pairs without an equivalent verified day-level fallback**. The November 21 research pass added a time-bounded LEB–HPN pattern, bringing verified coverage to **29 of 225** and reducing the missing-day register to **196 pairs**. Contracted route existence is **not** proof that a particular flight operates on a particular date. See [the machine-readable 197-pair review register](../data/eas-schedule-evidence-gap.json).
 
-Each register entry records its community, airport codes, modeled hub, geographic region, DOT source/index, and whether a future operating day has actually been confirmed. All 197 remain `not_verified` for exact operating-day fallback; **none** is filled with an invented daily/weekly pattern.
+The newly verified LEB–HPN directions have a bounded November 21–December 31, 2026 daily service window supported by [Lebanon Airport](https://lebanonnh.gov/158/Book-Your-Flight), [Cape Air future offers](https://flights.capeair.com/en/flights-from-lebanon-nh-to-white-plains-new-york), and [the published LEB–HPN timetable](https://zbordirect.com/en/tools/schedule/LEB/HPN). The pattern is not extended into 2027 without fresh evidence.\n\nEach register entry records its community, airport codes, modeled hub, geographic region, DOT source/index, and whether a future operating day has actually been confirmed. All 196 remaining entries remain `not_verified` for exact operating-day fallback; **none** is filled with an invented daily/weekly pattern.
 
 Primary DOT references:
 - [Current and historical EAS reports](https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports)
