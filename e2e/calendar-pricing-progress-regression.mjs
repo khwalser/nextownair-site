@@ -12,7 +12,7 @@ const jobs=new Set();
 const blocked=new Set();
 const ctx={
   document:{getElementById:id=>id==='calendarMoreFares'?button:null},
-  liveFareData:data,calendarFareJobs:jobs,fareCoverageBlockedLegs:blocked,
+  liveFareData:data,calendarFareJobs:jobs,fareCoverageBlockedLegs:blocked,manualFareCheckedDates:new Set(),
   fareKey:(a,b,date)=>a+'|'+b+'|'+date,
   fareLegKey:(a,b)=>a+'|'+b,
   isKnownFareCoverageGap:(a,b)=>a==='DTW'&&b==='CIU'
@@ -40,7 +40,10 @@ ctx.showMore('DTW','ORD','2026-11',dates,0);
 assert.equal(button.hidden,true,'No more-price button when all dates have returned');
 data.clear();blocked.add('DTW|ORD');
 ctx.showMore('DTW','ORD','2026-11',dates,0);
-assert.equal(button.hidden,true,'Unsupported fare routes do not offer fake price checks');
+assert.equal(button.hidden,false,'Provider-limited routes still offer explicit date checks');
+data.set('DTW|ORD|2026-11-25',{coverageLimited:true,offers:[]});
+ctx.showMore('DTW','ORD','2026-11',dates,0);
+assert.equal(button.hidden,false,'Synthetic coverage results remain manually checkable');
 assert.match(source,/refreshVisibleCalendar\(\)/,'Completed requests update the current visible calendar after a rerender');
 console.log('PASS: Calendar pricing progress, completion, optional additional checks, and unsupported coverage');
 
@@ -61,7 +64,8 @@ const queueCtx={
   isScheduleFallbackCode:code=>code==='schedule_quota_exhausted',
   isKnownFareCoverageGap:(a,b)=>a==='DTW'&&b==='CIU',
   scheduleState:()=>({status:'yes'}),
-  liveFareData:new Map(),calendarFareJobs:new Set(),
+  liveFareData:new Map(),calendarFareJobs:new Set(),manualFareCheckedDates:new Set(),
+  prioritizeFareCheck:(a,b,date)=>{queuedDates.push(date);return new Promise(()=>{});},
   fetchFare:(a,b,date)=>{queuedDates.push(date);return new Promise(()=>{});},
   updateCalendarCell:()=>{},
   firstLeg:()=>({a:'DTW',b:'ORD'}),
@@ -92,9 +96,18 @@ assert.equal(queuedDates[0],'2026-11-20','A known coverage gap checks the select
 assert(!source.includes('if(leg&&isKnownFareCoverageGap(leg.a,leg.b))fareCoverageBlockedLegs.add'),'Known gaps must not be unconditionally blocked by firstLeg');
 assert(!source.includes('if(isKnownFareCoverageGap(a,b))fareCoverageBlockedLegs.add'),'Known gaps must not suppress live pricing from fetchFare');
 console.log('PASS: DTW-CIU calendar attempts bounded real pricing instead of suppressing all fare lookups');
+queueCtx.calendarFareJobs.clear();
+queuedDates.length=0;
+queueCtx.fareCoverageBlockedLegs.add('DTW|CIU');
+queueCtx.liveFareData.set('DTW|CIU|2026-11-20',{coverageLimited:true,offers:[]});
+queueCtx.queueCalendarFarePricing('DTW','CIU',allDates,4,2,true);
+assert.equal(queuedDates.length,2,'Manual action queues at most two dates for a known coverage gap');
+assert(queueCtx.manualFareCheckedDates.has('DTW|CIU|2026-11-20'),'Manual recheck marks a synthetic coverage result as attempted');
+console.log('PASS: Traveler-selected calendar requests bypass blocked automated fare scanning');
+
 
 assert(source.includes('calendarMoreFareControl(leg.a,leg.b,month,monthCells.map(cell=>cell.dataset.calendarDate),queued)'),'Schedule-quota fallback exposes manual checks for unchecked calendar days');
-assert(source.includes('queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,Math.min(isKnownFareCoverageGap(leg.a,leg.b)?2:5,remaining.length))'),'Manual checks are capped at five dates, or two for known coverage gaps');
+assert(source.includes('queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,Math.min(isKnownFareCoverageGap(leg.a,leg.b)?2:5,remaining.length),true)'),'Manual checks stay bounded and intentionally bypass automatic provider limits');
 assert(source.includes('dates checked;')&&source.includes('remain\' unchecked')===false,'Partial fallback scan uses checked counts instead of announcing completion');
 assert(source.includes('No selectable offer was returned for this date; this does not prove the flight does not operate.'),'First-leg missing inventory must not masquerade as a connection timing conflict');
 console.log('PASS: Partial scan remains truthful, additional checks are available, and first-leg empty results are explained');
