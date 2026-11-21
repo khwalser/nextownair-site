@@ -675,7 +675,7 @@
       const arrivalDay=isoDate(o.arrivalTime)||departDay;
       const dayOffset=Math.max(0,window.NTA.diffDays(departDay,arrivalDay));
       const providerDuration=Number(o.durationMinutes);
-      const fallbackDuration=Math.max(1,Math.round((new Date(o.arrivalTime)-new Date(o.departureTime))/60000));
+      const fallbackDuration=Math.round((new Date(o.arrivalTime)-new Date(o.departureTime))/60000);
       const elapsed=Number.isFinite(providerDuration)&&providerDuration>0?providerDuration:fallbackDuration;
       if(!Number.isFinite(elapsed)||elapsed<=0)return null;
       return {
