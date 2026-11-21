@@ -2,8 +2,8 @@
   "basis": "Existing NexTownAir May 2026 DOT EAS community–hub model; NOT a verified operating-day timetable",
   "generated": "2026-11-21",
   "totalContractedPairs": 225,
-  "existingDayPatternCovered": 28,
-  "missingDayPatterns": 197,
+  "existingDayPatternCovered": 29,
+  "missingDayPatterns": 196,
   "contractSourceMeaning": "Reported EAS contracted community/hub evidence at the report date; does not prove daily operations, contract renewal or bookability.",
   "missing": [
     {
@@ -1437,19 +1437,6 @@
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
-      "pair": "LEB-HPN",
-      "community": "Lebanon Municipal Airport",
-      "communityCode": "LEB",
-      "hub": "HPN",
-      "state": "NH",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
       "pair": "LNS-IAD",
       "community": "Lancaster Airport",
       "communityCode": "LNS",
@@ -2658,5 +2645,14 @@
     "Alaska DOT attachment linked from the report index displays May-25 in its heading; do not infer 2026 validity without a current order.",
     "The Alaska Seaplanes public schedule combines seasonal tables; candidate days are not promoted without effective-year boundaries."
   ],
-  "candidateTimetablePairs": 6
+  "candidateTimetablePairs": 6,
+  "promotedEvidence": [
+    {
+      "pair": "LEB-HPN",
+      "source": "https://lebanonnh.gov/158/Book-Your-Flight",
+      "timeWindow": "2026-11-21 through 2026-12-31",
+      "status": "time_bounded_published_operating_days",
+      "note": "Daily published service on route; fare, current operating flight and seats require date-specific verification"
+    }
+  ]
 }
