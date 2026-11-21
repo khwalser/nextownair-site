@@ -2,6 +2,47 @@
   'use strict';
   const D=window.NTA_DATA||{airports:[]};
   let state=window.NTA.load();
+  // A direct itinerary URL can bypass the map's connector-repair flow.
+  // Repair only missing links; keep the traveler’s chosen stop order and stays.
+  function repairDirectItineraryRoute(){
+    if(!state.route||state.route.length<2)return;
+    const original=state.route.slice(),repaired=[original[0]],oldToNew=[0];
+    const originalAutomatic=new Set(state.autoConnectorIndices||[]);
+    const automatic=new Set();
+    let changed=false;
+    for(let i=1;i<original.length;i++){
+      const from=repaired[repaired.length-1],to=original[i];
+      if(!window.NTA.hasTravelLink(from,to)){
+        const path=window.NTA.findTravelPath(from,to);
+        if(path&&path.length>2){
+          for(const mid of path.slice(1,-1)){
+            automatic.add(repaired.length);
+            repaired.push(mid);
+          }
+          changed=true;
+        }
+      }
+      oldToNew[i]=repaired.length;
+      if(originalAutomatic.has(i))automatic.add(repaired.length);
+      repaired.push(to);
+    }
+    if(!changed)return;
+    const stays={};
+    for(const [index,value] of Object.entries(state.stays||{})){
+      const originalIndex=Number(index);
+      if(Number.isInteger(originalIndex)&&oldToNew[originalIndex]!==undefined){
+        stays[String(oldToNew[originalIndex])]=value;
+      }
+    }
+    state.route=repaired;
+    state.autoConnectorIndices=[...automatic].filter(i=>i>0&&i<repaired.length-1).sort((a,b)=>a-b);
+    state.autoConnectors=[...new Set(state.autoConnectorIndices.map(i=>repaired[i]))];
+    state.stays=stays;
+    // A changed leg sequence invalidates selected flight inventory.
+    state.selections={};
+    state=window.NTA.save(state);
+  }
+  repairDirectItineraryRoute();
 
   const el={
     routebar:document.getElementById('routebar'),
