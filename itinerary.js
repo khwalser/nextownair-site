@@ -1029,25 +1029,28 @@
     const requests=new Map();
     legNodes.forEach(node=>{
       const a=node.dataset.origin,b=node.dataset.destination,date=node.dataset.date;
-      requests.set(fareKey(a,b,date),{a,b,date,leg:Number(node.dataset.legIndex)});
+      const key=fareKey(a,b,date),leg=Number(node.dataset.legIndex);
+      const req=requests.get(key)||{a,b,date,legs:[]};
+      if(Number.isInteger(leg)&&!req.legs.includes(leg))req.legs.push(leg);
+      requests.set(key,req);
     });
     let learnedSomething=false;
     await Promise.all([...requests.entries()].map(async([key,req])=>{
       if(liveFareData.has(key)){
-        if(req.leg!=null)liveFareByLeg.set(req.leg,liveFareData.get(key));
+        for(const leg of req.legs)liveFareByLeg.set(leg,liveFareData.get(key));
         return;
       }
       try{
         const data=await fetchFare(req.a,req.b,req.date,true);
         if(version!==renderVersion)return;
         rememberFareData(key,data);
-        if(req.leg!=null)liveFareByLeg.set(req.leg,data);
+        for(const leg of req.legs)liveFareByLeg.set(leg,data);
         learnedSomething=true;
       }catch(err){
         if(version!==renderVersion)return;
         const data={error:true,status:err.status||0,offers:[],message:String(err.message||err)};
         rememberFareData(key,data);
-        if(req.leg!=null)liveFareByLeg.set(req.leg,data);
+        for(const leg of req.legs)liveFareByLeg.set(leg,data);
         learnedSomething=true;
       }
     }));
