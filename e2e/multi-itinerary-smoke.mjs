@@ -8,7 +8,8 @@ const cases=[
   {name:'Arkansas EAS chain',route:['ELD','DFW','CVN','DFW','HOT'],date:'2026-12-08'},
   {name:'Michigan EAS round trip',route:['DTW','APN','DTW'],date:'2026-12-09'},
   {name:'Upper Peninsula via Chicago',route:['ORD','CMX','ORD'],date:'2026-12-10'},
-  {name:'Nebraska and Arkansas EAS',route:['GRI','DFW','HOT','DFW'],date:'2026-12-11'}
+  {name:'Nebraska and Arkansas EAS',route:['GRI','DFW','HOT','DFW'],date:'2026-12-11'},
+  {name:'Open-jaw cycle 1 ELD to GRI',route:['ELD','DFW','CVN','DFW','HOT','DFW','GRI'],date:'2026-12-08'}
 ];
 const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome'});
 const evidence=[];
@@ -33,6 +34,9 @@ try{
       const state=await page.evaluate(()=>window.NTA.load());
       check(state.route.join(',')===tc.route.join(','),'Route preserved in planner',state.route.join(' → '));
       check(state.startDate===tc.date,'Trip start date preserved',state.startDate);
+      if(tc.name.startsWith('Open-jaw')){
+        check(tc.route.length>=5&&tc.route[0]!==tc.route.at(-1),'Long itinerary uses distinct origin and destination');
+      }
       const headings=await page.locator('#content .leg .leghead h2').allTextContents();
       check(headings.length===tc.route.length-1,'Expected flight-leg cards rendered',headings.join(' | '));
       const calendar=page.locator('#startDateCalendar');
