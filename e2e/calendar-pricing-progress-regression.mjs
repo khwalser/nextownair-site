@@ -207,7 +207,7 @@ const rateLimitStart=source.indexOf('  function pumpFareQueue()');
 const rateLimitEnd=source.indexOf('  function fetchFare(',rateLimitStart);
 const rateLimitBlock=source.slice(rateLimitStart,rateLimitEnd);
 assert(rateLimitStart>=0&&rateLimitEnd>rateLimitStart,'Live fare queue implementation is present');
-assert(rateLimitBlock.includes("if(status===429){"),'Rate-limit logic handles retry instructions with or without Retry-After');
+assert(rateLimitBlock.includes("if(!ok&&status===429){"),'Rate-limit logic handles bodyless 429 before JSON validation');
 assert(rateLimitBlock.includes('task.rateLimitRetries<=2'),'Rate-limited date receives no more than two automatic retries');
 assert(rateLimitBlock.includes('fareQueue.unshift(task)'),'Retry preserves the original date and existing fare promise');
 assert(rateLimitBlock.indexOf('fareQueue.unshift(task)')<rateLimitBlock.indexOf('task.resolve({...coverageFallbackData'),'Rate-limit retry happens before recording temporary unavailability');
