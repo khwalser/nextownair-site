@@ -143,6 +143,12 @@
         const [a,b]=key.split('|');
         if(!a||!b)return;
         const lk=fareLegKey(a,b),data=entry.data;
+        // Older builds stored synthetic coverage-gap results. They are not evidence
+        // of a provider fare check and must not permanently suppress new probes.
+        if(isKnownFareCoverageGap(a,b)&&data.coverageLimited&&!lowestOffer(data)){
+          liveFareData.delete(key);liveFareCache.delete(key);
+          return;
+        }
         if(data.coverageLimited){
           fareCoverageBlockedLegs.add(lk);
           return;
