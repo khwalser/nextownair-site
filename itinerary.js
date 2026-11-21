@@ -370,8 +370,8 @@
       calendarMoreFareControl(leg.a,leg.b,month,monthCells.map(cell=>cell.dataset.calendarDate),queued);
       el.calendarStatus.textContent=queued
         ?checked
-          ?`Loading live fares across the month: ${checked} of ${total} dates checked, ${priced} with a fare so far. Selected and nearby dates go first.`
-          :`Live fare scan started for ${total} dates. Selected and nearby dates go first; prices will fill in automatically.`
+          ?`${checked} of ${total} dates checked; ${priced} with a live fare and ${queued} checks pending. Other dates remain unchecked until requested.`
+          :`Checking ${queued} priority dates out of ${total}; remaining dates can be requested in batches.`
         :priced
           ?`${checked} of ${total} dates checked; ${priced} with a live fare. ${total-checked} date${total-checked===1?' remains':'s remain'} unchecked. Choose another date or use Check next dates to continue.`
           :checked
