@@ -659,6 +659,7 @@
   function providerOptions(data,a,b,date){
     if(!data||!Array.isArray(data.offers))return null;
     return data.offers.map((o,idx)=>{
+      if(!o||typeof o!=='object')return null;
       const departMin=isoMinutes(o.departureTime),arrivalMin=isoMinutes(o.arrivalTime);
       if(departMin==null||arrivalMin==null)return null;
       const departDay=isoDate(o.departureTime)||date;
@@ -670,7 +671,7 @@
       return {
         id:`provider|${o.offerId||idx}|${a}|${b}|${date}`,
         date,departMin,arrivalMin,arrivalDayOffset:dayOffset,duration:elapsed,
-        price:Number(o.amount),currency:o.currency||'USD',
+        price:o.amount!=null&&o.amount!==''&&Number.isFinite(Number(o.amount))&&Number(o.amount)>=0?Number(o.amount):null,currency:o.currency||'USD',
         fareCount:Number(o.fareCount||1),fareChoices:Array.isArray(o.fareChoices)?o.fareChoices:[],
         intermediateStops:[],
         carrier:o.operatingCarrier||o.operatingCarrierCode||'Carrier',
@@ -806,7 +807,7 @@
     return option&&option.timeStatus==='prototype'?`?${value}`:value;
   }
   function optionFareText(option){
-    if(!Number.isFinite(Number(option&&option.price)))return '';
+    if(!option||option.price==null||option.price===''||!Number.isFinite(Number(option.price))||Number(option.price)<0)return '';
     return option.fareStatus==='prototype'?prototypeFareText(option.price):formatMoney(option.price,option.currency);
   }
   function servicePatternStops(a,b){
@@ -962,7 +963,7 @@
     const node=document.getElementById('liveTripFare');if(!node)return;
     // A ferry or ground transfer is a route segment, not a flight fare.
     const legs=state.route.slice(0,-1).reduce((count,a,i)=>count+(isTransferLeg(a,state.route[i+1])?0:1),0);
-    const selected=[...selectedFareByLeg.values()].filter(x=>x&&Number.isFinite(Number(x.amount)));
+    const selected=[...selectedFareByLeg.values()].filter(x=>x&&x.amount!=null&&x.amount!==''&&Number.isFinite(Number(x.amount))&&Number(x.amount)>=0);
     if(selected.length){
       const currency=selected[0].currency||'USD';
       const same=selected.every(x=>(x.currency||'USD')===currency);
@@ -1397,11 +1398,11 @@
       const arr=F.arrival(o,departDate);
       const bt=document.createElement('button');bt.type='button';bt.className=`flight${selected?' selected':''}`;bt.setAttribute('aria-pressed',String(selected));
       const badge=o.scheduleVerified?'Published flight':(o.prototype?'Known service':(o.liveMode?'Live flight':'Provider flight'));
-      const fareChoices=(o.fareChoices||[]).filter(x=>Number.isFinite(Number(x.amount)));
+      const fareChoices=(o.fareChoices||[]).filter(x=>x&&x.amount!=null&&x.amount!==''&&Number.isFinite(Number(x.amount))&&Number(x.amount)>=0);
       const fareLabel=optionFareText(o);
       const timeClass=o.timeStatus==='prototype'?' prototype-value':'';
       const fareClass=o.fareStatus==='prototype'?' prototype-value':'';
-      const price=Number.isFinite(Number(o.price))?(
+      const price=o.price!=null&&o.price!==''&&Number.isFinite(Number(o.price))&&Number(o.price)>=0?(
         usingProvider&&fareChoices.length>1&&o.fareStatus==='verified'
           ? `<div class="price${fareClass}">Lowest fare ${fareLabel}</div><div class="fare-choice-list" aria-label="Returned fare prices">${fareChoices.map((f,idx)=>`<span class="fare-choice${idx===0?' lowest':''}">${idx===0?'Lowest · ':''}${formatMoney(f.amount,f.currency||o.currency)}</span>`).join('')}</div><div class="small">${fareChoices.length} live fare prices returned for this flight</div>`
           : `<div class="price${fareClass}">${fareLabel}</div>`
@@ -1590,7 +1591,7 @@
       previousChosen=legRendered.chosen;
       departDate=legRendered.departDate;
       if(previousChosen){
-        if(Number.isFinite(Number(previousChosen.price))){
+        if(previousChosen.price!=null&&previousChosen.price!==''&&Number.isFinite(Number(previousChosen.price))&&Number(previousChosen.price)>=0){
           selectedFareByLeg.set(i,{
             amount:Number(previousChosen.price),
             currency:previousChosen.currency||'USD',
