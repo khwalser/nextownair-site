@@ -23,6 +23,7 @@ on:
       - "e2e/fare-null-normalization-regression.mjs"
       - "e2e/flight-request-timeout-regression.mjs"
       - "e2e/flight-input-validation-regression.mjs"
+      - "e2e/trip-date-validation-regression.mjs"
       - "e2e/live-flight-validation.mjs"
       - "e2e/schedule-full-day-regression.mjs"
       - "docs/data-architecture.md"
@@ -84,6 +85,9 @@ jobs:
 
       - name: Verify flight API date and fare validation
         run: node e2e/flight-input-validation-regression.mjs
+
+      - name: Validate persisted and shared trip dates
+        run: node e2e/trip-date-validation-regression.mjs
 
       - name: Audit route graph
         id: network
