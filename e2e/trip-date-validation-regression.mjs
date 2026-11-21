@@ -43,4 +43,22 @@ assert.equal(N.load().route.join(','),'DTW,ROC','Imported route cannot create sa
 const sharedRoute=N.encodeTripSnapshot({route:['DTW','DTW','ROC'],startDate:'2096-02-29',stays:{},selections:{}});
 assert.equal(N.decodeTripSnapshot(sharedRoute).route.join(','),'DTW,ROC','Shared snapshots also remove adjacent duplicate stops');
 
+// A legacy route may contain repeated or unrecognized stops. Its stay and
+// connector indices must follow the surviving destinations, never drift.
+location.search='';
+storage.setItem(N.KEY,JSON.stringify({
+  version:2,route:['DTW','DTW','ROC','ROC','DTW'],
+  startDate:'2096-02-29',
+  autoConnectorIndices:[2],
+  stays:{'2':{mode:'nights',nights:3},'4':{mode:'nights',nights:2}},
+  selections:{'1':'stale-flight','3':'another-stale-flight'}
+}));
+const migrated=N.load();
+assert.equal(migrated.route.join(','),'DTW,ROC,DTW','Legacy adjacent duplicate stops are compacted');
+assert.equal(migrated.stays['1']?.nights,3,'Stay tracks the first surviving destination');
+assert.equal(migrated.stays['2']?.nights,2,'Final destination stay follows its shifted position');
+assert.equal(migrated.autoConnectorIndices.join(','),'1','Automatic connector index follows the surviving stop');
+assert.equal(Object.keys(migrated.selections).length,0,'Old leg selections are invalidated after route compaction');
+assert.equal(N.load().route.join(','),'DTW,ROC,DTW','Normalized state remains stable after save and reload');
+
 console.log('PASS: Shared trip-state date validation rejects impossible calendar dates across storage, links and snapshots');
