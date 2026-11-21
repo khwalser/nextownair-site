@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-21.43",
+  "mvpRevision": "2026-11-21.44",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-21",
@@ -6858,6 +6858,50 @@ window.NTA_DATA = {
       "label": "Published Nov 23–29, 2026 nonstop week with daily service, reduced frequency Thanksgiving; live flight and fare confirmation required",
       "sourceLabel": "Directflights.com United Week48 flight-by-day grid (both directions, Nov9 update)",
       "sourceUrl": "https://www.directflights.com/DEN-JMS",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "PIR|DEN": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines / United Express",
+      "label": "Published November 23–29 nonstop every day in both directions; reduced Thanksgiving frequency; live inventory/fare unverified",
+      "sourceLabel": "Directflights week48 Pierre–Denver Nov23–29 dated flight grid, updated Nov9",
+      "sourceUrl": "https://www.directflights.com/PIR-DEN",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "DEN|PIR": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines / United Express",
+      "label": "Published November 23–29 nonstop every day in both directions; reduced Thanksgiving frequency; live inventory/fare unverified",
+      "sourceLabel": "Directflights week48 Pierre–Denver Nov23–29 dated flight grid, updated Nov9",
+      "sourceUrl": "https://www.directflights.com/DEN-PIR",
       "checkedAsOf": "2026-11-21",
       "verifiedWeekStart": "2026-11-23",
       "verifiedWeekEnd": "2026-11-29",
