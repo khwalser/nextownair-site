@@ -1221,10 +1221,6 @@
     const knownRoute=F.hasKnownRoute(a,b);
     const locked=i>0&&!priorSelected;
     const storedSelection=state.selections[String(i)];
-    if(storedSelection&&!String(storedSelection).endsWith(`|${a}|${b}|${departDate}`)){
-      delete state.selections[String(i)];
-      save();
-    }
     const autoConnector=(state.autoConnectorIndices||[]).includes(i);
     const key=fareKey(a,b,departDate);
     const fareData=liveFareData.get(key);
@@ -1274,6 +1270,13 @@
       note='Choose the inbound flight first. NexTownAir will then show only departures that leave after you arrive and clear the connection buffer.';
     }
 
+    // Automatic connectors may advance to a future service date above.
+    // Compare saved selections with the final effective departure date, not
+    // the provisional date, or valid next-day choices disappear on rerender.
+    if(storedSelection&&!String(storedSelection).endsWith(`|${a}|${b}|${departDate}`)){
+      delete state.selections[String(i)];
+      save();
+    }
     const A=by(a),B=by(b),leg=document.createElement('section');leg.className=`leg${locked?' leg-locked':''}`;
     if(knownRoute){
       leg.dataset.scheduleOrigin=a;
