@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-21.39",
+  "mvpRevision": "2026-11-21.40",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-21",
@@ -6634,6 +6634,50 @@ window.NTA_DATA = {
       "label": "Published nonstop on every day of the Nov 23–29, 2026 week, including holiday-schedule adjustment; flights and fares require provider confirmation",
       "sourceLabel": "Directflights Week 48 flight-by-day directional timetable, updated Nov 9, 2026",
       "sourceUrl": "https://www.directflights.com/DFW-GCK",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "LWB|CLT": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "American Airlines",
+      "label": "Verified November 23–29 2026 daily nonstop timetable only; live flight status, seat inventory, and price unverified",
+      "sourceLabel": "Directflights Nov 23–29 week48 directional flight grid; flight time varies during holiday",
+      "sourceUrl": "https://www.directflights.com/LWB-CLT",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "CLT|LWB": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "American Airlines",
+      "label": "Verified November 23–29 2026 daily nonstop timetable only; live flight status, seat inventory, and price unverified",
+      "sourceLabel": "Directflights Nov 23–29 week48 directional flight grid; flight time varies during holiday",
+      "sourceUrl": "https://www.directflights.com/CLT-LWB",
       "checkedAsOf": "2026-11-21",
       "verifiedWeekStart": "2026-11-23",
       "verifiedWeekEnd": "2026-11-29",
