@@ -4549,6 +4549,82 @@ window.NTA_DATA = {
     }
   ],
   "servicePatterns": {
+    "ELD|DFW": {
+      "activeFrom": "2026-11-21",
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Contour Airlines",
+      "label": "Daily published nonstop route service; exact times and fares require provider confirmation",
+      "sourceLabel": "South Arkansas Regional Airport / Contour 2026 daily nonstop service",
+      "sourceUrl": "https://www.contourairlines.com/corporate/press/178-contour-airlines-announces-new-nonstop-service-from-el-dorado-ar-to-dallas-fort-worth-tx",
+      "checkedAsOf": "2026-11-21"
+    },
+    "DFW|ELD": {
+      "activeFrom": "2026-11-21",
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Contour Airlines",
+      "label": "Daily published nonstop route service; exact times and fares require provider confirmation",
+      "sourceLabel": "Contour 2026 daily Dallas/Fort Worth–El Dorado nonstop service",
+      "sourceUrl": "https://www.contourairlines.com/corporate/press/178-contour-airlines-announces-new-nonstop-service-from-el-dorado-ar-to-dallas-fort-worth-tx",
+      "checkedAsOf": "2026-11-21"
+    },
+    "GRI|DFW": {
+      "activeFrom": "2026-11-21",
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "American Eagle / SkyWest",
+      "label": "Daily published nonstop route service; exact times and fares require provider confirmation",
+      "sourceLabel": "Central Nebraska Regional Airport: daily American service to Dallas/Fort Worth",
+      "sourceUrl": "https://flygrandisland.com/",
+      "checkedAsOf": "2026-11-21"
+    },
+    "DFW|GRI": {
+      "activeFrom": "2026-11-21",
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "American Eagle / SkyWest",
+      "label": "Daily published nonstop route service; exact times and fares require provider confirmation",
+      "sourceLabel": "Published American service between Dallas/Fort Worth and Grand Island",
+      "sourceUrl": "https://www.flightsfrom.com/DFW-GRI",
+      "checkedAsOf": "2026-11-21"
+    },
     "DTW|ORD": {
       "activeFrom": "2026-11-19",
       "activeThrough": "2026-12-18",
