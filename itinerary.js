@@ -737,10 +737,14 @@
     return flights.map((f,idx)=>{
       const departMin=isoMinutes(f.scheduledOut),arrivalMin=isoMinutes(f.scheduledIn);
       if(departMin==null||arrivalMin==null)return null;
-      const departDay=isoDate(f.scheduledOut)||date;
+      const departDay=isoDate(f.scheduledOut);
+      // A schedule provider may include an adjacent day's flights in a response.
+      // Never let those become selectable on the wrong itinerary date.
+      if(!departDay||departDay!==date)return null;
       const arrivalDay=isoDate(f.scheduledIn)||departDay;
-      const dayOffset=Math.max(0,window.NTA.diffDays(departDay,arrivalDay));
-      const elapsed=Math.max(1,dayOffset*1440+(arrivalMin-departMin));
+      const dayOffset=window.NTA.diffDays(departDay,arrivalDay);
+      const elapsed=dayOffset*1440+(arrivalMin-departMin);
+      if(dayOffset<0||!Number.isFinite(elapsed)||elapsed<=0)return null;
       return {
         id:`schedule|${String(f.ident||idx).replace(/\|/g,'-')}|${a}|${b}|${date}`,
         date,
