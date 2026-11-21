@@ -15,6 +15,11 @@ const context={
   fetch:async (_url,options)=>{
     lastSignal=options.signal;
     if(mode==='success')return {ok:true,status:200,json:async()=>({offers:[]})};
+    if(mode==='stalled-body')return {ok:true,status:200,json:()=>new Promise((resolve,reject)=>{
+      options.signal.addEventListener('abort',()=>{
+        const e=new Error('Body aborted');e.name='AbortError';reject(e);
+      },{once:true});
+    })};
     return new Promise((resolve,reject)=>{
       options.signal.addEventListener('abort',()=>{
         const e=new Error('Request aborted');e.name='AbortError';reject(e);
@@ -25,17 +30,22 @@ const context={
 vm.createContext(context);
 vm.runInContext(source,context);
 const F=context.window.NTA_FLIGHTS;
-for(const operation of [
-  ()=>F.fetchOffers('DTW','ROC','2026-12-10'),
-  ()=>F.fetchScheduleMonth('DTW','ROC','2026-12')
-]){
-  timeoutCallback=null;
-  const pending=operation();
-  assert.equal(typeof timeoutCallback,'function','Request sets a timeout');
-  assert.equal(lastSignal.aborted,false,'Request starts with active signal');
-  timeoutCallback();
-  await assert.rejects(pending,/aborted/,'Stalled request is rejected after timeout');
-  assert.equal(lastSignal.aborted,true,'Request aborts the in-flight fetch');
+for(const stallMode of ['stall','stalled-body']){
+  mode=stallMode;
+  for(const operation of [
+    ()=>F.fetchOffers('DTW','ROC','2026-12-10'),
+    ()=>F.fetchScheduleMonth('DTW','ROC','2026-12')
+  ]){
+    timeoutCallback=null;
+    const pending=operation();
+    assert.equal(typeof timeoutCallback,'function','Request sets a timeout');
+    assert.equal(lastSignal.aborted,false,'Request starts with active signal');
+    // Let the mocked fetch resolve headers so the stalled-body test enters JSON parsing.
+    if(stallMode==='stalled-body')await Promise.resolve();
+    timeoutCallback();
+    await assert.rejects(pending,/aborted/,'Stalled '+stallMode+' request is rejected after timeout');
+    assert.equal(lastSignal.aborted,true,'Request aborts the in-flight fetch');
+  }
 }
 mode='success';
 assert.equal((await F.fetchOffers('DTW','ROC','2026-12-10')).ok,true,'Normal fare request still succeeds');
