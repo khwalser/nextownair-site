@@ -22,6 +22,7 @@ on:
       - "e2e/calendar-pricing-progress-regression.mjs"
       - "e2e/fare-null-normalization-regression.mjs"
       - "e2e/flight-request-timeout-regression.mjs"
+      - "e2e/flight-input-validation-regression.mjs"
       - "e2e/schedule-full-day-regression.mjs"
       - "docs/data-architecture.md"
       - ".github/workflows/live-e2e.yml"
@@ -79,6 +80,9 @@ jobs:
 
       - name: Regress stalled flight and schedule requests
         run: node e2e/flight-request-timeout-regression.mjs
+
+      - name: Verify flight API date and fare validation
+        run: node e2e/flight-input-validation-regression.mjs
 
       - name: Audit route graph
         id: network
