@@ -684,7 +684,9 @@
       const providerDuration=Number(o.durationMinutes);
       const fallbackDuration=Math.round((new Date(o.arrivalTime)-new Date(o.departureTime))/60000);
       const elapsed=Number.isFinite(providerDuration)&&providerDuration>0?providerDuration:fallbackDuration;
-      if(!Number.isFinite(elapsed)||elapsed<=0)return null;
+      // A claimed duration cannot override an arrival timestamp that is
+      // earlier than departure on the same calendar day.
+      if(!Number.isFinite(fallbackDuration)||fallbackDuration<=0||!Number.isFinite(elapsed)||elapsed<=0)return null;
       return {
         id:`provider|${o.offerId||idx}|${a}|${b}|${date}`,
         date,departMin,arrivalMin,arrivalDayOffset:dayOffset,duration:elapsed,
