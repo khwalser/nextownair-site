@@ -1,0 +1,49 @@
+name: Multi-itinerary field test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'e2e/multi-itinerary-smoke.mjs'
+      - '.github/workflows/multi-itinerary.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  itinerary-field-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    env:
+      E2E_BASE_URL: https://nextownair.com
+      E2E_OUT_DIR: artifacts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify production frontend matches test checkout
+        run: |
+          for attempt in {1..36}; do
+            expected="$(sha256sum itinerary.js | cut -d' ' -f1)"
+            actual="$(curl -fsSL --max-time 20 https://nextownair.com/itinerary.js | sha256sum | cut -d' ' -f1)" || actual=""
+            if [ "$expected" = "$actual" ]; then echo "PASS: matching production itinerary code"; exit 0; fi
+            sleep 5
+          done
+          echo "Production itinerary.js does not match checkout"; exit 1
+      - name: Install Chrome test dependency
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: |
+          npm install --no-save playwright@1.55.0
+          google-chrome --version
+      - name: Create and exercise four live itineraries
+        run: node e2e/multi-itinerary-smoke.mjs
+      - name: Preserve route snapshots and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: multi-itinerary-evidence
+          path: artifacts/
+          retention-days: 14
