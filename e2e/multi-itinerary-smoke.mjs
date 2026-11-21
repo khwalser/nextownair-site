@@ -73,7 +73,7 @@ try{
             const input=stay.locator('input.dateinput');
             if(await input.count()){
               const earliest=await input.getAttribute('min');
-              if(earliest&&/^\\d{4}-\\d{2}-\\d{2}$/.test(earliest)){
+              if(earliest&&/^\d{4}-\d{2}-\d{2}$/.test(earliest)){
                 for(let offset=0;offset<8&&!found;offset++){
                   const candidate=new Date(earliest+'T12:00:00Z');
                   candidate.setUTCDate(candidate.getUTCDate()+offset);
