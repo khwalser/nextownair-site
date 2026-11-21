@@ -917,7 +917,8 @@
               fareCoverageBlockedLegs.add(lk);
               for(let idx=fareQueue.length-1;idx>=0;idx--){
                 const pending=fareQueue[idx];
-                if(fareLegKey(pending.a,pending.b)!==lk)continue;
+                // Automatic coverage caps must not cancel a traveler-requested lookup.
+                if(fareLegKey(pending.a,pending.b)!==lk||pending.priority)continue;
                 fareQueue.splice(idx,1);
                 pending.resolve(coverageFallbackData(pending.a,pending.b,pending.date));
               }
