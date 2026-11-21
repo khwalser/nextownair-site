@@ -37,7 +37,7 @@
         operatingCarrier:o.operatingCarrier,
         operatingCarrierCode:o.operatingCarrierCode,
         flightNumber:o.flightNumber,
-        amount:Number(o.fare&&o.fare.amount),
+        amount:o.fare&&o.fare.amount!==null&&o.fare.amount!==undefined&&String(o.fare.amount).trim()!==''&&Number.isFinite(Number(o.fare.amount))?Number(o.fare.amount):null,
         currency:o.fare&&o.fare.currency||'USD',
         fareStatus:o.fare&&o.fare.status||'prototype',
         timeStatus:o.timeStatus||'prototype',
@@ -45,7 +45,7 @@
         fareCount:Number(o.fareCount||1),
         fareChoices:Array.isArray(o.fareChoices)?o.fareChoices.map(f=>({
           offerId:f.id||null,
-          amount:Number(f.amount),
+          amount:f.amount!==null&&f.amount!==undefined&&String(f.amount).trim()!==''&&Number.isFinite(Number(f.amount))?Number(f.amount):null,
           currency:f.currency||'USD',
           expiresAt:f.expiresAt||null
         })):[]
