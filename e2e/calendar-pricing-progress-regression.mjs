@@ -304,3 +304,15 @@ console.log('PASS: Null provider rows and missing amounts never become $0 flight
 assert(source.includes('${checked} of ${dates.length} published-service dates checked for live prices'),'Completed calendar batch reports exact checked count');
 assert(source.includes('${Math.max(0,dates.length-checked)} remain unchecked'),'Incomplete monthly fare coverage is never silently portrayed as complete');
 console.log('PASS: Calendar completion reports checked, priced and unchecked service dates');
+
+const fareChoicesStart=source.indexOf('  function normalizedFareChoices(');
+const fareChoicesEnd=source.indexOf('  function optionFareText(',fareChoicesStart);
+assert(fareChoicesStart>=0&&fareChoicesEnd>fareChoicesStart,'Returned fare normalization function is present');
+const fareChoiceCtx={};vm.createContext(fareChoiceCtx);
+vm.runInContext(source.slice(fareChoicesStart,fareChoicesEnd)+'\nthis.normalizedFareChoices=normalizedFareChoices;',fareChoiceCtx);
+const sorted=Array.from(fareChoiceCtx.normalizedFareChoices({currency:'USD',fareChoices:[{amount:340},{amount:180},{amount:260},{amount:null}]})).map(x=>x.amount);
+assert.deepEqual(sorted,[180,260,340],'Same-currency fares are sorted from lowest price');
+const mixed=Array.from(fareChoiceCtx.normalizedFareChoices({currency:'USD',fareChoices:[{amount:120,currency:'EUR'},{amount:200,currency:'USD'}]})).map(x=>x.currency);
+assert.deepEqual(mixed,['EUR','USD'],'Different currencies retain their provider order without false price ranking');
+assert(source.includes("comparableFares&&idx===0?' lowest':''"),'Lowest badge only applies to comparable prices');
+console.log('PASS: Returned fare prices are ranked only when currencies are comparable');
