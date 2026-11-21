@@ -996,12 +996,13 @@
     if(selected.length){
       const currency=selected[0].currency||'USD';
       const same=selected.every(x=>(x.currency||'USD')===currency);
-      const hasPrototype=selected.some(x=>x.fareStatus==='prototype');
+      const allVerified=selected.every(x=>x.fareStatus==='verified');
+      const hasUnverified=!allVerified;
       const sum=selected.reduce((total,x)=>total+Number(x.amount||0),0);
-      const total=same?(hasPrototype?prototypeFareText(sum):formatMoney(sum,currency)):'Multiple currencies';
+      const total=same?(hasUnverified?prototypeFareText(sum):formatMoney(sum,currency)):'Multiple currencies';
       const label=selected.length===legs?'Itinerary fare total':'Selected fare subtotal';
-      const status=hasPrototype?'Includes prototype fare values; the leading ? applies to the total.':'All selected fares are verified provider values.';
-      node.innerHTML=`<strong class="${hasPrototype?'prototype-value':''}">${label} ${total}</strong><span>${selected.length} of ${legs} selected fare${selected.length===1?'':'s'} · ${status}</span>`;
+      const status=hasUnverified?'Includes unverified or prototype fare values; the leading ? means this is not a bookable quoted total.':'All selected fares are verified provider values.';
+      node.innerHTML=`<strong class="${hasUnverified?'prototype-value':''}">${label} ${total}</strong><span>${selected.length} of ${legs} selected fare${selected.length===1?'':'s'} · ${status}</span>`;
       return;
     }
     const rows=[...liveFareByLeg.values()];
