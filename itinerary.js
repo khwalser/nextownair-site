@@ -1231,8 +1231,7 @@
     const locked=i>0&&!priorSelected;
     const storedSelection=state.selections[String(i)];
     const autoConnector=(state.autoConnectorIndices||[]).includes(i);
-    const key=fareKey(a,b,departDate);
-    const fareData=liveFareData.get(key);
+    let fareData=liveFareData.get(fareKey(a,b,departDate));
     let providerOpts=providerOptions(fareData,a,b,departDate);
     let usingProvider=Array.isArray(providerOpts)&&providerOpts.length>0;
     const providerMissing=Boolean(fareData)&&(fareData.error||!fareData.offers||!fareData.offers.length);
@@ -1260,11 +1259,17 @@
       opts=opts.filter(o=>o.departMin>=plan.notBefore);
       if(opts.length===0&&usingPrototype&&autoConnector&&plan.mode==='asap'){
         const nextDate=window.NTA.addDays(departDate,1);
-        const nextOpts=scheduleOptions(a,b,nextDate);
-        const fallbackNextOpts=nextOpts.length?nextOpts:prototypeOptions(a,b,nextDate);
-        if(fallbackNextOpts.length){
+        const nextFareData=liveFareData.get(fareKey(a,b,nextDate));
+        const nextProviderOpts=providerOptions(nextFareData,a,b,nextDate);
+        const nextScheduleOpts=nextProviderOpts.length?[]:scheduleOptions(a,b,nextDate);
+        const nextOpts=nextProviderOpts.length?nextProviderOpts:(nextScheduleOpts.length?nextScheduleOpts:prototypeOptions(a,b,nextDate));
+        if(nextOpts.length){
           departDate=nextDate;
-          opts=fallbackNextOpts;
+          fareData=nextFareData;
+          opts=nextOpts;
+          usingProvider=nextProviderOpts.length>0;
+          usingVerifiedSchedule=!usingProvider&&nextScheduleOpts.length>0;
+          usingPrototype=opts.some(o=>o.prototype);
           note='No same-day service option remains for this automatic connection, so the itinerary continues on the next known service day.';
         }
       }
