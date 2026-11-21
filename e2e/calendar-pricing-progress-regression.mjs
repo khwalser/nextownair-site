@@ -101,7 +101,7 @@ console.log('PASS: Partial scan remains truthful, additional checks are availabl
 
 assert(source.includes("const publishedDate=knownRoute&&selectedAvailability.status==='yes'"),'Known service is established separately from a provider quote');
 assert(source.includes("publishedDate?prototypeOptions(a,b,departDate):[]"),'Published service offers explicitly marked planning choices while live prices are pending');
-assert(source.includes("if(!fareData&&!opts.length)"),'The pending panel is shown only when no published service choice is available');
+assert(source.includes("if(!opts.length)")&&source.includes('const stillChecking=!fareData;'),'Missing flight panel distinguishes provider pending from completed lookup');
 console.log('PASS: Published-service choices do not depend on slow fare-provider responses');
 
 assert(source.includes("const pinnedFallback=(pinnedId.startsWith('prototype|')"),'Late live pricing preserves previously selected published-service planning choices');
