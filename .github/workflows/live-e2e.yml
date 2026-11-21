@@ -28,6 +28,7 @@ on:
       - "e2e/all-pairs-routing-regression.mjs"
       - "e2e/schedule-provider-timeout-regression.mjs"
       - "e2e/schedule-malformed-response-regression.mjs"
+      - "e2e/schedule-partial-cache-regression.mjs"
       - "e2e/live-flight-validation.mjs"
       - "e2e/schedule-full-day-regression.mjs"
       - "docs/data-architecture.md"
@@ -109,6 +110,9 @@ jobs:
 
       - name: Regress malformed schedule response treatment
         run: node e2e/schedule-malformed-response-regression.mjs
+
+      - name: Ensure incomplete schedule data is never CDN cached
+        run: node e2e/schedule-partial-cache-regression.mjs
 
       - name: Audit schedule fallback coverage
         id: coverage
