@@ -2,8 +2,8 @@
   "basis": "Existing NexTownAir May 2026 DOT EAS community–hub model; NOT a verified operating-day timetable",
   "generated": "2026-11-21",
   "totalContractedPairs": 225,
-  "existingDayPatternCovered": 46,
-  "missingDayPatterns": 179,
+  "existingDayPatternCovered": 48,
+  "missingDayPatterns": 177,
   "contractSourceMeaning": "Reported EAS contracted community/hub evidence at the report date; does not prove daily operations, contract renewal or bookability.",
   "missing": [
     {
@@ -575,19 +575,6 @@
       "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
-      "pair": "GCK-DFW",
-      "community": "Garden City Regional Airport",
-      "communityCode": "GCK",
-      "hub": "DFW",
-      "state": "KS",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
       "pair": "GGW-BIL",
       "community": "Wokal Field Glasgow International Airport",
       "communityCode": "GGW",
@@ -715,19 +702,6 @@
       "communityCode": "HVR",
       "hub": "BIL",
       "state": "MT",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
-      "pair": "HYS-DEN",
-      "community": "Hays Regional Airport",
-      "communityCode": "HYS",
-      "hub": "DEN",
-      "state": "KS",
       "contractEvidence": "May 2026 DOT contracted EAS route list",
       "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
       "scheduleDayEvidence": "not_verified",
@@ -2554,6 +2528,20 @@
       "timeWindow": "November 23–29, 2026",
       "status": "time_bounded_published_operating_days",
       "note": "Daily in both directions even on Thanksgiving; variable flight frequency"
+    },
+    {
+      "pair": "HYS-DEN",
+      "source": "https://www.directflights.com/HYS-DEN",
+      "timeWindow": "November 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Every day in both directional timetables, with holiday-adjusted flight number and time"
+    },
+    {
+      "pair": "GCK-DFW",
+      "source": "https://www.directflights.com/GCK-DFW",
+      "timeWindow": "November 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Every day in both directional timetables, with holiday-adjusted flight number and time"
     }
   ]
 }
