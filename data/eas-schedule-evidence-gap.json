@@ -2,8 +2,8 @@
   "basis": "Existing NexTownAir May 2026 DOT EAS community–hub model; NOT a verified operating-day timetable",
   "generated": "2026-11-21",
   "totalContractedPairs": 225,
-  "existingDayPatternCovered": 40,
-  "missingDayPatterns": 185,
+  "existingDayPatternCovered": 42,
+  "missingDayPatterns": 183,
   "contractSourceMeaning": "Reported EAS contracted community/hub evidence at the report date; does not prove daily operations, contract renewal or bookability.",
   "missing": [
     {
@@ -333,19 +333,6 @@
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
-      "pair": "CGI-ORD",
-      "community": "Cape Girardeau Regional Airport",
-      "communityCode": "CGI",
-      "hub": "ORD",
-      "state": "MO",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
       "pair": "CIU-MSP",
       "community": "Chippewa County International Airport",
       "communityCode": "CIU",
@@ -612,19 +599,6 @@
       "reviewedOn": "2026-11-21",
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
       "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
-    },
-    {
-      "pair": "FOD-ORD",
-      "community": "Fort Dodge Regional Airport",
-      "communityCode": "FOD",
-      "hub": "ORD",
-      "state": "IA",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
       "pair": "GCK-DFW",
@@ -2590,6 +2564,20 @@
       "timeWindow": "Nov 23–29, 2026",
       "status": "time_bounded_published_operating_days",
       "note": "Both directional week-specific timetables cited; no extrapolation beyond this published week"
+    },
+    {
+      "pair": "FOD-ORD",
+      "source": "https://www.directflights.com/FOD-ORD",
+      "timeWindow": "November 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Verified day-by-day in both directions, with holiday-specific alternate flight; later dates unverified"
+    },
+    {
+      "pair": "CGI-ORD",
+      "source": "https://www.directflights.com/CGI-ORD",
+      "timeWindow": "November 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Verified day-by-day in both directions, with holiday-specific alternate flight; later dates unverified"
     }
   ]
 }
