@@ -478,7 +478,10 @@
     const av=calendarAvailability(date);
     cell.classList.remove('checking','available','unavailable','retry','unconfigured');
     cell.classList.add(av.status);
-    cell.disabled=av.status==='unavailable';
+    // Fare refreshes must never re-enable a calendar date in the past.
+    const past=date<window.NTA.todayLocal();
+    cell.classList.toggle('past',past);
+    cell.disabled=past||av.status==='unavailable';
     const fare=cell.querySelector('.calendar-fare');
     const leg=firstLeg();
     if(fare)fare.textContent=leg?calendarFareText(leg.a,leg.b,date,av):(av.status==='unavailable'?'—':'…');
