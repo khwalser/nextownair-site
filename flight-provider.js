@@ -59,7 +59,7 @@
     const timer=setTimeout(()=>controller.abort(),timeoutMs);
     try{
       const res=await fetch(url,{headers:{Accept:'application/json'},signal:controller.signal});
-      return {res,data:await res.json().catch(()=>({}))};
+      return {res,data:await res.json().catch(error=>{if(controller.signal.aborted)throw error;return {};})};
     }finally{
       clearTimeout(timer);
     }
