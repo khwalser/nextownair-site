@@ -266,7 +266,6 @@
       const a=state.route[i],b=state.route[i+1];if(isTransferLeg(a,b))continue;
       leg={a,b,index:i};break;
     }
-    if(leg&&isKnownFareCoverageGap(leg.a,leg.b))fareCoverageBlockedLegs.add(fareLegKey(leg.a,leg.b));
     return leg;
   }
   function calendarAvailability(date){
@@ -281,7 +280,6 @@
     return {status:'checking',label:'Checking'};
   }
   function calendarFareText(a,b,date,av){
-    if(fareCoverageBlockedLegs.has(fareLegKey(a,b))&&av.status!=='unavailable')return av.status==='available'?'nonstop':'';
     const key=fareKey(a,b,date),data=liveFareData.get(key);
     if(data){
       if(data.error)return 'fare unavailable';
@@ -299,7 +297,9 @@
   }
   function calendarFareTitle(a,b,date,av){
     if(fareCoverageBlockedLegs.has(fareLegKey(a,b))){
-      if(av.status==='available')return 'Published nonstop service · check current fare on the flight leg';
+      const blockedBest=lowestOffer(liveFareData.get(fareKey(a,b,date)));
+      if(blockedBest)return `Lowest live fare ${formatMoney(blockedBest.amount,blockedBest.currency)}`;
+      if(av.status==='available')return 'Published nonstop service · live fare provider coverage is limited';
       if(av.status==='unavailable')return 'No published nonstop service found for this date';
     }
     const data=liveFareData.get(fareKey(a,b,date)),best=lowestOffer(data);
@@ -351,7 +351,7 @@
     if(fareCoverageBlockedLegs.has(fareLegKey(leg.a,leg.b))){
       const pattern=publishedServicePattern(leg.a,leg.b);
       el.calendarStatus.textContent=pattern
-        ?`${pattern.label} is published for ${leg.a} → ${leg.b}. Choose a service date; live fares are checked separately on the flight leg.`
+        ?`${pattern.label} is published for ${leg.a} → ${leg.b}. The fare provider has limited coverage on this route; select a date to request another live fare check.`
         :`Choose a departure date. Live fare pricing is not available in-app for this route; use “Check current fares” on the flight leg after selecting a date.`;
       return;
     }
@@ -388,7 +388,7 @@
     calendarMoreFareControl(leg.a,leg.b,month,dates,queued);
     el.calendarStatus.textContent=queued
       ?`Published flights confirmed on ${dates.length} dates. Checking live prices: ${checked} of ${dates.length} checked, ${priced} priced, ${queued} queued or in progress. Selected and nearby dates go first.`
-      :`Published flights confirmed on ${dates.length} dates. Live fares found on ${priced}; select any other date to request its price.`;
+      :`Published flights confirmed on ${dates.length} dates. Live fares found on ${priced}; dates without fares are not necessarily unavailable. Select a date to request its price.`;
   }
   function queueCalendarFarePricing(a,b,dates,token,limit=AUTO_PRICE_WINDOW){
     if(fareCoverageBlockedLegs.has(fareLegKey(a,b))){
@@ -405,7 +405,8 @@
       const month=dates[0]&&monthKeyFromDate(dates[0]);
       const schedule=month&&scheduleMonthData.get(scheduleMonthKey(a,b,month));
       const fallback=Boolean(schedule&&schedule.error&&isScheduleFallbackCode(schedule.code));
-      return fallback?Math.min(5,Math.max(1,Number(limit)||AUTO_PRICE_WINDOW)):Math.max(1,Number(limit)||AUTO_PRICE_WINDOW);
+      const bounded=fallback?5:isKnownFareCoverageGap(a,b)?2:AUTO_PRICE_WINDOW;
+      return Math.min(bounded,Math.max(1,Number(limit)||AUTO_PRICE_WINDOW));
     })());
     ordered.forEach(date=>{
       if(!['yes','fallback'].includes(scheduleState(a,b,date).status))return;
@@ -489,9 +490,9 @@
       const av=calendarAvailability(date);
       const leg=firstLeg();
       const coverageGap=leg&&fareCoverageBlockedLegs.has(fareLegKey(leg.a,leg.b));
-      if(coverageGap)btn.classList.add('coverage-gap');
+      if(coverageGap&&!lowestOffer(liveFareData.get(fareKey(leg.a,leg.b,date))))btn.classList.add('coverage-gap');
       fare.textContent=date<today?'':leg?calendarFareText(leg.a,leg.b,date,av):(av.status==='unavailable'?'—':'…');
-      if(coverageGap)fare.setAttribute('aria-hidden','true');
+      if(coverageGap&&!lowestOffer(liveFareData.get(fareKey(leg.a,leg.b,date))))fare.setAttribute('aria-hidden','true');
       btn.append(n,fare);
       btn.addEventListener('click',()=>{
         if(btn.disabled)return;
@@ -519,18 +520,6 @@
       calendarScheduleCompleteKey=key;
       renderStartCalendar();
       queueCalendarFarePricing(leg.a,leg.b,scheduledCalendarDates(leg.a,leg.b,localMonth),token);
-      updateCalendarFareStatus();
-      return;
-    }
-    if(isKnownFareCoverageGap(leg.a,leg.b)){
-      fareCoverageBlockedLegs.add(fareLegKey(leg.a,leg.b));
-      const token=++calendarLoadVersion;
-      const month=`${calendarMonthDate.getFullYear()}-${String(calendarMonthDate.getMonth()+1).padStart(2,'0')}`;
-      const key=scheduleMonthKey(leg.a,leg.b,month);
-      const published=publishedScheduleMonth(leg.a,leg.b,month);
-      if(published)scheduleMonthData.set(key,published);
-      calendarScheduleCompleteKey=key;
-      renderStartCalendar();
       updateCalendarFareStatus();
       return;
     }
@@ -897,7 +886,6 @@
   }
   function fetchFare(a,b,date,priority=false){
     const key=fareKey(a,b,date);
-    if(isKnownFareCoverageGap(a,b))fareCoverageBlockedLegs.add(fareLegKey(a,b));
     if(fareCoverageBlockedLegs.has(fareLegKey(a,b))){
       const data=coverageFallbackData(a,b,date);
       liveFareData.set(key,data);
