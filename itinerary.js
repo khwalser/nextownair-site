@@ -855,6 +855,15 @@
   function fareKey(a,b,date){return `${a}|${b}|${date}`;}
   function fareLegKey(a,b){return `${a}|${b}`;}
   function externalFareSearchUrl(a,b,date){return `https://www.google.com/travel/flights?q=${encodeURIComponent(`Flights from ${a} to ${b} on ${date}`)}`;}
+  function carrierReservation(a,b,date,carrier){
+    return window.NTA_CARRIER_BOOKING?.resolve({origin:a,destination:b,date,carrier})||null;
+  }
+  function carrierBookingAction(a,b,date,carrier){
+    const match=carrierReservation(a,b,date,carrier);
+    if(!match)return '';
+    const mode=match.mode==='contact'?'reservations contact':'booking';
+    return `<div class="carrier-handoff"><strong>Carrier connection: ${match.name}</strong><div class="small">Open the airline's ${mode} page, then enter ${a} → ${b} for ${date}. Flight dates, prices, and seats are confirmed by the airline, not prefilled or guaranteed here.</div><a class="btn tertiary carrier-booking-link" data-carrier-id="${match.id}" href="${match.url}" target="_blank" rel="noopener noreferrer">Open ${match.name} ${mode} ↗</a></div>`;
+  }
   function coverageFallbackData(a,b,date){return {provider:'external-search',liveMode:false,checkedAt:new Date().toISOString(),origin:a,destination:b,departureDate:date,offers:[],coverageLimited:true,externalSearchUrl:externalFareSearchUrl(a,b,date)};}
   function lowestOffer(data){
     const offers=(data&&Array.isArray(data.offers))?data.offers:[];
@@ -1426,7 +1435,9 @@
       }
     }
 
-    leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${A.city} → ${B.city}</h2><div class="muted">${a} → ${b}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div><p class="small">${note}</p>${fareMarkup}<div class="options" id="flight-options-${i}"></div>`;
+    const knownCarrier=providerOpts[0]?.carrier||providerOpts[0]?.operatingCarrier||null;
+    const carrierHandoff=knownRoute?carrierBookingAction(a,b,departDate,knownCarrier):'';
+    leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${A.city} → ${B.city}</h2><div class="muted">${a} → ${b}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div><p class="small">${note}</p>${fareMarkup}${carrierHandoff}<div class="options" id="flight-options-${i}"></div>`;
     const box=leg.querySelector('.options');
     const viewOptions=leg.querySelector('[data-view-flight-options]');
     if(viewOptions)viewOptions.addEventListener('click',()=>box.scrollIntoView({behavior:'smooth',block:'start'}));
@@ -1589,6 +1600,9 @@
     const items=flights.map((x,i)=>{
       const fareClass=x.fareStatus==='prototype'?' prototype-value':'';
       const timeClass=x.timeStatus==='prototype'?' prototype-value':'';
+      const booking=carrierReservation(x.from,x.to,x.departDate,x.carrier);
+      const url=booking?.url||x.bookingUrl;
+      const label=booking?`Open ${booking.name} ${booking.mode==='contact'?'reservations contact':'booking'} ↗`:'Search flight booking options ↗';
       return `<li class="booking-item">
         <label class="booking-check">
           <input type="checkbox" class="booking-check-input" data-booking-key="${bookingProgressKey(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}" aria-label="Mark leg ${i+1} booked">
@@ -1600,7 +1614,8 @@
         </label>
         <div class="booking-action">
           <strong class="${fareClass.trim()}">${x.fareText||'Fare pending'}</strong>
-          <a class="btn tertiary booking-link" href="${x.bookingUrl}" target="_blank" rel="noopener">Open booking search ↗</a>
+          <a class="btn tertiary booking-link" href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>
+          ${booking?'<span class="small">Complete the airport and date search on the airline website; availability is not transferred automatically.</span>':''}
         </div>
       </li>`;
     }).join('');
