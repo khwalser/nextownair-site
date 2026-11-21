@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-21.38",
+  "mvpRevision": "2026-11-21.39",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-21",
@@ -6546,6 +6546,94 @@ window.NTA_DATA = {
       "label": "Published Nov 23–29 week includes at least one nonstop daily, including Thanksgiving reduced frequency; exact inventory requires live provider",
       "sourceLabel": "Directflights directional flight-by-day November 23–29 2026 schedule",
       "sourceUrl": "https://www.directflights.com/ORD-DEC",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "HYS|DEN": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Published nonstop on every day of the Nov 23–29, 2026 week, including holiday-schedule adjustment; flights and fares require provider confirmation",
+      "sourceLabel": "Directflights Week 48 flight-by-day directional timetable, updated Nov 9, 2026",
+      "sourceUrl": "https://www.directflights.com/HYS-DEN",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "DEN|HYS": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines",
+      "label": "Published nonstop on every day of the Nov 23–29, 2026 week, including holiday-schedule adjustment; flights and fares require provider confirmation",
+      "sourceLabel": "Directflights Week 48 flight-by-day directional timetable, updated Nov 9, 2026",
+      "sourceUrl": "https://www.directflights.com/DEN-HYS",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "GCK|DFW": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "American Airlines",
+      "label": "Published nonstop on every day of the Nov 23–29, 2026 week, including holiday-schedule adjustment; flights and fares require provider confirmation",
+      "sourceLabel": "Directflights Week 48 flight-by-day directional timetable, updated Nov 9, 2026",
+      "sourceUrl": "https://www.directflights.com/GCK-DFW",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "DFW|GCK": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "American Airlines",
+      "label": "Published nonstop on every day of the Nov 23–29, 2026 week, including holiday-schedule adjustment; flights and fares require provider confirmation",
+      "sourceLabel": "Directflights Week 48 flight-by-day directional timetable, updated Nov 9, 2026",
+      "sourceUrl": "https://www.directflights.com/DFW-GCK",
       "checkedAsOf": "2026-11-21",
       "verifiedWeekStart": "2026-11-23",
       "verifiedWeekEnd": "2026-11-29",
