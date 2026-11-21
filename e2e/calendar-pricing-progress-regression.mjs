@@ -96,7 +96,7 @@ console.log('PASS: DTW-CIU calendar attempts bounded real pricing instead of sup
 assert(source.includes('calendarMoreFareControl(leg.a,leg.b,month,monthCells.map(cell=>cell.dataset.calendarDate),queued)'),'Schedule-quota fallback exposes manual checks for unchecked calendar days');
 assert(source.includes('queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,Math.min(isKnownFareCoverageGap(leg.a,leg.b)?2:5,remaining.length))'),'Manual checks are capped at five dates, or two for known coverage gaps');
 assert(source.includes('dates checked;')&&source.includes('remain\' unchecked')===false,'Partial fallback scan uses checked counts instead of announcing completion');
-assert(source.includes('No selectable flight offer was returned for this departure date'),'First-leg missing inventory must not masquerade as a connection timing conflict');
+assert(source.includes('No selectable offer was returned for this date; this does not prove the flight does not operate.'),'First-leg missing inventory must not masquerade as a connection timing conflict');
 console.log('PASS: Partial scan remains truthful, additional checks are available, and first-leg empty results are explained');
 
 assert(source.includes("const publishedDate=knownRoute&&selectedAvailability.status==='yes'"),'Known service is established separately from a provider quote');
