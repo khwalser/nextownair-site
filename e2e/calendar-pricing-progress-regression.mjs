@@ -441,3 +441,24 @@ calendarCellContext.calendarAvailability=()=>({status:'unavailable'});
 calendarCellContext.updateCalendarCell('2026-11-22');
 assert.equal(calendarMockCell.disabled,true,'Future date lacking published service remains disabled');
 console.log('PASS: Asynchronous calendar fare updates never enable past or unavailable departure days');
+
+const scheduleStatusStart=source.indexOf('  function scheduleState(');
+const scheduleStatusEnd=source.indexOf('  function firstLeg(',scheduleStatusStart);
+assert(scheduleStatusStart>=0&&scheduleStatusEnd>scheduleStatusStart,'Calendar schedule status resolver is present');
+const verifiedPattern={activeFrom:'2026-11-21',activeThrough:'2026-12-31',days:[0,1,2,4,5,6],count:1,excludeDates:['2026-12-25']};
+const statusContext={
+  monthKeyFromDate:d=>d.slice(0,7),
+  scheduleMonthData:new Map(),
+  scheduleMonthKey:(a,b,m)=>a+'|'+b+'|'+m,
+  publishedServicePattern:()=>verifiedPattern,
+  patternAppliesOnDate:(p,d)=>d>=p.activeFrom&&d<=p.activeThrough&&!p.excludeDates.includes(d)&&p.days.includes(new Date(d+'T12:00:00Z').getUTCDay()),
+  isScheduleFallbackCode:()=>false
+};
+vm.createContext(statusContext);
+vm.runInContext(source.slice(scheduleStatusStart,scheduleStatusEnd)+'\nthis.scheduleState=scheduleState;',statusContext);
+assert.equal(statusContext.scheduleState('DFW','CVN','2026-12-08').status,'yes','Published operating day is selectable within timetable range');
+assert.equal(statusContext.scheduleState('DFW','CVN','2026-12-09').status,'none','Published nonoperating weekday is not presented as a flight');
+assert.equal(statusContext.scheduleState('DFW','CVN','2026-12-25').status,'none','Explicitly excluded timetable date is not presented as operating');
+assert.equal(statusContext.scheduleState('DFW','CVN','2027-01-05').status,'fallback','Expired published timetable cannot verify flights next year');
+assert.equal(statusContext.scheduleState('DFW','CVN','2026-11-20').status,'fallback','Flight before published timetable validity is unverified');
+console.log('PASS: Calendar availability respects timetable date windows, exclusions and weekdays');
