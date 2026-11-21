@@ -54,6 +54,8 @@ try{
   assert.equal(transferEvidence.hasFlight,false,'MRI–ANC is never counted as a flight');
   assert.equal(transferEvidence.transfer?.mode,'ground','Airport-to-airport transfer retains ground mode');
   assert.match(transferEvidence.content,/transfer/i,'Itinerary visibly distinguishes airport transfer from flight');
+  assert.match(transferEvidence.content,/Ground transfer/i,'MRI airport connection uses the road-only transfer heading');
+  assert.doesNotMatch(transferEvidence.content,/Ground \+ airport ferry transfer/i,'MRI transfer never incorrectly mentions an airport ferry');
   assert.deepEqual(transferErrors,[],'MRI–ANC transfer itinerary has no uncaught errors');
   console.log('PASS: Merrill Field to Anchorage International renders as a ground transfer, not an invented flight');
   await context.close();
