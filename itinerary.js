@@ -253,14 +253,11 @@
     }
     const pattern=publishedServicePattern(a,b);
     if(pattern){
-      const p=parseYmd(date);
-      if(p){
-        const dow=new Date(Date.UTC(p.y,p.m-1,p.d,12)).getUTCDay();
-        const operating=pattern.days.includes(dow);
-        return operating
-          ?{status:'yes',label:'Scheduled',detail:`${Math.max(1,Number(pattern.count)||1)} published flight${Number(pattern.count)===1?'':'s'}`}
-          :{status:'none',label:'No scheduled service',detail:'published service pattern'};
-      }
+      const inPublishedWindow=(!pattern.activeFrom||date>=pattern.activeFrom)&&(!pattern.activeThrough||date<=pattern.activeThrough);
+      if(!inPublishedWindow)return {status:'fallback',label:'Service unverified',detail:'Published operating pattern is not confirmed for this date'};
+      return patternAppliesOnDate(pattern,date)
+        ?{status:'yes',label:'Scheduled',detail:`${Math.max(1,Number(pattern.count)||1)} published flight${Number(pattern.count)===1?'':'s'}`}
+        :{status:'none',label:'No scheduled service',detail:'No published service for this date in the verified timetable'};
     }
     if(!data)return {status:'checking',label:'Checking…',detail:''};
     if(data.error){
