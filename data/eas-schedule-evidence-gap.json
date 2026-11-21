@@ -2,23 +2,10 @@
   "basis": "Existing NexTownAir May 2026 DOT EAS community–hub model; NOT a verified operating-day timetable",
   "generated": "2026-11-21",
   "totalContractedPairs": 225,
-  "existingDayPatternCovered": 29,
-  "missingDayPatterns": 196,
+  "existingDayPatternCovered": 35,
+  "missingDayPatterns": 190,
   "contractSourceMeaning": "Reported EAS contracted community/hub evidence at the report date; does not prove daily operations, contract renewal or bookability.",
   "missing": [
-    {
-      "pair": "ABR-MSP",
-      "community": "Aberdeen Regional Airport",
-      "communityCode": "ABR",
-      "hub": "MSP",
-      "state": "SD",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
     {
       "pair": "ADK-ANC",
       "community": "Adak Airport",
@@ -200,37 +187,11 @@
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
-      "pair": "BJI-MSP",
-      "community": "Bemidji Regional Airport",
-      "communityCode": "BJI",
-      "hub": "MSP",
-      "state": "MN",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
       "pair": "BKW-CLT",
       "community": "Raleigh County Memorial Airport",
       "communityCode": "BKW",
       "hub": "CLT",
       "state": "WV",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
-      "pair": "BRD-MSP",
-      "community": "Brainerd Lakes Regional Airport",
-      "communityCode": "BRD",
-      "hub": "MSP",
-      "state": "MN",
       "contractEvidence": "May 2026 DOT contracted EAS route list",
       "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
       "scheduleDayEvidence": "not_verified",
@@ -912,19 +873,6 @@
       "communityCode": "IMT",
       "hub": "MSP",
       "state": "MI",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
-      "pair": "INL-MSP",
-      "community": "Falls International Airport",
-      "communityCode": "INL",
-      "hub": "MSP",
-      "state": "MN",
       "contractEvidence": "May 2026 DOT contracted EAS route list",
       "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
       "scheduleDayEvidence": "not_verified",
@@ -2116,19 +2064,6 @@
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
-      "pair": "RHI-MSP",
-      "community": "Rhinelander Oneida County Airport",
-      "communityCode": "RHI",
-      "hub": "MSP",
-      "state": "WI",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
       "pair": "SDY-BIL",
       "community": "Sidney Richland Municipal Airport",
       "communityCode": "SDY",
@@ -2412,19 +2347,6 @@
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
-      "pair": "TVF-MSP",
-      "community": "Thief River Falls Regional Airport",
-      "communityCode": "TVF",
-      "hub": "MSP",
-      "state": "MN",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
       "pair": "TWA-DLG",
       "community": "Twin Hills Airport",
       "communityCode": "TWA",
@@ -2656,6 +2578,48 @@
       "timeWindow": "2026-11-21 through 2026-12-31",
       "status": "time_bounded_published_operating_days",
       "note": "Daily published service on route; fare, current operating flight and seats require date-specific verification"
+    },
+    {
+      "pair": "ABR-MSP",
+      "source": "https://www.directflights.com/ABR-MSP",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Directions separately verified; no inferred schedule outside the source-supported window"
+    },
+    {
+      "pair": "BJI-MSP",
+      "source": "https://www.directflights.com/BJI-MSP",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Directions separately verified; no inferred schedule outside the source-supported window"
+    },
+    {
+      "pair": "BRD-MSP",
+      "source": "https://www.directflights.com/BRD-MSP",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Directions separately verified; no inferred schedule outside the source-supported window"
+    },
+    {
+      "pair": "RHI-MSP",
+      "source": "https://www.directflights.com/RHI-MSP",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Directions separately verified; no inferred schedule outside the source-supported window"
+    },
+    {
+      "pair": "INL-MSP",
+      "source": "https://www.directflights.com/INL-MSP",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Directions separately verified; no inferred schedule outside the source-supported window"
+    },
+    {
+      "pair": "TVF-MSP",
+      "source": "https://whatflieswhere.com/from/tvf/to/msp",
+      "timeWindow": "Nov 23, 2026 – Jan 21/30, 2027 (direction-dependent)",
+      "status": "time_bounded_published_operating_days",
+      "note": "Directions separately verified; no inferred schedule outside the source-supported window"
     }
   ]
 }
