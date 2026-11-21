@@ -231,7 +231,7 @@ const pumpStart=source.indexOf('  function pumpFareQueue()');
 const pumpEnd=source.indexOf('  function fetchFare(',pumpStart);
 assert(pumpStart>=0&&pumpEnd>pumpStart,'Provider queue body exists');
 let providerError=null;
-const queueCtx={
+const nullProviderQueueCtx={
   clearTimeout:()=>{},
   setTimeout:()=>null,
   farePumpTimer:null, fareQueue:[{a:'ELD',b:'DFW',date:'2026-12-08',key:'ELD|DFW|2026-12-08',resolve:()=>{},reject:e=>{providerError=e;}}],
@@ -243,12 +243,12 @@ const queueCtx={
   coverageFallbackData:()=>({offers:[],coverageLimited:true}),
   externalFareSearchUrl:()=>'',firstLeg:()=>null,el:{calendarStatus:null},updateCalendarFareStatus:()=>{}
 };
-vm.createContext(queueCtx);
-vm.runInContext(source.slice(pumpStart,pumpEnd)+'\nthis.pumpFareQueue=pumpFareQueue;',queueCtx);
-queueCtx.pumpFareQueue();
+vm.createContext(nullProviderQueueCtx);
+vm.runInContext(source.slice(pumpStart,pumpEnd)+'\nthis.pumpFareQueue=pumpFareQueue;',nullProviderQueueCtx);
+nullProviderQueueCtx.pumpFareQueue();
 await new Promise(resolve=>setTimeout(resolve,10));
 assert(providerError&&/invalid response body/.test(providerError.message),'Null provider JSON is safely rejected as malformed, not dereferenced');
-assert.equal(queueCtx.fareActive,0,'Malformed provider response releases the active request slot');
+assert.equal(nullProviderQueueCtx.fareActive,0,'Malformed provider response releases the active request slot');
 console.log('PASS: Null provider responses reject cleanly and release the fare queue');
 
 const optionStart=source.indexOf('  function providerOptions(');
