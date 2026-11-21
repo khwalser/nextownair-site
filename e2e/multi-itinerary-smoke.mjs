@@ -62,6 +62,10 @@ try{
         check(Boolean(restored),'First flight survives reload',restored||'');
       }else{
         row.selection='no selectable first-leg offer; provider or schedule may be unavailable';
+        const explore=page.locator('#flight-options-0 [data-open-departure-calendar]');
+        check(await explore.count()===1,'Missing first-leg offer provides direct calendar navigation');
+        await explore.click();
+        check(await page.locator('#startDateCalendar').isVisible(),'Departure calendar opens from missing-flight guidance');
         console.log('INFO: '+tc.name+' — '+row.selection);
       }
       row.totalFlightLegs=tc.route.length-1;
@@ -86,6 +90,15 @@ try{
                   found=await selector.count()>0;
                 }
               }
+            }
+          }
+          if(!found){
+            const nextAction=page.locator('#flight-options-'+legIndex+' [data-next-service-date]');
+            if(await nextAction.count()){
+              await nextAction.click();
+              await page.waitForTimeout(300);
+              found=await selector.count()>0;
+              check(found,'Next confirmed-service date reveals a selectable onward flight');
             }
           }
           if(found){
