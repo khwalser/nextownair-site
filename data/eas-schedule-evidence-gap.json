@@ -2,8 +2,8 @@
   "basis": "Existing NexTownAir May 2026 DOT EAS community–hub model; NOT a verified operating-day timetable",
   "generated": "2026-11-21",
   "totalContractedPairs": 225,
-  "existingDayPatternCovered": 42,
-  "missingDayPatterns": 183,
+  "existingDayPatternCovered": 44,
+  "missingDayPatterns": 181,
   "contractSourceMeaning": "Reported EAS contracted community/hub evidence at the report date; does not prove daily operations, contract renewal or bookability.",
   "missing": [
     {
@@ -1284,19 +1284,6 @@
       "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
-      "pair": "LAR-DEN",
-      "community": "Laramie Regional Airport",
-      "communityCode": "LAR",
-      "hub": "DEN",
-      "state": "WY",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
       "pair": "LBL-DEN",
       "community": "Liberal Mid-America Regional Airport",
       "communityCode": "LBL",
@@ -1960,19 +1947,6 @@
       "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
-      "pair": "PUB-DEN",
-      "community": "Pueblo Memorial Airport",
-      "communityCode": "PUB",
-      "hub": "DEN",
-      "state": "CO",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
       "pair": "SDY-BIL",
       "community": "Sidney Richland Municipal Airport",
       "communityCode": "SDY",
@@ -2578,6 +2552,20 @@
       "timeWindow": "November 23–29, 2026",
       "status": "time_bounded_published_operating_days",
       "note": "Verified day-by-day in both directions, with holiday-specific alternate flight; later dates unverified"
+    },
+    {
+      "pair": "LAR-DEN",
+      "source": "https://www.directflights.com/LAR-DEN",
+      "timeWindow": "November 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Daily service including Thursday"
+    },
+    {
+      "pair": "PUB-DEN",
+      "source": "https://www.directflights.com/PUB-DEN",
+      "timeWindow": "November 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "No scheduled service Thursday Nov 26"
     }
   ]
 }
