@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-21.37",
+  "mvpRevision": "2026-11-21.38",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-21",
@@ -6458,6 +6458,94 @@ window.NTA_DATA = {
       "label": "Published Nov 23–29 nonstop timetable excludes Thanksgiving Thursday Nov 26; fares and inventory still require provider confirmation",
       "sourceLabel": "Directflights week 48 directional flight grid, updated Nov 9, 2026",
       "sourceUrl": "https://www.directflights.com/DEN-PUB",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "DVL|DEN": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines / United Express",
+      "label": "Published Nov 23–29 week includes at least one nonstop daily, including Thanksgiving reduced frequency; exact inventory requires live provider",
+      "sourceLabel": "Directflights directional flight-by-day November 23–29 2026 schedule",
+      "sourceUrl": "https://www.directflights.com/DVL-DEN",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "DEN|DVL": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines / United Express",
+      "label": "Published Nov 23–29 week includes at least one nonstop daily, including Thanksgiving reduced frequency; exact inventory requires live provider",
+      "sourceLabel": "Directflights directional flight-by-day November 23–29 2026 schedule",
+      "sourceUrl": "https://www.directflights.com/DEN-DVL",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "DEC|ORD": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines / United Express",
+      "label": "Published Nov 23–29 week includes at least one nonstop daily, including Thanksgiving reduced frequency; exact inventory requires live provider",
+      "sourceLabel": "Directflights directional flight-by-day November 23–29 2026 schedule",
+      "sourceUrl": "https://www.directflights.com/DEC-ORD",
+      "checkedAsOf": "2026-11-21",
+      "verifiedWeekStart": "2026-11-23",
+      "verifiedWeekEnd": "2026-11-29",
+      "evidenceScope": "exact-published-week"
+    },
+    "ORD|DEC": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "United Airlines / United Express",
+      "label": "Published Nov 23–29 week includes at least one nonstop daily, including Thanksgiving reduced frequency; exact inventory requires live provider",
+      "sourceLabel": "Directflights directional flight-by-day November 23–29 2026 schedule",
+      "sourceUrl": "https://www.directflights.com/ORD-DEC",
       "checkedAsOf": "2026-11-21",
       "verifiedWeekStart": "2026-11-23",
       "verifiedWeekEnd": "2026-11-29",
