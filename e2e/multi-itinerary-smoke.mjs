@@ -34,7 +34,7 @@ try{
       check(state.route.join(',')===tc.route.join(','),'Route preserved in planner',state.route.join(' → '));
       check(state.startDate===tc.date,'Trip start date preserved',state.startDate);
       const headings=await page.locator('#content .leg .leghead h2').allTextContents();
-      check(headings.length>=1,'Itinerary leg cards rendered',headings.join(' | '));
+      check(headings.length===tc.route.length-1,'Expected flight-leg cards rendered',headings.join(' | '));
       const calendar=page.locator('#startDateCalendar');
       if(await calendar.isHidden())await page.locator('#startDateButton').click();
       await page.locator('.calendar-day[data-calendar-date="'+tc.date+'"]').waitFor({state:'visible',timeout:15000});
@@ -60,6 +60,44 @@ try{
       }else{
         row.selection='no selectable first-leg offer; provider or schedule may be unavailable';
         console.log('INFO: '+tc.name+' — '+row.selection);
+      }
+      row.totalFlightLegs=tc.route.length-1;
+      row.completedFlightLegs=await page.evaluate(()=>Object.keys(window.NTA.load().selections||{}).length);
+      // Exercise downstream flight and stay choices on the two shorter round trips.
+      if(tc.route.length===3&&row.completedFlightLegs>=1){
+        for(let legIndex=1;legIndex<row.totalFlightLegs;legIndex++){
+          const selector=page.locator('#flight-options-'+legIndex+' .flight');
+          let found=await selector.count()>0;
+          if(!found){
+            const stay=page.locator('.stay').nth(legIndex-1);
+            const input=stay.locator('input.dateinput');
+            if(await input.count()){
+              const earliest=await input.getAttribute('min');
+              if(earliest&&/^\\d{4}-\\d{2}-\\d{2}$/.test(earliest)){
+                for(let offset=0;offset<8&&!found;offset++){
+                  const candidate=new Date(earliest+'T12:00:00Z');
+                  candidate.setUTCDate(candidate.getUTCDate()+offset);
+                  await input.fill(candidate.toISOString().slice(0,10));
+                  await input.dispatchEvent('change');
+                  await page.waitForTimeout(250);
+                  found=await selector.count()>0;
+                }
+              }
+            }
+          }
+          if(found){
+            await selector.first().click();
+            await page.waitForTimeout(300);
+          }
+        }
+        row.completedFlightLegs=await page.evaluate(()=>Object.keys(window.NTA.load().selections||{}).length);
+        row.complete=row.completedFlightLegs===row.totalFlightLegs;
+        console.log('INFO: '+tc.name+' — '+row.completedFlightLegs+'/'+row.totalFlightLegs+' flight legs selected');
+        if(row.complete){
+          await page.reload({waitUntil:'domcontentloaded',timeout:60000});
+          const persistedCount=await page.evaluate(()=>Object.keys(window.NTA.load().selections||{}).length);
+          check(persistedCount===row.totalFlightLegs,'Completed round-trip flight choices survive reload',String(persistedCount));
+        }
       }
       await page.screenshot({path:out+'/itinerary-case-'+(i+1)+'.png',fullPage:true});
       check(errors.length===0,'No uncaught browser errors',errors.join('; '));
