@@ -2,8 +2,8 @@
   "basis": "Existing NexTownAir May 2026 DOT EAS community–hub model; NOT a verified operating-day timetable",
   "generated": "2026-11-21",
   "totalContractedPairs": 225,
-  "existingDayPatternCovered": 54,
-  "missingDayPatterns": 171,
+  "existingDayPatternCovered": 56,
+  "missingDayPatterns": 169,
   "contractSourceMeaning": "Reported EAS contracted community/hub evidence at the report date; does not prove daily operations, contract renewal or bookability.",
   "missing": [
     {
@@ -139,19 +139,6 @@
       "community": "Bradford Regional Airport",
       "communityCode": "BFD",
       "hub": "IAD",
-      "state": "PA",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
-      "pair": "BFD-PIT",
-      "community": "Bradford Regional Airport",
-      "communityCode": "BFD",
-      "hub": "PIT",
       "state": "PA",
       "contractEvidence": "May 2026 DOT contracted EAS route list",
       "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
@@ -443,19 +430,6 @@
       "community": "DuBois Regional Airport",
       "communityCode": "DUJ",
       "hub": "IAD",
-      "state": "PA",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
-      "pair": "DUJ-PIT",
-      "community": "DuBois Regional Airport",
-      "communityCode": "DUJ",
-      "hub": "PIT",
       "state": "PA",
       "contractEvidence": "May 2026 DOT contracted EAS route list",
       "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
@@ -2506,6 +2480,20 @@
       "timeWindow": "Nov 23–29, 2026",
       "status": "time_bounded_published_operating_days",
       "note": "Daily in both directions with Thanksgiving frequency reduction; no extrapolation"
+    },
+    {
+      "pair": "BFD-PIT",
+      "source": "https://www.directflights.com/BFD-PIT",
+      "timeWindow": "November 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Daily nonstop in both directions in cited week, Thanksgiving frequency changes; no extrapolated 2027 dates"
+    },
+    {
+      "pair": "DUJ-PIT",
+      "source": "https://www.directflights.com/DUJ-PIT",
+      "timeWindow": "November 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Daily nonstop in both directions in cited week, Thanksgiving frequency changes; no extrapolated 2027 dates"
     }
   ]
 }
