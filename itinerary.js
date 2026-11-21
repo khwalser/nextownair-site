@@ -657,7 +657,7 @@
     }
   }
   function providerOptions(data,a,b,date){
-    if(!data||!Array.isArray(data.offers))return null;
+    if(!data||!Array.isArray(data.offers))return [];
     return data.offers.map((o,idx)=>{
       if(!o||typeof o!=='object')return null;
       const departMin=isoMinutes(o.departureTime),arrivalMin=isoMinutes(o.arrivalTime);
