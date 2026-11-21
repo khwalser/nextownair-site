@@ -75,7 +75,10 @@
       "scheduleDayEvidence": "not_verified",
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
+      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
+      "candidateTimetableUrl": "https://flyalo.com/traveler-information/faqs/",
+      "candidateEvidence": "Airport's service page says daily flights, but its FAQ specifies twice-daily round trips on most days; exact skipped operating dates need explicit verification before any seven-day fallback.",
+      "timetableReviewState": "candidate_specific_weekdays_unresolved"
     },
     {
       "pair": "ALS-DEN",
@@ -2645,7 +2648,7 @@
     "Alaska DOT attachment linked from the report index displays May-25 in its heading; do not infer 2026 validity without a current order.",
     "The Alaska Seaplanes public schedule combines seasonal tables; candidate days are not promoted without effective-year boundaries."
   ],
-  "candidateTimetablePairs": 6,
+  "candidateTimetablePairs": 7,
   "promotedEvidence": [
     {
       "pair": "LEB-HPN",
