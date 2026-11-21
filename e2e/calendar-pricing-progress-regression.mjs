@@ -407,3 +407,37 @@ assert.equal(validPublished.length,1,'Wrong-day, zero-minute and backward publis
 assert.equal(validPublished[0].flightNo,'VALID','Actual correctly dated published flight remains selectable');
 assert.equal(validPublished[0].duration,60,'Published flight duration is not fabricated');
 console.log('PASS: Published flight mapper excludes off-date and invalid-duration schedule rows');
+
+const calendarCellStart=source.indexOf('  function updateCalendarCell(');
+const calendarCellEnd=source.indexOf('  function renderStartCalendar(',calendarCellStart);
+assert(calendarCellStart>=0&&calendarCellEnd>calendarCellStart,'Calendar date refresh function exists');
+const classNames=new Set(['past']);
+const calendarMockCell={
+  disabled:true,title:'',
+  classList:{
+    remove:(...names)=>names.forEach(n=>classNames.delete(n)),
+    add:name=>classNames.add(name),
+    toggle:(name,enabled)=>enabled?classNames.add(name):classNames.delete(name)
+  },
+  querySelector:()=>({textContent:''})
+};
+const calendarCellContext={
+  el:{calendarGrid:{querySelector:()=>calendarMockCell}},
+  calendarAvailability:()=>({status:'available'}),
+  window:{NTA:{todayLocal:()=> '2026-11-21'}},
+  firstLeg:()=>({a:'ELD',b:'DFW'}),
+  calendarFareText:()=> '$200',
+  calendarFareTitle:()=> 'Live price'
+};
+vm.createContext(calendarCellContext);
+vm.runInContext(source.slice(calendarCellStart,calendarCellEnd)+'\nthis.updateCalendarCell=updateCalendarCell;',calendarCellContext);
+calendarCellContext.updateCalendarCell('2026-11-20');
+assert.equal(calendarMockCell.disabled,true,'Past departure date remains disabled after fare refresh');
+assert(classNames.has('past'),'Past date marker survives fare refresh');
+calendarCellContext.updateCalendarCell('2026-11-22');
+assert.equal(calendarMockCell.disabled,false,'Future date with service remains selectable');
+assert(!classNames.has('past'),'Future date does not inherit stale past marker');
+calendarCellContext.calendarAvailability=()=>({status:'unavailable'});
+calendarCellContext.updateCalendarCell('2026-11-22');
+assert.equal(calendarMockCell.disabled,true,'Future date lacking published service remains disabled');
+console.log('PASS: Asynchronous calendar fare updates never enable past or unavailable departure days');
