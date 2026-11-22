@@ -1,0 +1,20 @@
+name: Duffel supplier timeout validation
+on:
+  push:
+    branches: [fix/duffel-supplier-timeout-coverage]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node e2e/duffel-supplier-timeout-regression.mjs
+      - run: node e2e/duffel-lowest-offer-regression.mjs
+      - run: node e2e/flight-input-validation-regression.mjs
