@@ -60,12 +60,20 @@
             </div>
           </div>
         </div>
-        <div class="data-badge" title="NexTownAir combines verified route/service data with current provider data and clearly marked prototype values where the MVP still has a field-level gap"><span class="data-dot"></span>Multi-source schedules · fares</div>
-        <div class="prototype-legend" aria-label="Prototype data legend"><span class="prototype-value">?10:33 AM · ?148</span><span>Prototype time / fare</span></div>
-        <div class="btnrow">
-          <a id="editRoute" class="btn secondary" href="index.html">Edit route on map</a>
-          <button id="printTrip" class="btn tertiary" type="button">Print itinerary</button>
-          <button id="shareTrip" class="btn secondary" type="button">Copy shareable trip link</button>
+        <details class="data-guide">
+          <summary>Flight information and fare labels</summary>
+          <div class="data-badge" title="NexTownAir combines verified schedules and provider fares with clearly identified estimates"><span class="data-dot"></span>Schedule and booking data come from different sources.</div>
+          <div class="prototype-legend" aria-label="Prototype data legend"><span class="prototype-value">?10:33 AM · ?148</span><span>Values marked ? are planning estimates, not confirmed fares.</span></div>
+        </details>
+        <div class="btnrow trip-toolbar-actions">
+          <a id="editRoute" class="btn secondary" href="index.html">Edit route</a>
+          <details class="trip-actions">
+            <summary class="btn tertiary">More actions ▾</summary>
+            <div class="trip-actions-menu">
+              <button id="printTrip" class="btn tertiary" type="button">Print itinerary</button>
+              <button id="shareTrip" class="btn secondary" type="button">Copy shareable trip link</button>
+            </div>
+          </details>
           <span id="shareTripStatus" class="small" role="status" aria-live="polite"></span>
         </div>
       </section>
