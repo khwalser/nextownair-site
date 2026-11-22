@@ -201,8 +201,11 @@ h2{font-size:21px}h3{font-size:18px}
 }
 @media(max-width:860px){
   .layout,.itinerary-workspace{grid-template-columns:minmax(0,1fr)}
-  .itinerary-sidebar{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
-  .itinerary-sidebar .toolbar{margin:0}
+  /* Flatten the sidebar so itinerary cards precede secondary save/help panels. */
+  .itinerary-sidebar{display:contents}
+  .itinerary-sidebar .toolbar{order:0;margin:0}
+  .itinerary-main{order:1}
+  .itinerary-sidebar>.notice{order:2}
   .side{min-height:0}
   #map{height:clamp(330px,52vh,480px)}
 }
