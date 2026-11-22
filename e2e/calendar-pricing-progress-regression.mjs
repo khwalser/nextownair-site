@@ -130,7 +130,7 @@ assert(source.includes('const batchLimit=isKnownFareCoverageGap(a,b)?2:5;'),'Man
 console.log('PASS: Manual fare-check batch label matches two-date known gap and five-date general provider caps');
 
 assert(source.includes('function nextConfirmedFlightDate(a,b,afterDate,days=14)'),'Onward search uses a bounded 14-day horizon');
-assert(source.includes("status==='yes'||Boolean(lowestOffer"),'Onward service dates require published schedule or genuine provider offer evidence');
+assert(source.includes("status==='yes'||Boolean(lowestLiveOffer"),'Onward service dates require published schedule or genuine provider offer evidence');
 assert(source.includes('data-open-departure-calendar'),'Missing initial flight has a one-click calendar recovery');
 assert(source.includes('data-next-service-date'),'Missing onward flight has a next-confirmed-date action');
 console.log('PASS: Missing flight choices provide only verified-date recovery actions');
@@ -141,9 +141,10 @@ assert(nextStart>=0&&nextEnd>nextStart,'Next confirmed date helper exists');
 const dateCtx={
   window:{NTA:{addDays:(date,offset)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+offset);return d.toISOString().slice(0,10);}}},
   scheduleState:(a,b,d)=>({status:d==='2026-12-13'?'yes':'fallback'}),
-  liveFareData:new Map([['ELD|DFW|2026-12-12',{offers:[{amount:200,currency:'USD'}]}]]),
+  liveFareData:new Map([['ELD|DFW|2026-12-12',{liveMode:true,offers:[{amount:200,currency:'USD',liveMode:true,fareStatus:'verified'}]}]]),
   fareKey:(a,b,date)=>a+'|'+b+'|'+date,
-  lowestOffer:data=>data?.offers?.[0]||null
+  lowestOffer:data=>data?.offers?.[0]||null,
+  lowestLiveOffer:data=>data?.liveMode?data.offers.find(o=>o.liveMode&&o.fareStatus==='verified')||null:null
 };
 vm.createContext(dateCtx);
 vm.runInContext(source.slice(nextStart,nextEnd)+'\nthis.nextConfirmedFlightDate=nextConfirmedFlightDate;',dateCtx);
