@@ -48,9 +48,9 @@ try{
       const first=page.locator('.leg-no-options').first();
       const fare=first.locator('.live-fare');
       await fare.waitFor({state:'visible'});
-      assert.equal(await fare.locator('.live-fare-value').innerText(),'No verified fare');
+      assert.match(await fare.locator('.live-fare-value').innerText(),/No verified fare|Checking provider|Provider unavailable/,'Pending or absent inventory must never become a fabricated fare');
       assert.equal(await fare.locator('a').count(),0,'Main fare status must not duplicate booking link');
-      const recovery=first.locator('.no-flights');
+      const recovery=first.locator('.options > .no-flights, .options > .pending-flights');
       await recovery.waitFor({state:'visible'});
       assert.equal(await recovery.locator('a[data-external-first-fares]').count(),1);
       const widths=await first.evaluate(el=>{
