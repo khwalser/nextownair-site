@@ -2,6 +2,8 @@ name: Travelport adapter regression
 on:
   push:
     branches: [feature/travelport-onboarding]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 jobs:
   mocked-client:
@@ -11,4 +13,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: node --check netlify/lib/travelport-client.mjs
+      - run: node --check e2e/travelport-client-regression.mjs
       - run: node e2e/travelport-client-regression.mjs
