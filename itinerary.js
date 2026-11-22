@@ -295,7 +295,7 @@
         // A zero from one schedule feed does not negate an independently
         // published operating pattern. Treat conflicting evidence as unknown.
         if(published&&patternAppliesOnDate(published,date))
-          return {status:'fallback',label:'Schedule sources disagree',detail:'Published operating pattern suggests service, but date-specific feed found none; confirm with airline'};
+          return {status:'fallback',sourceConflict:true,label:'Schedule sources disagree',detail:'Published operating pattern suggests service, but date-specific feed found none; confirm with airline'};
         if(published)return {status:'none',label:'No scheduled service',detail:'Published operating pattern does not serve this date'};
         return {status:'fallback',label:'Flight date unverified',detail:'No date-specific flight confirmed; check live offers'};
       }
@@ -1351,25 +1351,26 @@
     let providerOpts=providerOptions(fareData,a,b,departDate);
     let usingProvider=Array.isArray(providerOpts)&&providerOpts.length>0;
     const providerMissing=Boolean(fareData)&&(fareData.error||!fareData.offers||!fareData.offers.length);
-    const selectedAvailability=scheduleState(a,b,departDate);
+    let selectedAvailability=scheduleState(a,b,departDate);
     // Published flight evidence is independent of live fare inventory.
     // Permit explicitly marked planning options while provider pricing is pending.
-    const publishedDate=knownRoute&&selectedAvailability.status==='yes';
+    let publishedDate=knownRoute&&selectedAvailability.status==='yes';
+    let tentativePattern=knownRoute&&selectedAvailability.sourceConflict===true&&Boolean(publishedServicePattern(a,b))&&patternAppliesOnDate(publishedServicePattern(a,b),departDate);
     let verifiedScheduleOpts=publishedDate?scheduleOptions(a,b,departDate):[];
     let usingVerifiedSchedule=!usingProvider&&verifiedScheduleOpts.length>0;
-    let opts=usingProvider?providerOpts:(usingVerifiedSchedule?verifiedScheduleOpts:(publishedDate?prototypeOptions(a,b,departDate):[]));
+    let opts=usingProvider?providerOpts:(usingVerifiedSchedule?verifiedScheduleOpts:((publishedDate||tentativePattern)?prototypeOptions(a,b,departDate):[]));
     // A late fare response must not silently erase a chosen published-service
     // planning option. Retain that option, explicitly marked prototype, alongside
     // the newly available real offers until the traveler changes their choice.
     const pinnedId=state.selections[String(i)];
-    if(usingProvider&&publishedDate&&pinnedId){
+    if(usingProvider&&(publishedDate||tentativePattern)&&pinnedId){
       const pinnedFallback=(pinnedId.startsWith('prototype|')?prototypeOptions(a,b,departDate):pinnedId.startsWith('schedule|')?scheduleOptions(a,b,departDate):[])
         .find(o=>o.id===pinnedId);
       if(pinnedFallback&&!opts.some(o=>o.id===pinnedId))opts=[...opts,pinnedFallback];
     }
     let usingPrototype=opts.some(o=>o.prototype);
     let hasPrototypeFields=opts.some(o=>o.timeStatus==='prototype'||o.fareStatus==='prototype');
-    let note=knownRoute?(usingVerifiedSchedule?'Choose an available published flight. Times are verified; fares beginning with ? are prototype values.':(usingPrototype?'Choose an available service. Values beginning with ? are prototype values used to complete the MVP itinerary.':(usingProvider?'Choose one flight to continue.':selectedAvailability.status==='yes'?'Published flight service is reported for this date, but a selectable flight has not been returned.':'The route is known, but flight operation on this date has not been verified. Check another date or current fares.'))):'No verified route is available for this pair.';
+    let note=knownRoute?(tentativePattern?'Published route pattern suggests service, but date-specific feeds disagree. These ?-marked choices are planning placeholders, not confirmed flights or fares. Verify directly with the airline.':usingVerifiedSchedule?'Choose an available published flight. Times are verified; fares beginning with ? are prototype values.':(usingPrototype?'Choose an available service. Values beginning with ? are prototype values used to complete the MVP itinerary.':(usingProvider?'Choose one flight to continue.':selectedAvailability.status==='yes'?'Published flight service is reported for this date, but a selectable flight has not been returned.':'The route is known, but flight operation on this date has not been verified. Check another date or current fares.'))):'No verified route is available for this pair.';
 
     if(!locked&&i>0&&plan&&plan.notBefore!=null){
       opts=opts.filter(o=>o.departMin>=plan.notBefore);
@@ -1389,6 +1390,9 @@
             usingProvider=nextProviderOpts.length>0;
             usingVerifiedSchedule=!usingProvider&&nextScheduleOpts.length>0;
             usingPrototype=opts.some(o=>o.prototype);
+            selectedAvailability=scheduleState(a,b,departDate);
+            publishedDate=knownRoute&&selectedAvailability.status==='yes';
+            tentativePattern=knownRoute&&selectedAvailability.sourceConflict===true&&Boolean(publishedServicePattern(a,b))&&patternAppliesOnDate(publishedServicePattern(a,b),departDate);
             note='No same-day service option remains for this automatic connection, so the itinerary continues on the next confirmed service date.';
           }
         }
