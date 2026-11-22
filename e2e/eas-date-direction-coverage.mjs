@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-const base=(process.env.E2E_BASE_URL||'https://nextownair.com').replace(/\\/$/,'');
+const base=(process.env.E2E_BASE_URL||'https://nextownair.com').replace(/\/$/,'');
 const routes=[['LEB','BOS','Cape Air'],['ESC','DTW','Delta Connection']];
 const dates=['2026-12-07','2026-12-13','2026-12-18'];
 const records=[];
