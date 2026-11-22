@@ -142,6 +142,9 @@ async function searchDuffel(origin,destination,departureDate){
     }
   }
 
+  // Keep the lowest-priced distinct flights before limiting the payload.
+  // Slicing a departure-time-sorted list first can hide the cheapest
+  // afternoon/evening fare from the monthly calendar.
   const offers=[...grouped.values()]
     .map(offer=>({
       ...offer,
@@ -149,6 +152,8 @@ async function searchDuffel(origin,destination,departureDate){
         .sort((a,b)=>a.amount-b.amount)
         .filter((x,i,arr)=>i===0||x.amount!==arr[i-1].amount||x.currency!==arr[i-1].currency)
     }))
+    .sort((a,b)=>a.amount-b.amount||String(a.departureTime||'').localeCompare(String(b.departureTime||'')))
+    .slice(0,12)
     .sort((a,b)=>String(a.departureTime||'').localeCompare(String(b.departureTime||''))||a.amount-b.amount);
 
   return {
@@ -158,7 +163,7 @@ async function searchDuffel(origin,destination,departureDate){
     origin,
     destination,
     departureDate,
-    offers:offers.slice(0,12).map(offer=>({
+    offers:offers.map(offer=>({
       id:offer.offerId||null,
       origin:offer.origin,
       destination:offer.destination,
