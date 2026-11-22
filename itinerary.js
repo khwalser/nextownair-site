@@ -164,7 +164,7 @@
   let calendarMonthDate=null;
   // On narrow screens keep the large month grid out of the way until requested.
   // Respect manual show/hide across asynchronous itinerary rerenders.
-  let calendarVisibilityPreference=!(window.matchMedia&&window.matchMedia('(max-width: 860px)').matches);
+  let calendarVisibilityPreference=false;
   let calendarLoadVersion=0;
   let calendarAutoLoadKey='';
   let calendarScheduleCompleteKey='';
@@ -1263,7 +1263,7 @@
     if(!hasExactArrival||!nextCode){
       wrap.classList.add('pending');
       const strong=document.createElement('strong');strong.textContent='Available onward service dates';
-      const span=document.createElement('span');span.textContent='Select the inbound flight first; NexTownAir will then show the next service dates.';
+      const span=document.createElement('span');span.textContent='Choose the inbound flight to see onward dates.';
       wrap.append(strong,span);
       section.querySelector('.stay-grid').insertAdjacentElement('afterend',wrap);
       return;
@@ -1298,11 +1298,11 @@
   function renderStay(i,airport,arrivalDate,arrivalMin,hasExactArrival){
     const s=defaultStay(i),plan=stayPlan(i,arrivalDate,arrivalMin,hasExactArrival);
     const autoConnector=(state.autoConnectorIndices||[]).includes(i);
-    const section=document.createElement('section');section.className=`stay${autoConnector?' connector':''}`;
+    const section=document.createElement('section');section.className=`stay${autoConnector?' connector':''}${!hasExactArrival?' awaiting-inbound':''}`;
     const arriveText=hasExactArrival?`${window.NTA.fmtDate(arrivalDate)} · ${F.timeFrom(arrivalMin)}`:`${window.NTA.fmtDate(arrivalDate)} · choose the inbound flight to set the arrival time`;
     section.innerHTML=`
       <div class="eyebrow">At ${airport.city}, ${airport.state} · ${airport.code}${autoConnector?' · Automatic connection':''}</div>
-      <h3>Choose when to continue from ${airport.city}</h3>
+      <h3>Stay in ${airport.city}</h3>
       <div class="small">Arrival: ${arriveText}</div>
       <div class="stay-grid">
         <div>
@@ -1422,7 +1422,7 @@
       delete state.selections[String(i)];
       save();
     }
-    const A=by(a),B=by(b),leg=document.createElement('section');leg.className=`leg${locked?' leg-locked':''}`;
+    const A=by(a),B=by(b),leg=document.createElement('section');leg.className=`leg${locked?' leg-locked':''}${!opts.length?' leg-no-options':''}`;
     if(knownRoute){
       leg.dataset.scheduleOrigin=a;
       leg.dataset.scheduleDestination=b;
@@ -1438,13 +1438,8 @@
       }else if(!fareData.offers||!fareData.offers.length){
         const limited=fareData.coverageLimited||fareCoverageBlockedLegs.has(fareLegKey(a,b));
         const scheduled=selectedAvailability.status==='yes';
-        const searchUrl=fareData.externalSearchUrl||externalFareSearchUrl(a,b,departDate);
-        const summary=scheduled?'Published flight · live fare unavailable':limited?'Provider booking coverage unavailable':'No live offer · flight date unverified';
-        const explanation=scheduled
-          ?'Published flight service is indicated for this date, but our connected booking provider returned no fare. Flight operation and seats must be confirmed with the airline.'
-          :limited?'This route has limited inventory coverage through our booking provider. The flight may operate even without a NexTownAir price.'
-          :'The route is known, but neither a live flight offer nor a date-specific published flight has been confirmed.';
-        fareMarkup=`<div class="live-fare ${scheduled?"scheduled-only":limited?"coverage-limited":"unverified"}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight information${previewNote}</div><div class="live-fare-value">No verified fare</div><div class="small"><strong>${summary}</strong> · ${explanation}</div><a class="btn tertiary" href="${searchUrl}" target="_blank" rel="noopener noreferrer">Check airline or booking options ↗</a></div>`;
+        // State the fare outcome once; place recovery actions with the flight choices.
+        fareMarkup=`<div class="live-fare ${scheduled?'scheduled-only':limited?'coverage-limited':'unverified'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Live fare</div><div class="live-fare-value">No verified fare</div></div>`;
       }else{
         const best=lowestLiveOffer(fareData),isLive=Boolean(best);
         fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?(locked?'Live fare preview':'Live flights') :'Provider test flights'} · nonstop economy${previewNote}</div><div class="live-fare-value">${isLive?'Lowest verified fare '+formatMoney(best.amount,best.currency):'No verified fare'}</div><div class="small">${fareData.offers.length} flight option${fareData.offers.length===1?'':'s'} · ${isLive?'verified live fare shown':'provider prices are unverified, shown only as ?-marked planning values'} · checked ${checkedTime(fareData.checkedAt)}${locked?' · exact choices unlock after inbound flight selection':''}</div>${locked?'':`<button class="view-flight-options" type="button" data-view-flight-options>View ${fareData.offers.length} flight option${fareData.offers.length===1?'':'s'} ↓</button>`}</div>`;
@@ -1452,7 +1447,7 @@
     }
 
     const knownCarrier=providerOpts[0]?.carrier||providerOpts[0]?.operatingCarrier||null;
-    const carrierHandoff=knownRoute?carrierBookingAction(a,b,departDate,knownCarrier):'';
+    const carrierHandoff=knownRoute&&opts.length?carrierBookingAction(a,b,departDate,knownCarrier):'';
     const legEvidence=usingProvider&&providerOpts.some(o=>o.liveMode&&o.fareStatus==='verified')
       ?{level:'live',text:'Live flight and fare available',detail:'Fare returned by a connected booking provider'}
       :selectedAvailability.status==='yes'
@@ -1461,7 +1456,7 @@
           ?{level:'coverage',text:'Provider booking coverage unavailable',detail:'Airline service may exist; check with the carrier'}
           :{level:'unknown',text:'Flight date not verified',detail:'The route is known but no date-specific flight has been confirmed'};
     const evidenceMarkup=`<div class="flight-evidence ${legEvidence.level}" role="status"><strong>${legEvidence.text}</strong><span>${legEvidence.detail}</span></div>`;
-    leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${A.city} → ${B.city}</h2><div class="muted">${a} → ${b}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div>${evidenceMarkup}<p class="small">${note}</p>${fareMarkup}${carrierHandoff}<div class="options" id="flight-options-${i}"></div>`;
+    leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${A.city} → ${B.city}</h2><div class="muted">${a} → ${b}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div>${evidenceMarkup}${opts.length&&!locked?`<p class="small">${note}</p>`:''}${fareMarkup}${carrierHandoff}<div class="options" id="flight-options-${i}"></div>`;
     const box=leg.querySelector('.options');
     const viewOptions=leg.querySelector('[data-view-flight-options]');
     if(viewOptions)viewOptions.addEventListener('click',()=>box.scrollIntoView({behavior:'smooth',block:'start'}));
@@ -1480,7 +1475,7 @@
       const stillChecking=!fareData;
       if(i===0){
         const next=nextConfirmedFlightDate(a,b,departDate);
-        box.innerHTML=`<div class="${stillChecking?'pending-flights':'no-flights'}">${stillChecking?'Checking published service and live offers for this date.':'No selectable offer was returned for this date; this does not prove the flight does not operate.'} ${next?`<button type="button" class="btn tertiary" data-first-next-date>Try confirmed flight date ${window.NTA.fmtDate(next,{weekday:'short',month:'short',day:'numeric'})}</button>`:''} <button type="button" class="btn tertiary" data-open-departure-calendar>Explore other departure dates</button> <a class="btn tertiary" data-external-first-fares href="${externalFareSearchUrl(a,b,departDate)}" target="_blank" rel="noopener">Check airline fares for this date</a></div>`;
+        box.innerHTML=`<div class="${stillChecking?'pending-flights':'no-flights'}"><span>${stillChecking?'Checking available flights…':'No selectable flight returned; this does not mean the flight is canceled.'}</span><div class="no-flights-actions">${next?`<button type="button" class="btn tertiary" data-first-next-date>Try ${window.NTA.fmtDate(next,{weekday:'short',month:'short',day:'numeric'})}</button>`:''}<button type="button" class="btn tertiary" data-open-departure-calendar>Other dates</button><a class="btn tertiary" data-external-first-fares href="${externalFareSearchUrl(a,b,departDate)}" target="_blank" rel="noopener">Check airline ↗</a></div></div>`;
         const nextButton=box.querySelector('[data-first-next-date]');
         if(nextButton)nextButton.addEventListener('click',()=>{
           state.startDate=next;state.selections={};save();
