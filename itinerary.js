@@ -1755,6 +1755,18 @@
     if(!el.startDateCalendar.hidden){calendarVisibilityPreference=false;closeStartCalendar();return;}
     calendarVisibilityPreference=true;showStartCalendar(false);
   });
+  document.getElementById('calendarClose')?.addEventListener('click',()=>{
+    calendarVisibilityPreference=false;
+    closeStartCalendar();
+    el.startDateButton.focus();
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&!el.startDateCalendar.hidden){
+      calendarVisibilityPreference=false;
+      closeStartCalendar();
+      el.startDateButton.focus();
+    }
+  });
   el.calendarPrev.addEventListener('click',()=>{
     if(el.calendarPrev.disabled)return;
     calendarMonthDate=new Date(calendarMonthDate.getFullYear(),calendarMonthDate.getMonth()-1,1,12);
