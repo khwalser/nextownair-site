@@ -1,18 +1,18 @@
-name: EAS date-direction inventory audit
+name: Post-timeout EAS inventory probe
 on:
-  workflow_dispatch:
+  push:
+    branches: [diagnostics/duffel-after-timeout]
+  pull_request:
+    branches: [main]
 permissions:
   contents: read
 jobs:
   probe:
     runs-on: ubuntu-24.04
-    timeout-minutes: 9
-    strategy:
-      max-parallel: 1
-      matrix:
-        date: ['2026-12-13', '2026-12-18']
+    timeout-minutes: 6
     env:
-      E2E_AUDIT_DATE: ${{ matrix.date }}
+      E2E_AUDIT_DATE: '2026-12-13'
+      E2E_MAX_REQUESTS: '4'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
