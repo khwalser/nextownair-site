@@ -477,7 +477,10 @@ try{
     assert(/Published flights confirmed|checking live prices|limited coverage/i.test(status),'Alpena calendar reports confirmed service and pricing status',status);
     const fares=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
     assert(fares.some(x=>/schedule only|no live fare|date unverified|\\$[0-9]|pricing/i.test(x)),'Alpena calendar displays flight or fare status',fares.join(' | '));
-    assert(await page.locator('#calendarServiceKey').isVisible(),'Alpena calendar shows the service-day legend');
+    assert(await page.locator('#startDateCalendar').isHidden(),'Alpena month calendar starts compact');
+    await page.locator('#startDateButton').click();
+    assert(await page.locator('#calendarServiceKey').isVisible(),'Alpena calendar shows the service-day legend when opened');
+    await page.locator('#calendarClose').click();
     await page.locator('#flight-options-0 .flight').first().click();
     const downstreamStay=page.locator('.stay').first();
     await downstreamStay.locator('.stay-av:not(:disabled)').first().waitFor({state:'visible',timeout:15000});
