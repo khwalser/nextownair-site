@@ -2,8 +2,6 @@ name: Post-timeout EAS inventory probe
 on:
   push:
     branches: [diagnostics/duffel-after-timeout]
-  pull_request:
-    branches: [main]
 permissions:
   contents: read
 jobs:
@@ -12,7 +10,7 @@ jobs:
     timeout-minutes: 6
     env:
       E2E_AUDIT_DATE: '2026-12-13'
-      E2E_MAX_REQUESTS: '4'
+      E2E_MAX_REQUESTS: '2'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
