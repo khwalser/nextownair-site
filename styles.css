@@ -115,3 +115,137 @@ h2{font-size:26px;line-height:1.2}h3{line-height:1.25}
 .live-fare.coverage-limited{border-color:#b58d44;background:#2b2417}
 .live-fare.unverified{border-style:dashed}
 .live-fare.scheduled-only .live-fare-value,.live-fare.coverage-limited .live-fare-value,.live-fare.unverified .live-fare-value{font-size:17px;white-space:normal}
+
+
+/* Compact responsive layout: preserve actions and evidence, reduce scrolling. */
+:root{--max:1360px}
+body{font-size:15px;line-height:1.42}
+.sitehead{padding:7px 18px;gap:10px}
+.brand{font-size:21px}.nav a{padding:7px 11px;min-height:36px}
+.wrap{padding:13px 18px}
+.eyebrow{font-size:10px;letter-spacing:.08em}
+h1{font-size:clamp(25px,2.6vw,36px);line-height:1.16;margin:3px 0 6px}
+h2{font-size:21px}h3{font-size:18px}
+.lead{font-size:15px;line-height:1.42;margin:0 0 11px;max-width:1000px}
+.stepbar{gap:6px;margin-bottom:7px}
+.step{padding:4px 9px;font-size:12px}
+.layout{grid-template-columns:minmax(0,1fr) minmax(290px,370px);gap:12px}
+#map{height:clamp(390px,62vh,560px);border-radius:12px}
+.side{min-height:0;padding:12px;gap:9px;border-radius:12px}
+.map-controls{gap:5px;margin-bottom:7px;padding:7px 9px;border-radius:10px}
+.map-tools{gap:5px}.map-control-label{font-size:11px;min-width:54px}
+.map-tool,.map-filter{padding:4px 9px;min-height:31px;font-size:12px}
+.map-count{min-width:18px;height:18px;font-size:10px;padding:0 4px}
+.finder{padding:9px}.finder input{min-height:40px;padding:7px 9px}
+.btn{padding:8px 11px;min-height:38px;font-size:13px}
+.routebar{gap:5px;margin:8px 0}.routechip{padding:5px 8px;font-size:12px}
+.itinerary-workspace{grid-template-columns:minmax(320px,380px) minmax(0,1fr);gap:12px}
+.itinerary-sidebar .toolbar{gap:7px}
+.toolbar{padding:10px;margin:8px 0}
+.field label{font-size:12px;margin-bottom:3px}
+.field input,.date-picker-button{min-height:38px;padding:7px 10px;font-size:14px}
+.start-calendar{padding:9px;margin-top:5px}
+.start-calendar-head{margin-bottom:6px}
+.calendar-weekdays,.calendar-grid{gap:3px}
+.calendar-day{min-height:43px;padding:3px 1px;border-radius:6px}
+.calendar-blank{min-height:43px}
+.calendar-day-number{font-size:13px}
+.calendar-fare{font-size:9px}
+.calendar-key{font-size:11px;gap:5px}
+.leg{padding:12px;margin:9px 0;border-radius:12px}
+.leghead{gap:7px}.leg h2{margin:2px 0;font-size:19px}
+.leg-date{font-size:12px}
+.flight-evidence{padding:6px 9px;margin-top:7px;gap:3px 8px}
+.flight-evidence strong{font-size:12px}.flight-evidence span{font-size:11px}
+.live-fare{padding:8px 9px;margin:7px 0 1px;gap:2px 10px}
+.live-fare-value{font-size:17px}
+.live-fare-label{font-size:11px}
+.options{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:9px}
+.flight-options-head{gap:6px}.flight-options-head strong{font-size:15px}
+.flight{min-height:94px;padding:9px;border-radius:9px}
+.flight.selected{padding:7px}
+.flight .times{font-size:16px}
+.flight .price{font-size:17px;margin-top:5px}
+.flight .selectlabel{margin-top:5px;font-size:12px}
+.flight-badge{margin-top:3px}
+.fare-choice-list{gap:4px;margin:5px 0}
+.stay{margin:7px 0 12px 13px;padding:5px 0 5px 11px;border-left-width:3px}
+.stay h3{margin:2px 0 3px;font-size:16px}
+.stay-grid{gap:7px;grid-template-columns:minmax(0,1fr) minmax(160px,220px)}
+.choices{margin:4px 0}.choice{min-height:36px;padding:5px 10px;font-size:12px}
+.stay-summary{padding:6px 9px;margin-top:4px}
+.stay-availability{margin-top:6px;padding:8px}
+.stay-availability-head{margin-bottom:6px}
+.stay-availability-grid{gap:5px}
+.stay-av{padding:6px;border-radius:8px}
+.stay-av strong{font-size:13px}
+.stay-av span{font-size:11px}
+.dateinput{min-height:38px;font-size:14px;padding:6px 9px}
+.summary{margin-top:12px;padding:11px}
+.selectedline{padding:6px 0}.total{font-size:20px}
+.travel-chart,.booking-checklist{margin-top:12px;padding-top:11px}
+.travel-chart-head h3,.booking-checklist-head h3{font-size:19px}
+.travel-row{gap:8px;padding:8px 10px}
+.booking-item{padding:8px 9px;gap:8px}
+.footer{margin-top:8px;padding:13px 18px 20px;font-size:12px}
+.eas-explainer{display:block;margin:7px 0 10px;padding:7px 11px;font-size:13px}
+.eas-explainer summary{cursor:pointer;color:#fff;font-weight:800}
+.eas-explainer[open] summary{margin-bottom:6px}
+.eas-explainer p{margin:5px 0 7px;line-height:1.45}
+.eas-summary-hint{color:var(--muted);font-size:11px;font-weight:500;margin-left:8px}
+.map-compact-select{display:none;min-height:38px;border:1px solid var(--border2);border-radius:8px;background:#0b1926;color:var(--text);padding:6px 9px;font:inherit}
+@media(max-width:1050px){
+  .itinerary-workspace{grid-template-columns:minmax(290px,340px) minmax(0,1fr)}
+  .layout{grid-template-columns:minmax(0,1fr) 320px}
+  .options{grid-template-columns:1fr}
+}
+@media(max-width:860px){
+  .layout,.itinerary-workspace{grid-template-columns:minmax(0,1fr)}
+  .itinerary-sidebar{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+  .itinerary-sidebar .toolbar{margin:0}
+  .side{min-height:0}
+  #map{height:clamp(330px,52vh,480px)}
+}
+@media(max-width:720px){
+  body{font-size:14px;line-height:1.4}
+  .sitehead{flex-direction:row;align-items:center;padding:6px 10px}
+  .brand{font-size:19px}.nav{width:auto;gap:3px}
+  .nav a{padding:6px 9px;font-size:12px;min-height:35px}
+  .wrap{padding:10px}
+  h1{font-size:25px}.lead{font-size:13px;line-height:1.42;margin-bottom:8px}
+  .stepbar{margin-bottom:5px}.step{font-size:10px;padding:3px 6px}
+  .map-tools{display:grid;grid-template-columns:66px minmax(0,1fr);gap:6px;align-items:center}
+  .map-control-label{width:auto;min-width:0}
+  .map-compact-select{display:block;width:100%;min-width:0}
+  .map-tools .map-tool,.map-tools .map-filter,.map-tools .map-count{display:none}
+  .region-status{grid-column:1 / -1;font-size:11px}
+  .map-controls{padding:7px;gap:6px}
+  #map{height:clamp(320px,48vh,460px)}
+  .finder-row{grid-template-columns:minmax(0,1fr) auto}
+  .finder-row .btn{width:auto}
+  .leghead{flex-direction:row;flex-wrap:wrap}
+  .leg h2{font-size:17px}
+  .stay{margin-left:5px;padding-left:9px}
+  .stay-grid{grid-template-columns:minmax(0,1fr) minmax(130px,43%);gap:6px}
+  .stay-availability-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .options{grid-template-columns:1fr}
+  .flight{min-height:0}
+  .flight .times{font-size:16px}
+  .live-fare{grid-template-columns:minmax(0,1fr)}
+  .live-fare-value{grid-row:auto;grid-column:1}
+  .live-fare .small{grid-column:1}
+  .travel-row{gap:5px}
+  .start-calendar{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(96vw,430px);max-height:82dvh;overflow:auto}
+  .calendar-day{min-height:46px}
+  .calendar-fare{font-size:9px}
+  .footer{padding:10px}
+}
+@media(max-width:390px){
+  .brand{font-size:17px}.nav a{font-size:11px;padding:5px 7px}
+  .stay-grid{grid-template-columns:1fr}
+  .flight-evidence{display:block}
+}
+@media print{
+  .eas-explainer{display:none}
+  .map-compact-select{display:none}
+}
