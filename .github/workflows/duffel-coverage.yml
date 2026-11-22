@@ -1,0 +1,24 @@
+name: EAS Duffel inventory probe
+on:
+  push:
+    branches: [feature/duffel-eas-coverage-audit]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate fare selection regression
+        run: node e2e/duffel-lowest-offer-regression.mjs
+      - name: Validate existing input and money regression
+        run: node e2e/flight-input-validation-regression.mjs
+      - name: Sample live EAS inventory through production Duffel proxy
+        run: node e2e/duffel-eas-coverage-probe.mjs
