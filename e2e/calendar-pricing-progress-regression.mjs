@@ -109,7 +109,7 @@ console.log('PASS: Traveler-selected calendar requests bypass blocked automated 
 assert(source.includes('calendarMoreFareControl(leg.a,leg.b,month,monthCells.map(cell=>cell.dataset.calendarDate),queued)'),'Schedule-quota fallback exposes manual checks for unchecked calendar days');
 assert(source.includes('queueCalendarFarePricing(leg.a,leg.b,remaining,calendarLoadVersion,Math.min(isKnownFareCoverageGap(leg.a,leg.b)?2:5,remaining.length),true)'),'Manual checks stay bounded and intentionally bypass automatic provider limits');
 assert(source.includes('dates checked;')&&source.includes('remain\' unchecked')===false,'Partial fallback scan uses checked counts instead of announcing completion');
-assert(source.includes('No selectable offer was returned for this date; this does not prove the flight does not operate.'),'First-leg missing inventory must not masquerade as a connection timing conflict');
+assert(source.includes('No selectable flight returned; this does not mean the flight is canceled.'),'First-leg missing inventory must not masquerade as a connection timing conflict');
 console.log('PASS: Partial scan remains truthful, additional checks are available, and first-leg empty results are explained');
 
 assert(source.includes("publishedDate=knownRoute&&selectedAvailability.status==='yes'"),'Known service is established separately from a provider quote');
