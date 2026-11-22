@@ -2,8 +2,6 @@ name: EAS Duffel inventory probe
 on:
   push:
     branches: [feature/duffel-eas-coverage-audit]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
