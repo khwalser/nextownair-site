@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+const src=fs.readFileSync(new URL('../itinerary.js',import.meta.url),'utf8');
+const start=src.indexOf('  function scheduleState('),end=src.indexOf('  function firstLeg(',start);
+assert(start>=0&&end>start);
+const dates=new Map([['CMX|ORD|2026-12',{checkedDates:['2026-12-09','2026-12-10'],days:{}}]]);
+const pattern={activeFrom:'2026-11-01',activeThrough:'2026-12-31',days:[1,2,3,4,5,6],count:2};
+const ctx={scheduleMonthData:dates,scheduleMonthKey:(a,b,m)=>a+'|'+b+'|'+m,monthKeyFromDate:d=>d.slice(0,7),
+ publishedServicePattern:()=>pattern,patternAppliesOnDate:(p,d)=>p.days.includes(new Date(d+'T12:00:00Z').getUTCDay()),isScheduleFallbackCode:()=>false};
+vm.createContext(ctx);
+vm.runInContext(src.slice(start,end)+'\nthis.scheduleState=scheduleState;',ctx);
+const conflicting=ctx.scheduleState('CMX','ORD','2026-12-09');
+assert.equal(conflicting.status,'fallback','Conflicting schedule evidence must never assert no service');
+assert.match(conflicting.label,/disagree/i);
+assert.equal(ctx.scheduleState('CMX','ORD','2026-12-10').status,'fallback');
+dates.set('CMX|ORD|2026-12',{checkedDates:['2026-12-09'],days:{'2026-12-09':{count:2}}});
+assert.equal(ctx.scheduleState('CMX','ORD','2026-12-09').status,'yes','Actual dated flights retain precedence');
+dates.set('CMX|ORD|2026-12',{checkedDates:['2026-12-13'],days:{}});
+assert.equal(ctx.scheduleState('CMX','ORD','2026-12-13').status,'none','Published non-service date is not invented');
+console.log('PASS conflicting schedule feed vs published operating day stays unverified; dated positives and non-service dates remain accurate');
