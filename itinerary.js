@@ -191,7 +191,7 @@
         const lk=fareLegKey(a,b),data=entry.data;
         // Older builds stored synthetic coverage-gap results. They are not evidence
         // of a provider fare check and must not permanently suppress new probes.
-        if(isKnownFareCoverageGap(a,b)&&data.coverageLimited&&!lowestOffer(data)){
+        if(isKnownFareCoverageGap(a,b)&&data.coverageLimited&&!lowestLiveOffer(data)){
           liveFareData.delete(key);liveFareCache.delete(key);
           return;
         }
@@ -327,7 +327,7 @@
   }
   function calendarEvidence(a,b,date){
     const fareData=liveFareData.get(fareKey(a,b,date));
-    const best=lowestOffer(fareData);
+    const best=lowestLiveOffer(fareData);
     // A real provider-priced offer is stronger evidence than an incomplete schedule feed.
     if(best&&best.liveMode&&best.fareStatus==='verified')return {tier:'live',status:'available',label:'Live flight and fare'};
     const service=scheduleState(a,b,date);
@@ -345,8 +345,8 @@
   }
   function calendarFareText(a,b,date,av){
     const data=liveFareData.get(fareKey(a,b,date));
-    const best=lowestOffer(data);
-    if(best&&best.liveMode&&best.fareStatus==='verified')return formatMoney(best.amount,best.currency);
+    const best=lowestLiveOffer(data);
+    if(best)return formatMoney(best.amount,best.currency);
     if(av.tier==='none')return '—';
     if(av.tier==='coverage')return 'no live fare';
     if(av.tier==='scheduled')return 'schedule only';
@@ -355,8 +355,8 @@
     return 'date unverified';
   }
   function calendarFareTitle(a,b,date,av){
-    const best=lowestOffer(liveFareData.get(fareKey(a,b,date)));
-    if(av.tier==='live')return 'Live flight offer · verified fare '+formatMoney(best.amount,best.currency)+' · subject to availability';
+    const best=lowestLiveOffer(liveFareData.get(fareKey(a,b,date)));
+    if(av.tier==='live'return 'Live flight offer · verified fare '+formatMoney(best.amount,best.currency)+' · subject to availability';
     if(av.tier==='scheduled')return 'Published flight service for '+date+' · live booking fare not confirmed';
     if(av.tier==='coverage')return 'Published route or service · connected booking provider did not return a fare; check airline directly';
     if(av.tier==='none')return 'No flight in the available published schedule on '+date+' · not a booking-provider cancellation confirmation';
@@ -406,7 +406,7 @@
     }
     if(scheduleData&&scheduleData.error&&isScheduleFallbackCode(scheduleData.code)){
       const monthCells=[...el.calendarGrid.querySelectorAll('.calendar-day[data-calendar-date]')].filter(cell=>!cell.classList.contains('past'));
-      const priced=monthCells.filter(cell=>Boolean(lowestOffer(liveFareData.get(fareKey(leg.a,leg.b,cell.dataset.calendarDate))))).length;
+      const priced=monthCells.filter(cell=>Boolean(lowestLiveOffer(liveFareData.get(fareKey(leg.a,leg.b,cell.dataset.calendarDate))))).length;
       const checked=monthCells.filter(cell=>liveFareData.has(fareKey(leg.a,leg.b,cell.dataset.calendarDate))).length;
       const queued=monthCells.filter(cell=>calendarFareJobs.has(fareKey(leg.a,leg.b,cell.dataset.calendarDate))).length;
       const total=monthCells.length;
@@ -423,10 +423,10 @@
       return;
     }
     const dates=scheduledCalendarDates(leg.a,leg.b,month);
-    const priced=dates.filter(date=>Boolean(lowestOffer(liveFareData.get(fareKey(leg.a,leg.b,date))))).length;
+    const priced=dates.filter(date=>Boolean(lowestLiveOffer(liveFareData.get(fareKey(leg.a,leg.b,date))))).length;
     if(!dates.length){
       const liveDates=[...liveFareData.entries()]
-        .filter(([key,data])=>key.startsWith(leg.a+'|'+leg.b+'|'+month+'-')&&Boolean(lowestOffer(data)))
+        .filter(([key,data])=>key.startsWith(leg.a+'|'+leg.b+'|'+month+'-')&&Boolean(lowestLiveOffer(data)))
         .map(([key])=>key.slice(-10));
       el.calendarStatus.textContent=liveDates.length
         ?'Live flight offers are available for '+liveDates.length+' date'+(liveDates.length===1?'':'s')+' this month. The separate published schedule feed has incomplete coverage; choose a highlighted fare date or check other dates.'
@@ -872,6 +872,10 @@
     const priced=offers.filter(o=>o&&o.amount!==null&&o.amount!==undefined&&o.amount!==''&&Number.isFinite(Number(o.amount))&&Number(o.amount)>=0);
     return priced.reduce((best,o)=>!best||Number(o.amount)<Number(best.amount)?o:best,null);
   }
+  function lowestLiveOffer(data){
+    if(!data||!data.liveMode||!Array.isArray(data.offers))return null;
+    return lowestOffer({offers:data.offers.filter(o=>o&&o.liveMode===true&&o.fareStatus==='verified')});
+  }
   function formatMoney(amount,currency){
     try{return new Intl.NumberFormat(undefined,{style:'currency',currency:currency||'USD',maximumFractionDigits:0}).format(amount);}
     catch(_){return `${currency||'USD'} ${Number(amount).toFixed(0)}`;}
@@ -1029,7 +1033,7 @@
       return liveFareCache.get(key)||null;
     }
     const existing=liveFareData.get(key);
-    if(forceIfUnpriced&&!lowestOffer(existing)){
+    if(forceIfUnpriced&&!lowestLiveOffer(existing)){
       liveFareData.delete(key);
       liveFareCache.delete(key);
       try{
@@ -1338,7 +1342,7 @@
     for(let offset=1;offset<=days;offset++){
       const date=window.NTA.addDays(afterDate,offset);
       const status=scheduleState(a,b,date).status;
-      if(status==='yes'||Boolean(lowestOffer(liveFareData.get(fareKey(a,b,date)))))return date;
+      if(status==='yes'||Boolean(lowestLiveOffer(liveFareData.get(fareKey(a,b,date)))))return date;
     }
     return null;
   }
@@ -1439,8 +1443,8 @@
           :'The route is known, but neither a live flight offer nor a date-specific published flight has been confirmed.';
         fareMarkup=`<div class="live-fare ${scheduled?"scheduled-only":limited?"coverage-limited":"unverified"}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight information${previewNote}</div><div class="live-fare-value">No verified fare</div><div class="small"><strong>${summary}</strong> · ${explanation}</div><a class="btn tertiary" href="${searchUrl}" target="_blank" rel="noopener noreferrer">Check airline or booking options ↗</a></div>`;
       }else{
-        const best=lowestOffer(fareData),isLive=Boolean(fareData.liveMode&&best&&best.liveMode);
-        fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?(locked?'Live fare preview':'Live flights') :'Provider test flights'} · nonstop economy${previewNote}</div><div class="live-fare-value">Lowest fare ${best?formatMoney(best.amount,best.currency):'—'}</div><div class="small">${fareData.offers.length} flight${fareData.offers.length===1?'':'s'} · exact returned fare prices shown below · checked ${checkedTime(fareData.checkedAt)}${locked?' · exact choices unlock after inbound flight selection':''}</div>${locked?'':`<button class="view-flight-options" type="button" data-view-flight-options>View ${fareData.offers.length} flight option${fareData.offers.length===1?'':'s'} ↓</button>`}</div>`;
+        const best=lowestLiveOffer(fareData),isLive=Boolean(best);
+        fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?(locked?'Live fare preview':'Live flights') :'Provider test flights'} · nonstop economy${previewNote}</div><div class="live-fare-value">${isLive?'Lowest verified fare '+formatMoney(best.amount,best.currency):'No verified fare'}</div><div class="small">${fareData.offers.length} flight option${fareData.offers.length===1?'':'s'} · ${isLive?'verified live fare shown':'provider prices are unverified, shown only as ?-marked planning values'} · checked ${checkedTime(fareData.checkedAt)}${locked?' · exact choices unlock after inbound flight selection':''}</div>${locked?'':`<button class="view-flight-options" type="button" data-view-flight-options>View ${fareData.offers.length} flight option${fareData.offers.length===1?'':'s'} ↓</button>`}</div>`;
       }
     }
 
