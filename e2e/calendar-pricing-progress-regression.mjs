@@ -112,8 +112,8 @@ assert(source.includes('dates checked;')&&source.includes('remain\' unchecked')=
 assert(source.includes('No selectable offer was returned for this date; this does not prove the flight does not operate.'),'First-leg missing inventory must not masquerade as a connection timing conflict');
 console.log('PASS: Partial scan remains truthful, additional checks are available, and first-leg empty results are explained');
 
-assert(source.includes("const publishedDate=knownRoute&&selectedAvailability.status==='yes'"),'Known service is established separately from a provider quote');
-assert(source.includes("publishedDate?prototypeOptions(a,b,departDate):[]"),'Published service offers explicitly marked planning choices while live prices are pending');
+assert(source.includes("publishedDate=knownRoute&&selectedAvailability.status==='yes'"),'Known service is established separately from a provider quote');
+assert(source.includes("(publishedDate||tentativePattern)?prototypeOptions(a,b,departDate):[]"),'Published service and explicit conflicts preserve clearly marked planning choices');
 assert(source.includes("if(!opts.length)")&&source.includes('const stillChecking=!fareData;'),'Missing flight panel distinguishes provider pending from completed lookup');
 console.log('PASS: Published-service choices do not depend on slow fare-provider responses');
 
