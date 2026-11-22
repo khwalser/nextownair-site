@@ -2,6 +2,8 @@ name: Focused production mobile browser
 on:
   push:
     branches: [test/mobile-production-navigation-smoke]
+  pull_request:
+    branches: [main]
 permissions:
   contents: read
 jobs:
