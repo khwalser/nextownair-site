@@ -21,6 +21,9 @@ const cases=[
   ['Denver Air Connection','denver','denverairconnection.com'],
   ['Contour Aviation','contour','contourairlines.com'],
   ['Alaska Seaplanes','alaska-seaplanes','flyalaskaseaplanes.com'],
+  ['Taquan Air','taquan','taquanair.com'],
+  ['Ryan Air','ryan-alaska','ryanalaska.com'],
+  ['Island Air Service','island-air-service','flyadq.com'],
   ['Wright Air Service','wright','wrightairservice.com'],
   ['Bering Air','bering','beringair.com'],
   ["Warbelow's Air Ventures",'warbelows','warbelows.com'],
@@ -45,4 +48,4 @@ assert(itinerary.includes('carrierBookingAction(a,b,departDate,knownCarrier)'),'
 assert(itinerary.includes('carrierReservation(x.from,x.to,x.departDate,x.carrier)'),'Booking checklist uses carrier actually chosen');
 assert(itinerary.includes('Search flight booking options'),'Unmatched carrier retains general search');
 assert(!booking.includes('searchParams.set'),'No undocumented carrier deep-link parameters');
-console.log('PASS: 13 independently linked carrier booking/contact channels, itinerary leg + checkout handoff, and honest fallback');
+console.log('PASS: 16 independently linked carrier booking/contact channels, itinerary leg + checkout handoff, and honest fallback');
