@@ -505,8 +505,24 @@ try{
     const selectedLines=(await page.locator('#summary').innerText()).replace(/\s+/g,' ');
     assert(!/fare pending/i.test(selectedLines),'Completed itinerary contains no fare-pending escape hatch');
     assert((selectedLines.match(/(?:\$|\?)\d+/g)||[]).length>=6,'Every completed selected leg displays a verified or prototype fare',selectedLines);
-    const bookingHrefs=await bookingLinks.evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href')||''));
-    assert(bookingHrefs.every(h=>/^https:\/\/www\.google\.com\/travel\/flights\?q=/.test(h)),'Every MVP booking handoff targets a route/date-specific flight search',bookingHrefs.join(' | '));
+    const bookingTargets=await bookingLinks.evaluateAll(nodes=>nodes.map(n=>({
+      href:n.getAttribute('href')||'',
+      label:n.textContent||'',
+      rel:n.rel||'',
+      legText:n.closest('.booking-item')?.textContent||''
+    })));
+    const trustedCarrierHrefs=await page.evaluate(()=>window.NTA_CARRIER_BOOKING.carriers.map(x=>x.url));
+    const googleSearch=/^https:\/\/www\.google\.com\/travel\/flights\?q=/;
+    assert(bookingTargets.every(x=>googleSearch.test(x.href)||trustedCarrierHrefs.includes(x.href)),
+      'Each selected leg links only to a route/date search or a curated official carrier destination',
+      bookingTargets.map(x=>x.href).join(' | '));
+    assert(bookingTargets.every(x=>/noopener/.test(x.rel)&&/noreferrer/.test(x.rel)),
+      'All airline booking handoffs enforce safe external-tab behavior');
+    assert(bookingTargets.every(x=>/[A-Z]{3}\s*→\s*[A-Z]{3}/.test(x.legText)&&/\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b/.test(x.legText)),
+      'Every booking checklist item retains the selected route and departure date');
+    assert(bookingTargets.some(x=>trustedCarrierHrefs.includes(x.href)),
+      'Identified carriers use verified airline-owned reservation destinations instead of only generic search',
+      bookingTargets.map(x=>x.href).join(' | '));
 
     // Phase 9: named saved trips preserve user choices, not stale offer selections.
     await page.locator('#saveTripName').fill('Phase 9 test journey');
