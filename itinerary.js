@@ -162,6 +162,9 @@
   let farePumpTimer=null;
   let renderVersion=0;
   let calendarMonthDate=null;
+  // On narrow screens keep the large month grid out of the way until requested.
+  // Respect manual show/hide across asynchronous itinerary rerenders.
+  let calendarVisibilityPreference=!(window.matchMedia&&window.matchMedia('(max-width: 860px)').matches);
   let calendarLoadVersion=0;
   let calendarAutoLoadKey='';
   let calendarScheduleCompleteKey='';
@@ -565,7 +568,7 @@
         if(leg)prioritizeFareCheck(leg.a,leg.b,date,{forceIfUnpriced:true});
         state.startDate=date;state.selections={};save();
         calendarMonthDate=monthStart(date);
-        el.startDateCalendar.hidden=false;el.startDateButton.setAttribute('aria-expanded','true');
+        calendarVisibilityPreference=!(window.matchMedia&&window.matchMedia('(max-width: 860px)').matches);
         render();
       });
       el.calendarGrid.appendChild(btn);
@@ -1484,7 +1487,7 @@
           calendarMonthDate=monthStart(next);render();
         });
         box.querySelector('[data-open-departure-calendar]').addEventListener('click',()=>{
-          showStartCalendar(false);
+          calendarVisibilityPreference=true;showStartCalendar(false);
           el.startDateCalendar.scrollIntoView({behavior:'smooth',block:'start'});
         });
       }else if(locked){
@@ -1673,7 +1676,7 @@
     selectedFareByLeg.clear();
     syncLinks();el.startDate.value=state.startDate;el.startDateButtonText.textContent=formatStartDate(state.startDate);
     if(state.route.length<2){renderEmpty();return;}
-    el.toolbar.hidden=false;renderRoutebar();showStartCalendar();el.content.innerHTML='';
+    el.toolbar.hidden=false;renderRoutebar();showStartCalendar();if(!calendarVisibilityPreference)closeStartCalendar();el.content.innerHTML='';
     let departDate=state.startDate;
     let previousChosen=null;
     let previousArrivalDate=state.startDate;
@@ -1749,8 +1752,20 @@
   }
 
   el.startDateButton.addEventListener('click',()=>{
-    if(!el.startDateCalendar.hidden){closeStartCalendar();return;}
-    showStartCalendar(false);
+    if(!el.startDateCalendar.hidden){calendarVisibilityPreference=false;closeStartCalendar();return;}
+    calendarVisibilityPreference=true;showStartCalendar(false);
+  });
+  document.getElementById('calendarClose')?.addEventListener('click',()=>{
+    calendarVisibilityPreference=false;
+    closeStartCalendar();
+    el.startDateButton.focus();
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&!el.startDateCalendar.hidden){
+      calendarVisibilityPreference=false;
+      closeStartCalendar();
+      el.startDateButton.focus();
+    }
   });
   el.calendarPrev.addEventListener('click',()=>{
     if(el.calendarPrev.disabled)return;

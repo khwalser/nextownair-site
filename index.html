@@ -23,17 +23,25 @@
   <div class="eyebrow">Map mode</div>
   <h1>Where would you like to wander?</h1>
   <p class="lead">Build an air road trip through small-town America. Pick the places you actually want to visit and NexTownAir connects the dots through verified small-airport and hub links, then carries the route into a date, fare, flight, and stopover itinerary.</p>
-  <aside class="eas-explainer" aria-label="What is Essential Air Service?">
-    <strong>What is Essential Air Service?</strong>
-    <span>EAS is a U.S. Department of Transportation program created after airline deregulation to keep eligible smaller communities connected to the national air transportation system, subsidizing service when needed, usually to a larger hub. NexTownAir is built around making that overlooked network easier to discover and travel.</span>
+  <details class="eas-explainer" aria-label="What is Essential Air Service?">
+    <summary>What is Essential Air Service? <span class="eas-summary-hint">About the network</span></summary>
+    <p>EAS is a U.S. Department of Transportation program created after airline deregulation to keep eligible smaller communities connected to the national air transportation system, subsidizing service when needed, usually to a larger hub. NexTownAir is built around making that overlooked network easier to discover and travel.</p>
     <a href="https://www.transportation.gov/policy/aviation-policy/small-community-rural-air-service/essential-air-service" target="_blank" rel="noopener">About EAS at U.S. DOT</a>
-  </aside>
+  </details>
 
   <div class="layout">
     <section class="mapcolumn" aria-label="Airport map">
       <div class="map-controls" aria-label="Map region controls">
         <div class="map-tools" aria-label="Map shortcuts">
-          <span class="map-control-label">Jump to</span>
+          <span class="map-control-label">Jump to</span><label class="sr-only" for="mapRegionSelect">Jump to map region</label>
+          <select id="mapRegionSelect" class="map-compact-select" aria-label="Jump to map region">
+            <option value="lower48">Lower 48</option>
+            <option value="michigan">Michigan &amp; U.P.</option>
+            <option value="alaska">Alaska</option>
+            <option value="hawaii">Hawaii</option>
+            <option value="puerto-rico">Puerto Rico</option>
+            <option value="all">All regions</option>
+          </select>
           <button type="button" class="map-tool active" data-region="lower48">Lower 48</button>
           <button type="button" class="map-tool" data-region="michigan">Michigan & U.P.</button>
           <button type="button" class="map-tool" data-region="alaska">Alaska</button>
@@ -42,7 +50,14 @@
           <button type="button" class="map-tool" data-region="all">All</button>
         </div>
         <div class="map-tools map-filters" aria-label="Filter airports by region">
-          <span class="map-control-label">Show</span>
+          <span class="map-control-label">Show</span><label class="sr-only" for="mapFilterSelect">Filter visible airports</label>
+          <select id="mapFilterSelect" class="map-compact-select" aria-label="Filter visible airports">
+            <option value="all">All airports</option>
+            <option value="lower48">Lower 48</option>
+            <option value="alaska">Alaska</option>
+            <option value="hawaii">Hawaii</option>
+            <option value="puerto-rico">Puerto Rico</option>
+          </select>
           <button type="button" class="map-filter active" data-filter="all" aria-pressed="true">All <span class="map-count" data-filter-count="all"></span></button>
           <button type="button" class="map-filter" data-filter="lower48" aria-pressed="false">Lower 48 <span class="map-count" data-filter-count="lower48"></span></button>
           <button type="button" class="map-filter" data-filter="alaska" aria-pressed="false">Alaska <span class="map-count" data-filter-count="alaska"></span></button>
