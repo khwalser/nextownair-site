@@ -1417,12 +1417,15 @@
       }else if(fareData.error){
         fareMarkup=`<div class="live-fare unavailable" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value">Provider unavailable</div><div class="small">Pricing can be retried without changing the itinerary.</div></div>`;
       }else if(!fareData.offers||!fareData.offers.length){
-        const searchUrl=fareData.externalSearchUrl||externalFareSearchUrl(a,b,departDate);
         const limited=fareData.coverageLimited||fareCoverageBlockedLegs.has(fareLegKey(a,b));
-        const fallbackForFare=scheduleOptions(a,b,departDate);
-        const proto=fallbackForFare.length?fallbackForFare:prototypeOptions(a,b,departDate);
-        const protoFare=proto[0]&&optionFareText(proto[0]);
-        fareMarkup=`<div class="live-fare prototype" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight offers${previewNote}</div><div class="live-fare-value ${protoFare?'prototype-value':''}">${protoFare?`Prototype fare ${protoFare}`:(limited?'Provider coverage gap':'No provider fare returned')}</div><div class="small">${protoFare?'A real service is known for this date; live fare coverage is unavailable, so the MVP uses a clearly marked prototype fare.':(limited?'The connected fare provider does not reliably cover this route.':'The route is verified, but the connected provider returned no nonstop inventory for this date.')} </div><a class="btn tertiary" href="${searchUrl}" target="_blank" rel="noopener">Check current fares ↗</a></div>`;
+        const scheduled=selectedAvailability.status==='yes';
+        const searchUrl=fareData.externalSearchUrl||externalFareSearchUrl(a,b,departDate);
+        const summary=scheduled?'Published flight · live fare unavailable':limited?'Provider booking coverage unavailable':'No live offer · flight date unverified';
+        const explanation=scheduled
+          ?'Published flight service is indicated for this date, but our connected booking provider returned no fare. Flight operation and seats must be confirmed with the airline.'
+          :limited?'This route has limited inventory coverage through our booking provider. The flight may operate even without a NexTownAir price.'
+          :'The route is known, but neither a live flight offer nor a date-specific published flight has been confirmed.';
+        fareMarkup=`<div class="live-fare ${scheduled?"scheduled-only":limited?"coverage-limited":"unverified"}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">Flight information${previewNote}</div><div class="live-fare-value">No verified fare</div><div class="small"><strong>${summary}</strong> · ${explanation}</div><a class="btn tertiary" href="${searchUrl}" target="_blank" rel="noopener noreferrer">Check airline or booking options ↗</a></div>`;
       }else{
         const best=lowestOffer(fareData),isLive=Boolean(fareData.liveMode&&best&&best.liveMode);
         fareMarkup=`<div class="live-fare ${isLive?'live':'test'}" data-leg-index="${i}" data-origin="${a}" data-destination="${b}" data-date="${departDate}"><div class="live-fare-label">${isLive?(locked?'Live fare preview':'Live flights') :'Provider test flights'} · nonstop economy${previewNote}</div><div class="live-fare-value">Lowest fare ${best?formatMoney(best.amount,best.currency):'—'}</div><div class="small">${fareData.offers.length} flight${fareData.offers.length===1?'':'s'} · exact returned fare prices shown below · checked ${checkedTime(fareData.checkedAt)}${locked?' · exact choices unlock after inbound flight selection':''}</div>${locked?'':`<button class="view-flight-options" type="button" data-view-flight-options>View ${fareData.offers.length} flight option${fareData.offers.length===1?'':'s'} ↓</button>`}</div>`;
@@ -1431,7 +1434,15 @@
 
     const knownCarrier=providerOpts[0]?.carrier||providerOpts[0]?.operatingCarrier||null;
     const carrierHandoff=knownRoute?carrierBookingAction(a,b,departDate,knownCarrier):'';
-    leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${A.city} → ${B.city}</h2><div class="muted">${a} → ${b}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div><p class="small">${note}</p>${fareMarkup}${carrierHandoff}<div class="options" id="flight-options-${i}"></div>`;
+    const legEvidence=usingProvider&&providerOpts.some(o=>o.liveMode&&o.fareStatus==='verified')
+      ?{level:'live',text:'Live flight and fare available',detail:'Fare returned by a connected booking provider'}
+      :selectedAvailability.status==='yes'
+        ?{level:'scheduled',text:'Published flight · fare not confirmed',detail:'Published service is separate from live seats and pricing'}
+        :fareData?.coverageLimited||fareCoverageBlockedLegs.has(fareLegKey(a,b))
+          ?{level:'coverage',text:'Provider booking coverage unavailable',detail:'Airline service may exist; check with the carrier'}
+          :{level:'unknown',text:'Flight date not verified',detail:'The route is known but no date-specific flight has been confirmed'};
+    const evidenceMarkup=`<div class="flight-evidence ${legEvidence.level}" role="status"><strong>${legEvidence.text}</strong><span>${legEvidence.detail}</span></div>`;
+    leg.innerHTML=`<div class="leghead"><div><div class="eyebrow">Leg ${i+1}</div><h2>${A.city} → ${B.city}</h2><div class="muted">${a} → ${b}</div></div><div class="leg-date">${window.NTA.fmtDate(departDate,{weekday:'short',month:'short',day:'numeric'})}</div></div>${evidenceMarkup}<p class="small">${note}</p>${fareMarkup}${carrierHandoff}<div class="options" id="flight-options-${i}"></div>`;
     const box=leg.querySelector('.options');
     const viewOptions=leg.querySelector('[data-view-flight-options]');
     if(viewOptions)viewOptions.addEventListener('click',()=>box.scrollIntoView({behavior:'smooth',block:'start'}));
