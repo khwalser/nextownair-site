@@ -219,7 +219,10 @@ try{
   await page.reload({waitUntil:'domcontentloaded'});
   const easExplainer=page.locator('.eas-explainer');
   await easExplainer.waitFor({state:'visible'});
-  assert(/Essential Air Service/i.test(await easExplainer.innerText())&&/Department of Transportation/i.test(await easExplainer.innerText()),'Start page explains Essential Air Service in plain language');
+  assert(!(await easExplainer.evaluate(el=>el.open)),'Long EAS explanation is initially collapsed to conserve vertical space');
+  await easExplainer.locator('summary').click();
+  assert(/Essential Air Service/i.test(await easExplainer.innerText())&&/Department of Transportation/i.test(await easExplainer.innerText()),'Expanded EAS explanation still provides DOT context in plain language');
+  await easExplainer.locator('summary').click();
   const networkRegression=await page.evaluate(()=>({
     billingsToDenver:window.NTA.findFlightPath('BIL','DEN'),
     wolfPointToDenver:window.NTA.findFlightPath('OLF','DEN'),
