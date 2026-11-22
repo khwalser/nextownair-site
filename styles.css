@@ -252,3 +252,10 @@ h2{font-size:21px}h3{font-size:18px}
   .eas-explainer{display:none}
   .map-compact-select{display:none}
 }
+
+/* A fixed mobile calendar must have an in-dialog close affordance. */
+.calendar-close{display:none}
+@media(max-width:860px){
+  .start-calendar-head{grid-template-columns:36px minmax(0,1fr) 36px 36px;gap:5px}
+  .calendar-close{display:block;line-height:1;font-size:23px}
+}
