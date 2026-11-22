@@ -479,7 +479,10 @@ try{
     await downstreamStay.locator('.stay-av:not(:disabled)').first().waitFor({state:'visible',timeout:15000});
     pass('Published service pattern keeps downstream onward dates selectable when the external schedule provider is unavailable');
     await page.reload({waitUntil:'domcontentloaded',timeout:60000});
-    assert(await page.locator('.prototype-legend').isVisible(),'Prototype time/fare legend is visible once for the itinerary');
+    assert(await page.locator('#startDateCalendar').isHidden(),'Itinerary calendar starts collapsed to avoid hiding flight choices');
+    await page.locator('.data-guide summary').click();
+    assert(await page.locator('.prototype-legend').isVisible(),'Prototype fare explanation is available in the information menu');
+    await page.locator('.data-guide summary').click();
     assert(await page.locator('#calendarKey').isHidden(),'Alpena calendar hides the fare-status legend');
     assert(!/unhandled exception|javascript error/i.test((await page.locator('#startDateCalendar').innerText())),'Alpena calendar remains readable while pricing attempts run');
     const desktopLayout=await page.evaluate(()=>{
@@ -545,6 +548,7 @@ try{
     pass('Phase 9 saved trips can be created, inspected and deleted without caching selected flight promises');
 
     // Phase 8: share a snapshot of user choices, never frozen flight inventory.
+    await page.locator('.trip-actions summary').click();
     await page.getByRole('button',{name:'Copy shareable trip link'}).click();
     await page.waitForFunction(()=>/Link copied|Copy this link:/.test(document.getElementById('shareTripStatus')?.textContent||''),null,{timeout:10000});
     assert(/Link copied|Copy this link:/.test(await page.locator('#shareTripStatus').innerText()),'Phase 8 share button provides an accessible copy confirmation or selectable fallback');

@@ -259,3 +259,63 @@ h2{font-size:21px}h3{font-size:18px}
   .start-calendar-head{grid-template-columns:36px minmax(0,1fr) 36px 36px;gap:5px}
   .calendar-close{display:block;line-height:1;font-size:23px}
 }
+
+
+/* Itinerary density correction (desktop and mobile).
+   Keep date choices discoverable without a permanently open month grid. */
+.itinerary-workspace{grid-template-columns:minmax(270px,310px) minmax(0,1fr)}
+.itinerary-sidebar .toolbar{gap:6px;padding:9px}
+.itinerary-sidebar .start-date-field{position:relative}
+.itinerary-sidebar .start-calendar{position:absolute;top:calc(100% + 4px);left:0;width:min(420px,calc(100vw - 28px));max-height:min(72vh,620px);overflow:auto;z-index:150;background:#0c1b2b;border-color:#43637b;box-shadow:0 18px 44px rgba(0,0,0,.55)}
+.itinerary-sidebar .start-calendar[hidden]{display:none}
+.start-calendar-head{grid-template-columns:34px minmax(0,1fr) 34px 34px;gap:5px}
+.calendar-close{display:block;line-height:1}
+.calendar-day{min-height:42px}
+.calendar-blank{min-height:42px}
+.trip-toolbar-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.itinerary-sidebar .trip-toolbar-actions .btn{flex:none;padding:7px 9px;min-height:34px;font-size:12px;white-space:nowrap}
+.trip-actions{position:relative}
+.trip-actions>summary{list-style:none;cursor:pointer}
+.trip-actions>summary::-webkit-details-marker{display:none}
+.trip-actions[open]>summary{border-color:var(--accent)}
+.trip-actions-menu{position:absolute;z-index:160;left:0;top:calc(100% + 5px);display:grid;gap:5px;padding:7px;min-width:205px;max-width:calc(100vw - 24px);background:#0e2032;border:1px solid var(--border2);border-radius:10px;box-shadow:0 15px 28px rgba(0,0,0,.5)}
+.trip-actions-menu>.btn{width:100%;text-align:left;justify-content:flex-start;white-space:normal!important}
+.data-guide{font-size:12px;color:var(--muted);padding:2px 0}
+.data-guide summary{cursor:pointer;font-weight:700;color:#c5d5e1;list-style:revert}
+.data-guide[open] .data-badge,.data-guide[open] .prototype-legend{margin-top:5px;max-width:100%;font-weight:500;font-size:11px;padding:5px 7px}
+.data-guide .data-badge{line-height:1.25}
+.leg-no-options .flight-evidence{margin-bottom:5px}
+.leg-no-options .live-fare{display:flex;align-items:center;flex-wrap:wrap;gap:5px 12px;padding:7px 9px;margin:5px 0}
+.leg-no-options .live-fare-value{grid-column:auto;grid-row:auto;font-size:14px}
+.leg-no-options .live-fare-label{font-size:11px}
+.options>.no-flights,.options>.pending-flights{grid-column:1 / -1;min-width:0;width:100%}
+.leg-no-options .options{display:block;margin-top:6px}
+.leg-no-options .no-flights,.leg-no-options .pending-flights{margin:0;padding:9px 10px;border:1px solid #526477;background:#102338;color:#dce8f1;border-radius:9px;font-size:13px}
+.no-flights-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.no-flights-actions .btn{font-size:12px;min-height:34px;padding:6px 9px}
+.stay-details{font-size:12px;color:var(--muted);margin-top:5px}
+.stay-details summary{cursor:pointer;display:list-item;list-style:revert}
+.stay-details[open] .small{margin:5px 0}
+.stay.awaiting-inbound{padding-top:2px;padding-bottom:3px;margin-top:5px;margin-bottom:8px}
+.stay.awaiting-inbound .stay-availability.pending{margin-top:5px;padding:6px 8px;font-size:12px}
+.stay.awaiting-inbound .stay-availability.pending strong{font-size:12px}
+.stay.awaiting-inbound .stay-summary{margin-top:3px}
+.itinerary-sidebar .notice{font-size:12px;padding:9px 10px}
+@media(min-width:861px) and (max-width:1100px){
+  .itinerary-workspace{grid-template-columns:minmax(260px,290px) minmax(0,1fr)}
+}
+@media(max-width:860px){
+  .itinerary-sidebar .start-calendar{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(96vw,420px);max-height:82dvh;overflow:auto}
+  .trip-actions-menu{left:auto;right:0}
+  .itinerary-workspace{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:390px){
+  .trip-toolbar-actions{gap:5px}
+  .itinerary-sidebar .trip-toolbar-actions .btn{font-size:11px}
+  .no-flights-actions .btn{flex:1 1 auto}
+}
+
+.itinerary-intro{margin:0 0 6px;color:var(--muted);font-size:12px}
+.itinerary-intro summary{cursor:pointer;display:list-item;font-weight:700;color:#b9ccda}
+.itinerary-intro .lead{margin:6px 0;font-size:13px;line-height:1.45}
+.itinerary-wrap>h1{font-size:clamp(22px,2.2vw,30px);margin:2px 0 4px}

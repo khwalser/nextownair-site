@@ -1,0 +1,43 @@
+name: Screenshot route density regression
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [fix/itinerary-screen-density]
+permissions:
+  contents: read
+jobs:
+  layout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node --check itinerary.js
+          node --check e2e/itinerary-density-browser.mjs
+      - name: Install Playwright
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save playwright@1.55.0
+      - name: Wait for preview
+        run: |
+          for i in {1..35}; do
+            if curl -fsSL --max-time 15 https://deploy-preview-18--nextownair-site.netlify.app/itinerary.js | grep -q 'leg-no-options'; then exit 0; fi
+            sleep 5
+          done
+          echo "Preview did not publish" >&2
+          exit 1
+      - name: Inspect Clarksburg route on desktop and mobile
+        env:
+          E2E_BASE_URL: https://deploy-preview-18--nextownair-site.netlify.app
+        run: node e2e/itinerary-density-browser.mjs
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clarksburg-responsive-screenshots
+          path: artifacts/
+          retention-days: 7
