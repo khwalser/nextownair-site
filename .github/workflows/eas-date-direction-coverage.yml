@@ -1,7 +1,7 @@
 name: Post-timeout EAS inventory probe
 on:
-  push:
-    branches: [diagnostics/duffel-after-timeout]
+  pull_request:
+    branches: [main]
 permissions:
   contents: read
 jobs:
