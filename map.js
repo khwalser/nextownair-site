@@ -242,9 +242,13 @@
     const b=regionBounds(region);
     try{map.fitBounds(b,{padding:[24,24]});}catch(_){/* noop */}
     el.mapTools.forEach(btn=>btn.classList.toggle('active',btn.dataset.region===region));
+    const regionSelect=document.getElementById('mapRegionSelect');
+    if(regionSelect)regionSelect.value=region;
   }
   function initMapTools(){
     el.mapTools.forEach(btn=>btn.addEventListener('click',()=>jumpRegion(btn.dataset.region)));
+    const regionSelect=document.getElementById('mapRegionSelect');
+    if(regionSelect)regionSelect.addEventListener('change',()=>jumpRegion(regionSelect.value));
   }
   function regionEasCount(region){
     return D.airports.filter(a=>a.type==='eas'&&(region==='all'||airportRegion(a)===region)).length;
@@ -272,6 +276,8 @@
       const on=btn.dataset.filter===activeFilter;
       btn.classList.toggle('active',on);btn.setAttribute('aria-pressed',String(on));
     });
+    const filterSelect=document.getElementById('mapFilterSelect');
+    if(filterSelect)filterSelect.value=activeFilter;
   }
   function setRegionFilter(region,jump=true){
     activeFilter=region;
@@ -281,6 +287,8 @@
   function initRegionFilters(){
     updateRegionCounts();
     el.filterTools.forEach(btn=>btn.addEventListener('click',()=>setRegionFilter(btn.dataset.filter,true)));
+    const filterSelect=document.getElementById('mapFilterSelect');
+    if(filterSelect)filterSelect.addEventListener('change',()=>setRegionFilter(filterSelect.value,true));
   }
 
   function initFallback(){
