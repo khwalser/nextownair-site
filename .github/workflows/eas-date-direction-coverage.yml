@@ -1,0 +1,17 @@
+name: EAS date-direction inventory audit
+on:
+  push:
+    branches: [diagnostics/eas-date-direction-coverage]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node e2e/eas-date-direction-coverage.mjs
