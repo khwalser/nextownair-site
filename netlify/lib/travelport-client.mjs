@@ -32,7 +32,7 @@ export async function authenticate(env=process.env,fetchFn=fetch){
 export function buildSearchRequest(origin,destination,date){
  if(!/^[A-Z]{3}$/.test(origin)||!/^[A-Z]{3}$/.test(destination)||origin===destination)throw new Error('Invalid airport pair');
  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||Number.isNaN(Date.parse(date+'T00:00:00Z'))||new Date(date+'T00:00:00Z').toISOString().slice(0,10)!==date)throw new Error('Invalid date');
- return {'@type':'CatalogProductOfferingsQueryRequest',CatalogProductOfferingsRequest:{'@type':'CatalogProductOfferingsRequestAir',offersPerPage:12,contentSourceList:['GDS'],PassengerCriteria:[{'@type':'PassengerCriteria',number:1,passengerTypeCode:'ADT'}],SearchCriteriaFlight:[{departureDate:date,From:{value:origin,cityOrAirport:'Airport Only'},To:{value:destination,cityOrAirport:'Airport Only'}}]}};
+ return {CatalogProductOfferingsQueryRequest:{CatalogProductOfferingsRequest:{'@type':'CatalogProductOfferingsRequestAir',offersPerPage:12,contentSourceList:['GDS'],PassengerCriteria:[{'@type':'PassengerCriteria',number:1,passengerTypeCode:'ADT'}],SearchCriteriaFlight:[{departureDate:date,From:{value:origin,cityOrAirport:'Airport Only'},To:{value:destination,cityOrAirport:'Airport Only'}}]}}};
 }
 export async function searchRaw(origin,destination,date,env=process.env,fetchFn=fetch){
  const c=configuration(env),token=await authenticate(env,fetchFn);
