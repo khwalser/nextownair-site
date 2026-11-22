@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {chromium} from 'playwright';
 
-const base=(process.env.E2E_BASE_URL||'https://deploy-preview-16--nextownair-site.netlify.app').replace(/\\/$/,'');
+const base=(process.env.E2E_BASE_URL||'https://deploy-preview-16--nextownair-site.netlify.app').replace(/\/$/,'');
 const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/google-chrome'});
 fs.mkdirSync('artifacts',{recursive:true});
 try{
