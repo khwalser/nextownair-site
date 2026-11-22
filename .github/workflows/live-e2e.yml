@@ -86,6 +86,15 @@ jobs:
         id: calendar
         run: node e2e/calendar-coverage-regression.mjs
 
+      - name: Conflicting published and provider schedule regression
+        run: node e2e/schedule-evidence-conflict-regression.mjs
+
+      - name: Tentative onward itinerary options regression
+        run: node e2e/conflicting-date-planning-regression.mjs
+
+      - name: Verified live fares versus prototype prices regression
+        run: node e2e/verified-live-fares-regression.mjs
+
       - name: Verify calendar pricing progress and completion
         id: pricing
         run: node e2e/calendar-pricing-progress-regression.mjs
