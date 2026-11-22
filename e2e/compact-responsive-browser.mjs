@@ -43,11 +43,14 @@ try{
    overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
    sidebarWidth:Math.round(document.querySelector('.itinerary-sidebar').getBoundingClientRect().width),
    headingSize:parseFloat(getComputedStyle(document.querySelector('h1')).fontSize),
-   legCount:document.querySelectorAll('.leg').length
+   legCount:document.querySelectorAll('.leg').length,
+   mainTop:Math.round(document.querySelector('.itinerary-main').getBoundingClientRect().top),
+   savedTop:Math.round(document.querySelector('.itinerary-sidebar>.notice').getBoundingClientRect().top)
   }));
   assert(itinerary.overflow<=2,'Itinerary has horizontal overflow at '+width+': '+itinerary.overflow);
   assert(itinerary.legCount>=2,'Itinerary must show both flight legs');
   if(width>=1051)assert(itinerary.sidebarWidth<=400,'Desktop sidebar should be compact');
+  if(width<=860)assert(itinerary.savedTop>itinerary.mainTop,'Saved trips and explanatory notice should follow itinerary cards on narrow screens');
   if(width<=720)assert(itinerary.headingSize<=30,'Mobile heading oversized');
   await page.screenshot({path:'artifacts/compact-itinerary-'+width+'.png',fullPage:true});
   console.log('PASS '+width+' map '+JSON.stringify(mapLayout)+' itinerary '+JSON.stringify(itinerary));
