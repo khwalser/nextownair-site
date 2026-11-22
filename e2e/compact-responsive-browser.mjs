@@ -39,6 +39,15 @@ try{
   const itinResp=await page.goto(base+'/itinerary.html?route=DTW,APN,DTW&date=2026-12-09',{waitUntil:'domcontentloaded',timeout:60000});
   assert(itinResp&&itinResp.status()<400,'Itinerary response should be available');
   await page.locator('.leg').first().waitFor({state:'visible',timeout:30000});
+  if(width<=860){
+   assert(await page.locator('#startDateCalendar').isHidden(),'Calendar should start collapsed on phone and tablet');
+   await page.locator('#startDateButton').click();
+   assert(await page.locator('#startDateCalendar').isVisible(),'Calendar must open on user request');
+   await page.locator('#startDateButton').click();
+   assert(await page.locator('#startDateCalendar').isHidden(),'Calendar must close on user request');
+  }else{
+   assert(await page.locator('#startDateCalendar').isVisible(),'Desktop calendar remains available at a glance');
+  }
   const itinerary=await page.evaluate(()=>({
    overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
    sidebarWidth:Math.round(document.querySelector('.itinerary-sidebar').getBoundingClientRect().width),
