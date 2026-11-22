@@ -1316,8 +1316,10 @@
           <input id="departDate-${i}" class="dateinput" type="date" min="${arrivalDate}" value="${plan.date}">
         </div>
       </div>
-      ${autoConnector?`<div class="small" style="margin-top:8px"><strong>Automatic connection:</strong> NexTownAir inserted this airport because the selected route requires it. Choose any available onward departure.</div>`:airport.note?`<div class="small" style="margin-top:8px"><strong>About ${airport.city}:</strong> ${airport.note}.</div>`:''}
-      ${Array.isArray(airport.stay)&&airport.stay.length?`<div class="small" style="margin-top:5px"><strong>Ideas:</strong> ${airport.stay.join(' · ')}</div>`:''}`;
+      <details class="stay-details"><summary>About this stop</summary>
+        ${autoConnector?`<div class="small"><strong>Automatic connection:</strong> This airport was inserted because the route requires it; choose an onward departure.</div>`:airport.note?`<div class="small"><strong>About ${airport.city}:</strong> ${airport.note}.</div>`:''}
+        ${Array.isArray(airport.stay)&&airport.stay.length?`<div class="small"><strong>Ideas:</strong> ${airport.stay.join(' · ')}</div>`:''}
+      </details>`;
     appendStayAvailability(section,i,airport,arrivalDate,hasExactArrival,s);
     section.querySelector('[data-mode="asap"]').addEventListener('click',()=>setStay(i,{mode:'asap',nights:0,date:null}));
     section.querySelector('.dateinput').addEventListener('change',ev=>setStayByDate(i,arrivalDate,ev.target.value));
