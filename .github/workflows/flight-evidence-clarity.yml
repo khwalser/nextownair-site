@@ -25,3 +25,11 @@ jobs:
         run: node e2e/fare-null-normalization-regression.mjs
       - name: Prototype model regression
         run: node e2e/phase4-regression.mjs
+      - name: Install Playwright using system Chrome
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save playwright@1.55.0
+      - name: Verify flight evidence in deployed browser
+        env:
+          E2E_BASE_URL: https://deploy-preview-8--nextownair-site.netlify.app
+        run: node e2e/flight-evidence-browser.mjs
