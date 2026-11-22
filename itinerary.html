@@ -46,14 +46,16 @@
             <div id="calendarGrid" class="calendar-grid"></div>
             <div id="calendarStatus" class="calendar-status" aria-live="polite"></div>
             <button id="calendarMoreFares" class="btn tertiary calendar-more-fares" type="button" hidden>Check prices for remaining dates</button>
-            <div id="calendarKey" class="calendar-key">
-              <span><i class="calendar-key-dot available"></i>Flight confirmed · fare shown if available</span>
-              <span><i class="calendar-key-dot fallback"></i>Flight not yet verified</span>
-              <span><i class="calendar-key-dot unavailable"></i>No published flight on date</span>
+            <div id="calendarKey" class="calendar-key" aria-label="Flight information legend">
+              <span><i class="calendar-key-dot available"></i>Live offer + verified fare</span>
+              <span><i class="calendar-key-dot scheduled"></i>Published schedule only · no live fare</span>
+              <span><i class="calendar-key-dot coverage"></i>Provider fare unavailable</span>
+              <span><i class="calendar-key-dot fallback"></i>Flight date unverified</span>
+              <span><i class="calendar-key-dot unavailable"></i>No flight in published schedule</span>
             </div>
             <div id="calendarServiceKey" class="calendar-key" hidden>
-              <span><i class="calendar-key-dot available"></i>Published flight confirmed</span>
-              <span><i class="calendar-key-dot unavailable"></i>No published flight on date</span>
+              <span><i class="calendar-key-dot scheduled"></i>Published schedule only · fare not confirmed</span>
+              <span><i class="calendar-key-dot unavailable"></i>No flight in published schedule</span>
             </div>
           </div>
         </div>
