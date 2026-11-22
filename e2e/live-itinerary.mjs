@@ -890,10 +890,15 @@ try{
   const mobile=await context.newPage();
   attachDiagnostics(mobile);
   await mobile.setViewportSize({width:390,height:844});
-  await mobile.goto(BASE_URL+'/index.html?route=DTW,ROC,DTW&date='+encodeURIComponent(tripDate),{waitUntil:'domcontentloaded'});
+  // The site can occasionally take longer than Playwright's 30-second
+  // navigation default on fresh mobile pages. Use the same bounded retry and
+  // explicit HTTP failure checks as the rest of this production test.
+  await gotoWithTransientRetry(mobile,BASE_URL+'/index.html?route=DTW,ROC,DTW&date='+encodeURIComponent(tripDate),45000);
+  await mobile.locator('#trip').waitFor({state:'visible',timeout:15000});
   const mobileOverflow=await mobile.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   assert(mobileOverflow<=2,'Core map page has no horizontal mobile overflow',String(mobileOverflow));
-  await mobile.goto(BASE_URL+'/itinerary.html?route=DTW,ROC,DTW&date='+encodeURIComponent(tripDate),{waitUntil:'domcontentloaded'});
+  await gotoWithTransientRetry(mobile,BASE_URL+'/itinerary.html?route=DTW,ROC,DTW&date='+encodeURIComponent(tripDate),45000);
+  await mobile.locator('.nav').waitFor({state:'visible',timeout:15000});
   const navVisible=await mobile.locator('.nav').isVisible();
   assert(navVisible,'Primary navigation remains visible on mobile');
   const itineraryOverflow=await mobile.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);

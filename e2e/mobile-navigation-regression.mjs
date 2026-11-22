@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const source=fs.readFileSync(new URL('../e2e/live-itinerary.mjs',import.meta.url),'utf8');
+assert.match(source,/async function gotoWithTransientRetry\(/,'Bounded navigation retry exists');
+assert.match(source,/for\(let attempt=1;attempt<=2;attempt\+\+\)/,'At most one retry is permitted');
+assert.match(source,/Production server returned HTTP/,'Server errors cannot silently pass');
+assert.match(source,/gotoWithTransientRetry\(mobile,BASE_URL\+'\/index\.html/,'Mobile map navigation must use retry');
+assert.match(source,/gotoWithTransientRetry\(mobile,BASE_URL\+'\/itinerary\.html/,'Mobile itinerary navigation must use retry');
+assert.match(source,/mobile\.locator\('#trip'\)\.waitFor/,'Map page readiness is checked');
+assert.match(source,/mobile\.locator\('\.nav'\)\.waitFor/,'Itinerary page readiness is checked');
+assert.match(source,/mobileOverflow<=2/);
+assert.match(source,/itineraryOverflow<=2/);
+console.log('PASS: mobile map and itinerary navigations have bounded retries, readiness and layout checks');
