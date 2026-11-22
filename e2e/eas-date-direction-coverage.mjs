@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 const base=(process.env.E2E_BASE_URL||'https://nextownair.com').replace(/\/$/,'');
 const routes=[['LEB','BOS','Cape Air'],['ESC','DTW','Delta Connection']];
-const dates=['2026-12-07','2026-12-13','2026-12-18'];
+const dates=process.env.E2E_AUDIT_DATE?[process.env.E2E_AUDIT_DATE]:['2026-12-07'];
 const maxRequests=Math.min(4,Math.max(1,Number(process.env.E2E_MAX_REQUESTS)||4));
 // Interleave carriers so the small request budget checks both airlines.
 const candidates=dates.flatMap(date=>routes.flatMap(([a,b,carrier])=>[
@@ -40,7 +40,7 @@ const successful=records.filter(r=>r.status===200);
 const summary={
  checkedAt:new Date().toISOString(),
  requests:records.length, planned:candidates.length,
- status:blocked?'blocked_rate_limited':successful.length?'partial_evidence':'inconclusive',
+ status:blocked?'blocked_rate_limited':successful.length?(records.some(r=>r.verifiedFareCount>0)?'live_offers_found':'checked_no_live_offers'):'inconclusive',
  verifiedFareResults:records.filter(r=>r.verifiedFareCount>0).length,
  zeroOfferResults:records.filter(r=>r.result==='no_offers_returned').length,
  blocked,records
