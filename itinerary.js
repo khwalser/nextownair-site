@@ -356,7 +356,7 @@
   }
   function calendarFareTitle(a,b,date,av){
     const best=lowestLiveOffer(liveFareData.get(fareKey(a,b,date)));
-    if(av.tier==='live'return 'Live flight offer · verified fare '+formatMoney(best.amount,best.currency)+' · subject to availability';
+    if(av.tier==='live')return 'Live flight offer · verified fare '+formatMoney(best.amount,best.currency)+' · subject to availability';
     if(av.tier==='scheduled')return 'Published flight service for '+date+' · live booking fare not confirmed';
     if(av.tier==='coverage')return 'Published route or service · connected booking provider did not return a fare; check airline directly';
     if(av.tier==='none')return 'No flight in the available published schedule on '+date+' · not a booking-provider cancellation confirmation';
