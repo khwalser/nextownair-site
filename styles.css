@@ -94,3 +94,24 @@ h2{font-size:26px;line-height:1.2}h3{line-height:1.25}
 .carrier-booking-link{align-self:flex-start}
 .booking-action .small{display:block;max-width:18rem;line-height:1.4}
 @media(max-width:620px){.carrier-booking-link{align-self:stretch;text-align:center}}
+
+
+/* Flight evidence levels: only actual provider-priced flights are green. */
+.calendar-day.available.scheduled-only{background:#172638;border-color:#618db2;color:#deefff}
+.calendar-day.available.scheduled-only:hover{background:#1c3349;border-color:#9fc8e8}
+.calendar-day.available.scheduled-only .calendar-fare{color:#b3d7f2}
+.calendar-day.coverage-gap,.calendar-day.available.coverage-gap{background:#2b2417;border-color:#b58d44;color:#ffe8b3}
+.calendar-day.coverage-gap .calendar-fare{display:block;color:#ffd896}
+.calendar-day.coverage-gap:hover,.calendar-day.available.coverage-gap:hover{background:#382d1a;border-color:#dfb560}
+.calendar-key-dot.scheduled{background:#618db2}
+.calendar-key-dot.coverage{background:#b58d44}
+.flight-evidence{display:flex;flex-wrap:wrap;align-items:baseline;gap:5px 12px;margin-top:12px;padding:9px 12px;border:1px solid #526a7b;border-radius:10px;background:#142333}
+.flight-evidence strong{font-size:14px}.flight-evidence span{font-size:12px;color:#c6d5df}
+.flight-evidence.live{border-color:#4e9a6c;background:#102f24}
+.flight-evidence.scheduled{border-color:#618db2;background:#172638}
+.flight-evidence.coverage{border-color:#b58d44;background:#2b2417}
+.flight-evidence.unknown{border-color:#526a7b;background:#142333}
+.live-fare.scheduled-only{border-color:#618db2;background:#172638}
+.live-fare.coverage-limited{border-color:#b58d44;background:#2b2417}
+.live-fare.unverified{border-style:dashed}
+.live-fare.scheduled-only .live-fare-value,.live-fare.coverage-limited .live-fare-value,.live-fare.unverified .live-fare-value{font-size:17px;white-space:normal}
