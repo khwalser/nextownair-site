@@ -414,6 +414,8 @@ assert(calendarCellStart>=0&&calendarCellEnd>calendarCellStart,'Calendar date re
 const classNames=new Set(['past']);
 const calendarMockCell={
   disabled:true,title:'',
+  attributes:{},
+  setAttribute(name,value){this.attributes[name]=value;},
   classList:{
     remove:(...names)=>names.forEach(n=>classNames.delete(n)),
     add:name=>classNames.add(name),
