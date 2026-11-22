@@ -314,3 +314,8 @@ h2{font-size:21px}h3{font-size:18px}
   .itinerary-sidebar .trip-toolbar-actions .btn{font-size:11px}
   .no-flights-actions .btn{flex:1 1 auto}
 }
+
+.itinerary-intro{margin:0 0 6px;color:var(--muted);font-size:12px}
+.itinerary-intro summary{cursor:pointer;display:list-item;font-weight:700;color:#b9ccda}
+.itinerary-intro .lead{margin:6px 0;font-size:13px;line-height:1.45}
+.itinerary-wrap>h1{font-size:clamp(22px,2.2vw,30px);margin:2px 0 4px}
