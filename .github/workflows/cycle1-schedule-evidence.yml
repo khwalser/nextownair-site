@@ -1,0 +1,20 @@
+name: Cycle 1 schedule evidence
+on:
+  push:
+    branches: [fix/schedule-evidence-conflicts]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  regressions:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check itinerary.js
+      - run: node e2e/schedule-evidence-conflict-regression.mjs
+      - run: node e2e/calendar-coverage-regression.mjs
+      - run: node e2e/calendar-pricing-progress-regression.mjs

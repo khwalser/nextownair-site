@@ -290,7 +290,15 @@
       const day=data.days&&data.days[date];
       if(day&&day.count>0)return {status:'yes',label:'Scheduled',detail:`${day.count} published flight${day.count===1?'':'s'}`};
       if(Array.isArray(data.unknownDates)&&data.unknownDates.includes(date))return {status:'fallback',label:'Schedule unverified',detail:'Published schedule lookup incomplete; live fare may be checked separately'};
-      if(Array.isArray(data.checkedDates)&&data.checkedDates.includes(date))return publishedServicePattern(a,b)?{status:'none',label:'No scheduled service',detail:'No service on this date in published operating pattern'}:{status:'fallback',label:'Check live fare',detail:'No date-specific service confirmed by schedule source; check live offers'};
+      if(Array.isArray(data.checkedDates)&&data.checkedDates.includes(date)){
+        const published=publishedServicePattern(a,b);
+        // A zero from one schedule feed does not negate an independently
+        // published operating pattern. Treat conflicting evidence as unknown.
+        if(published&&patternAppliesOnDate(published,date))
+          return {status:'fallback',label:'Schedule sources disagree',detail:'Published operating pattern suggests service, but date-specific feed found none; confirm with airline'};
+        if(published)return {status:'none',label:'No scheduled service',detail:'Published operating pattern does not serve this date'};
+        return {status:'fallback',label:'Flight date unverified',detail:'No date-specific flight confirmed; check live offers'};
+      }
     }
     const pattern=publishedServicePattern(a,b);
     if(pattern){
