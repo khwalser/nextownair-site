@@ -36,7 +36,7 @@ export function buildSearchRequest(origin,destination,date){
 }
 export async function searchRaw(origin,destination,date,env=process.env,fetchFn=fetch){
  const c=configuration(env),token=await authenticate(env,fetchFn);
- const headers={Authorization:'Bearer '+token,'Content-Type':'application/json',Accept:'application/json',TraceId:'NexTownAir_'+Date.now()};
+ const headers={Authorization:'Bearer '+token,'Content-Type':'application/json',Accept:'application/json','Accept-Encoding':'gzip, deflate','Cache-Control':'no-cache','Accept-Version':'11','Content-Version':'11',TraceId:'NexTownAir_'+Date.now()};
  if(env.TRAVELPORT_ACCESS_GROUP)headers.XAUTH_TRAVELPORT_ACCESSGROUP=env.TRAVELPORT_ACCESS_GROUP;
  else headers['TVP-PCC-Core']=env.TRAVELPORT_PCC;
  // This function is deliberately server-side raw transport only. It is NOT a live fare adapter.
