@@ -1,0 +1,35 @@
+name: Flight evidence clarity regression
+on:
+  push:
+    branches: [fix/flight-evidence-clarity]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  regressions:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax checks
+        run: node --check itinerary.js
+      - name: Calendar source evidence regression
+        run: node e2e/calendar-coverage-regression.mjs
+      - name: Calendar pricing regression
+        run: node e2e/calendar-pricing-progress-regression.mjs
+      - name: Fare amount regression
+        run: node e2e/fare-null-normalization-regression.mjs
+      - name: Prototype model regression
+        run: node e2e/phase4-regression.mjs
+      - name: Install Playwright using system Chrome
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save playwright@1.55.0
+      - name: Verify flight evidence in deployed browser
+        env:
+          E2E_BASE_URL: https://deploy-preview-8--nextownair-site.netlify.app
+        run: node e2e/flight-evidence-browser.mjs
