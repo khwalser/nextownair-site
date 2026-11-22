@@ -9,6 +9,12 @@ jobs:
   probe:
     runs-on: ubuntu-24.04
     timeout-minutes: 9
+    strategy:
+      max-parallel: 1
+      matrix:
+        date: ['2026-12-13', '2026-12-18']
+    env:
+      E2E_AUDIT_DATE: ${{ matrix.date }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
