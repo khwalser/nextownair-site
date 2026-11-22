@@ -21,7 +21,7 @@ function httpsRequestJson(options, body = null) {
         resolve(parsed);
       });
     });
-    req.setTimeout(14000, () => req.destroy(new Error('Upstream request timed out')));
+    req.setTimeout(23000, () => req.destroy(new Error('Upstream request timed out')));
     req.on('error', reject);
     if (body) req.write(body);
     req.end();
@@ -73,7 +73,7 @@ async function searchDuffel(origin,destination,departureDate){
 
   const response=await httpsRequestJson({
     hostname:'api.duffel.com',
-    path:'/air/offer_requests?return_offers=true&supplier_timeout=9000',
+    path:'/air/offer_requests?return_offers=true&supplier_timeout=18000',
     method:'POST',
     headers:{
       'Authorization':`Bearer ${token}`,
@@ -85,14 +85,23 @@ async function searchDuffel(origin,destination,departureDate){
   }, body);
 
   const request=response.data||{};
-  const rawOffers=(request.offers||[])
+  // Summarize filtering without exposing upstream passenger or offer payloads.
+  // Zero raw offers indicates the supplier response had no inventory; a
+  // nonzero raw count but zero normalized offers indicates a parsing/filter gap.
+  const upstreamOffers=Array.isArray(request.offers)?request.offers:[];
+  const coverageDiagnostics={
+    upstreamOfferCount:upstreamOffers.length,
+    connectingOffersExcluded:0,
+    missingFareOffersExcluded:0
+  };
+  const rawOffers=upstreamOffers
     .map(offer=>{
       const slice=(offer.slices||[])[0]||{};
       const segments=slice.segments||[];
-      if(segments.length!==1)return null;
+      if(segments.length!==1){coverageDiagnostics.connectingOffersExcluded++;return null;}
       const seg=segments[0]||{};
       const carrier=seg.operating_carrier||{};
-      if(!validMoneyAmount(offer.total_amount))return null;
+      if(!validMoneyAmount(offer.total_amount)){coverageDiagnostics.missingFareOffersExcluded++;return null;}
       const amount=Number(offer.total_amount);
       return {
         provider:'duffel',
@@ -159,6 +168,11 @@ async function searchDuffel(origin,destination,departureDate){
   return {
     contractVersion:'nta-flights-v1',
     sourceProvider:'duffel',
+    coverageDiagnostics:{
+      ...coverageDiagnostics,
+      directPricedOfferCount:rawOffers.length,
+      distinctFlightCount:grouped.size
+    },
     checkedAt:new Date().toISOString(),
     origin,
     destination,
