@@ -360,7 +360,7 @@ try{
     await page.goto(target,{waitUntil:'domcontentloaded',timeout:60000});
     await page.waitForFunction(()=>document.querySelectorAll('.calendar-day:not(.past)').length>0,null,{timeout:30000});
     const futureLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
-    assert(futureLabels.some(t=>/flight ✓|[$][0-9]|fare unavailable|pricing/i.test(t)),'DTW-CIU calendar renders flight/fare status instead of blank price cells',futureLabels.join(' | '));
+    assert(futureLabels.some(t=>/schedule only|no live fare|date unverified|[$][0-9]|fare unavailable|pricing/i.test(t)),'DTW-CIU calendar renders flight/fare status instead of blank price cells',futureLabels.join(' | '));
     assert(await page.locator('#calendarServiceKey').isVisible(),'Published DTW-CIU service-day legend remains visible');
     const start=Date.now();
     let ciuRequests=[];
@@ -469,7 +469,7 @@ try{
     const status=await page.locator('#calendarStatus').innerText();
     assert(/Published flights confirmed|checking live prices|limited coverage/i.test(status),'Alpena calendar reports confirmed service and pricing status',status);
     const fares=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
-    assert(fares.some(x=>/flight ✓|\\$[0-9]|pricing/i.test(x)),'Alpena calendar displays flight or fare status',fares.join(' | '));
+    assert(fares.some(x=>/schedule only|no live fare|date unverified|\\$[0-9]|pricing/i.test(x)),'Alpena calendar displays flight or fare status',fares.join(' | '));
     assert(await page.locator('#calendarServiceKey').isVisible(),'Alpena calendar shows the service-day legend');
     await page.locator('#flight-options-0 .flight').first().click();
     const downstreamStay=page.locator('.stay').first();
