@@ -54,7 +54,7 @@ try{
       await recovery.waitFor({state:'visible'});
       assert.equal(await recovery.locator('a[data-external-first-fares]').count(),1);
       const widths=await first.evaluate(el=>{
-        const box=el.querySelector('.options'),notice=el.querySelector('.no-flights');
+        const box=el.querySelector('.options'),notice=el.querySelector('.no-flights, .pending-flights');
         return {box:box.getBoundingClientRect().width,notice:notice.getBoundingClientRect().width};
       });
       assert(Math.abs(widths.notice-widths.box)<10,'Recovery actions should use full available card width');
