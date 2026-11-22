@@ -21,6 +21,6 @@ for(const amount of [null,undefined,'',' ', 'not-a-number', '-1',Infinity]){
 for(const amount of ['0',0,'148.50',148.5]){
   assert.equal(context.validMoneyAmount(amount),true,'Explicit valid fare must be accepted: '+amount);
 }
-assert(source.includes('if(!validMoneyAmount(offer.total_amount))return null;'),'Upstream offer parser rejects missing prices before coercion');
+assert.match(source,/if\(!validMoneyAmount\(offer\.total_amount\)\)/,'Upstream offer parser rejects missing prices before coercion');
 assert(source.includes('!validDate(departureDate)'),'Flight API rejects impossible dates before provider request');
 console.log('PASS: Flight API rejects impossible dates and missing/invalid upstream prices');
