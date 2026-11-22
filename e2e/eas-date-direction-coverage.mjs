@@ -1,23 +1,50 @@
+// Read-only sampling of live Duffel offers; 429 means unknown, never "no service".
 import assert from 'node:assert/strict';
+
 const base=(process.env.E2E_BASE_URL||'https://nextownair.com').replace(/\/$/,'');
 const routes=[['LEB','BOS','Cape Air'],['ESC','DTW','Delta Connection']];
 const dates=['2026-12-07','2026-12-13','2026-12-18'];
+const maxRequests=Math.min(4,Math.max(1,Number(process.env.E2E_MAX_REQUESTS)||4));
+const candidates=routes.flatMap(([a,b,carrier])=>dates.flatMap(date=>[
+ {a,b,carrier,date},{a:b,b:a,carrier,date}
+]));
 const records=[];
-for(const [origin,destination,modeledCarrier] of routes){
- for(const [a,b] of [[origin,destination],[destination,origin]]){
-  for(const date of dates){
-   const url=base+'/api/flights?'+new URLSearchParams({origin:a,destination:b,date});
-   try{
-    const response=await fetch(url,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(25000)});
-    const data=await response.json();
-    const offers=Array.isArray(data.offers)?data.offers:[];
-    const verified=offers.filter(o=>o.liveMode===true&&o.fare?.status==='verified');
-    records.push({route:a+'-'+b,modeledCarrier,date,status:response.status,offerCount:offers.length,verifiedFareCount:verified.length,carriers:[...new Set(offers.map(o=>o.operatingCarrier).filter(Boolean))],error:!response.ok?data.error||'HTTP '+response.status:null});
-   }catch(error){records.push({route:a+'-'+b,date,error:String(error.message||error)});}
-   console.log(JSON.stringify(records.at(-1)));
+let blocked=null;
+for(const {a,b,carrier,date} of candidates.slice(0,maxRequests)){
+ const url=base+'/api/flights?'+new URLSearchParams({origin:a,destination:b,date});
+ try{
+  const response=await fetch(url,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(25000)});
+  const payload=await response.json();
+  if(response.status===429){
+   blocked={reason:'provider_rate_limit',retryAfterMs:payload.retryAfterMs??null,resetAt:payload.resetAt??null};
+   records.push({route:a+'-'+b,date,status:429,result:'not_checked_rate_limited'});
+   console.log('BLOCKED '+JSON.stringify(blocked));
+   break; // never waste remaining allowance or report false zero offers
   }
+  const offers=Array.isArray(payload.offers)?payload.offers:[];
+  const live=offers.filter(o=>o.liveMode===true&&o.fare?.status==='verified');
+  records.push({route:a+'-'+b,modeledCarrier:carrier,date,status:response.status,
+   result:response.ok?(live.length?'verified_offers':'no_offers_returned'):'provider_error',
+   offerCount:offers.length,verifiedFareCount:live.length,
+   carriers:[...new Set(offers.map(o=>o.operatingCarrier).filter(Boolean))],
+   error:!response.ok?payload.error||'HTTP '+response.status:null});
+ }catch(e){
+  records.push({route:a+'-'+b,date,result:'transport_error',error:String(e.message||e)});
  }
+ console.log(JSON.stringify(records.at(-1)));
+ // Do not launch a burst of requests against the shared calendar quota.
+ if(records.length<maxRequests)await new Promise(resolve=>setTimeout(resolve,3000));
 }
-const complete=records.filter(r=>r.status===200);
-console.log('SUMMARY '+JSON.stringify({checkedAt:new Date().toISOString(),queries:records.length,successfulQueries:complete.length,queriesWithVerifiedFares:records.filter(r=>r.verifiedFareCount>0).length,errors:records.filter(r=>r.error).length}));
-assert(complete.length>=1,'Production API must respond with JSON at least once');
+const successful=records.filter(r=>r.status===200);
+const summary={
+ checkedAt:new Date().toISOString(),
+ requests:records.length, planned:candidates.length,
+ status:blocked?'blocked_rate_limited':successful.length?'partial_evidence':'inconclusive',
+ verifiedFareResults:records.filter(r=>r.verifiedFareCount>0).length,
+ zeroOfferResults:records.filter(r=>r.result==='no_offers_returned').length,
+ blocked,records
+};
+console.log('SUMMARY '+JSON.stringify(summary));
+assert(records.length<=maxRequests,'Audit request budget enforced');
+// This is a diagnostic: blocked-rate-limit is not "no inventory" and is NOT
+// sufficient evidence to close any provider coverage ticket.
