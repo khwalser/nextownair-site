@@ -43,8 +43,11 @@ try{
    assert(await page.locator('#startDateCalendar').isHidden(),'Calendar should start collapsed on phone and tablet');
    await page.locator('#startDateButton').click();
    assert(await page.locator('#startDateCalendar').isVisible(),'Calendar must open on user request');
+   await page.locator('#calendarClose').click();
+   assert(await page.locator('#startDateCalendar').isHidden(),'Calendar must close from inside mobile dialog');
    await page.locator('#startDateButton').click();
-   assert(await page.locator('#startDateCalendar').isHidden(),'Calendar must close on user request');
+   await page.keyboard.press('Escape');
+   assert(await page.locator('#startDateCalendar').isHidden(),'Escape dismisses mobile calendar');
   }else{
    assert(await page.locator('#startDateCalendar').isVisible(),'Desktop calendar remains available at a glance');
   }
