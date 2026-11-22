@@ -1,0 +1,45 @@
+name: Responsive layout browser verification
+on:
+  push:
+    branches: [fix/compact-responsive-layout]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  responsive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check syntax
+        run: |
+          node --check map.js
+          node --check itinerary.js
+          node --check e2e/compact-responsive-browser.mjs
+      - name: Install Playwright
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save playwright@1.55.0
+      - name: Verify published preview
+        run: |
+          for attempt in {1..30}; do
+            if curl -fsSL --max-time 15 https://deploy-preview-16--nextownair-site.netlify.app/index.html | grep -q 'mapRegionSelect'; then exit 0; fi
+            sleep 5
+          done
+          echo 'Preview has not published compact controls' >&2
+          exit 1
+      - name: Browser verify phone tablet desktop
+        env:
+          E2E_BASE_URL: https://deploy-preview-16--nextownair-site.netlify.app
+        run: node e2e/compact-responsive-browser.mjs
+      - name: Upload layout screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: responsive-layout-screenshots
+          path: artifacts/
+          retention-days: 7
