@@ -10,6 +10,7 @@ on:
       - "itinerary.js"
       - "trip-state.js"
       - "flight-provider.js"
+      - "carrier-booking.js"
       - "data.js"
       - "styles.css"
       - "netlify/functions/**"
@@ -33,6 +34,8 @@ on:
       - "e2e/schedule-malformed-response-regression.mjs"
       - "e2e/schedule-partial-cache-regression.mjs"
       - "e2e/live-flight-validation.mjs"
+      - "e2e/carrier-booking-regression.mjs"
+      - "e2e/carrier-booking-browser.mjs"
       - "e2e/schedule-full-day-regression.mjs"
       - "docs/data-architecture.md"
       - "docs/eas-schedule-research-2026-11-21.md"
@@ -107,6 +110,9 @@ jobs:
       - name: Reconcile all EAS schedule-evidence gaps
         run: node e2e/eas-evidence-ledger-regression.mjs
 
+      - name: Verify official carrier reservation handoffs
+        run: node e2e/carrier-booking-regression.mjs
+
       - name: Audit route graph
         id: network
         run: node e2e/network-audit.mjs
@@ -155,7 +161,7 @@ jobs:
         run: |
           for attempt in {1..48}; do
             match=1
-            for asset in map.js itinerary.js trip-state.js flight-provider.js data.js; do
+            for asset in map.js itinerary.js trip-state.js flight-provider.js carrier-booking.js data.js; do
               expected="$(sha256sum "$asset" | cut -d' ' -f1)"
               actual="$(curl -fsSL --max-time 20 "https://nextownair.com/$asset" | sha256sum | cut -d' ' -f1)" || { match=0; break; }
               if [ "$expected" != "$actual" ]; then
@@ -165,7 +171,7 @@ jobs:
               fi
             done
             if [ "$match" -eq 1 ]; then
-              echo "PASS: production serves exact checkout bytes of all five critical JavaScript assets"
+              echo "PASS: production serves exact checkout bytes of all six critical JavaScript assets"
               exit 0
             fi
             sleep 5
@@ -183,6 +189,9 @@ jobs:
           npm install --no-save playwright@1.55.0
           which google-chrome
           google-chrome --version
+
+      - name: Verify official carrier handoff in live itinerary browser
+        run: node e2e/carrier-booking-browser.mjs
 
       - name: Verify direct itinerary connector repair in live browser
         run: node e2e/direct-itinerary-connectors.mjs
