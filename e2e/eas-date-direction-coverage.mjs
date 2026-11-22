@@ -5,7 +5,8 @@ const base=(process.env.E2E_BASE_URL||'https://nextownair.com').replace(/\/$/,''
 const routes=[['LEB','BOS','Cape Air'],['ESC','DTW','Delta Connection']];
 const dates=['2026-12-07','2026-12-13','2026-12-18'];
 const maxRequests=Math.min(4,Math.max(1,Number(process.env.E2E_MAX_REQUESTS)||4));
-const candidates=routes.flatMap(([a,b,carrier])=>dates.flatMap(date=>[
+// Interleave carriers so the small request budget checks both airlines.
+const candidates=dates.flatMap(date=>routes.flatMap(([a,b,carrier])=>[
  {a,b,carrier,date},{a:b,b:a,carrier,date}
 ]));
 const records=[];
