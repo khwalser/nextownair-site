@@ -2,6 +2,8 @@ name: EAS date-direction inventory audit
 on:
   push:
     branches: [diagnostics/eas-date-direction-coverage]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
