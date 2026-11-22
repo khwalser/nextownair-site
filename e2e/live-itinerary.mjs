@@ -364,7 +364,11 @@ try{
     await page.waitForFunction(()=>document.querySelectorAll('.calendar-day:not(.past)').length>0,null,{timeout:30000});
     const futureLabels=await page.locator('.calendar-day:not(.past) .calendar-fare').allTextContents();
     assert(futureLabels.some(t=>/schedule only|no live fare|date unverified|[$][0-9]|fare unavailable|pricing/i.test(t)),'DTW-CIU calendar renders flight/fare status instead of blank price cells',futureLabels.join(' | '));
-    assert(await page.locator('#calendarServiceKey').isVisible(),'Published DTW-CIU service-day legend remains visible');
+    assert(await page.locator('#startDateCalendar').isHidden(),'Month calendar starts collapsed instead of dominating the desktop screen');
+    await page.locator('#startDateButton').click();
+    assert(await page.locator('#calendarServiceKey').isVisible(),'Published DTW-CIU service-day legend is visible when the traveler opens the calendar');
+    await page.locator('#calendarClose').click();
+    assert(await page.locator('#startDateCalendar').isHidden(),'Traveler can dismiss the month calendar without losing selected dates');
     const start=Date.now();
     let ciuRequests=[];
     while(Date.now()-start<30000){
