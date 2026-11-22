@@ -38,6 +38,7 @@ on:
       - "e2e/carrier-booking-browser.mjs"
       - "e2e/schedule-full-day-regression.mjs"
       - "docs/data-architecture.md"
+      - "docs/carrier-reservation-handoffs.md"
       - "docs/eas-schedule-research-2026-11-21.md"
       - ".github/workflows/live-e2e.yml"
   workflow_dispatch:
