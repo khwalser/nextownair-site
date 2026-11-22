@@ -1,0 +1,24 @@
+name: Focused production mobile browser
+on:
+  push:
+    branches: [test/mobile-production-navigation-smoke]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check e2e/mobile-production-smoke.mjs
+      - name: Install Playwright
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save playwright@1.55.0
+      - name: Exercise production map and itinerary on mobile
+        run: node e2e/mobile-production-smoke.mjs
