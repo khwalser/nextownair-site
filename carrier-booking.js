@@ -33,11 +33,40 @@
     // published carrier only as a suggestion, not evidence of date availability.
     const selected=byName(carrier);
     const documented=byName(pattern?.airline);
-    const match=selected||documented;
+    // Only recommend a carrier from a documented route, not from the airport
+    // state or a generic guess about who might operate the flight.
+    const endpoints=[origin,destination];
+    const regional=window.NTA_DATA||{};
+    const routeListed=[...(regional.routes||[]),...(regional.backboneRoutes||[])]
+      .some(pair=>pair.length===2&&pair.includes(origin)&&pair.includes(destination));
+    const airlineGatewayEvidence=(regional.routeVerification?.backboneSources||[])
+      .some(source=>(source.verifiedPairs||[]).some(pair=>{
+        const parts=pair.split('-');
+        return parts.length===2&&parts.includes(origin)&&parts.includes(destination);
+      })&&/Alaska Airlines/i.test(source.label||''));
+    const alaskaGateway=routeListed&&airlineGatewayEvidence&&
+      endpoints.some(code=>['SEA','LAX','PDX'].includes(code))&&
+      endpoints.some(code=>['ANC','HNL','OGG','KOA'].includes(code));
+    const hawaiiPair=routeListed&&endpoints.every(code=>
+      (regional.airports||[]).some(a=>a.code===code&&a.state==='HI'))&&
+      ((regional.routes||[]).some(pair=>pair.includes(origin)&&pair.includes(destination))||
+       ['MKK|HNL','MKK|OGG','OGG|KOA'].some(pair=>{
+         const parts=pair.split('|');return parts.includes(origin)&&parts.includes(destination);
+       }));
+    const documentedInterisland=routeListed&&
+      ['HNL|OGG','HNL|KOA'].some(pair=>{
+        const parts=pair.split('|');return parts.includes(origin)&&parts.includes(destination);
+      });
+    const documentedDetroitGateway=routeListed&&endpoints.includes('DTW')&&endpoints.includes('SEA');
+    const sourced=alaskaGateway||documentedInterisland
+      ?byName('Alaska Airlines')
+      :hawaiiPair?byName('Mokulele Airlines')
+      :documentedDetroitGateway?byName('Delta Air Lines'):null;
+    const match=selected||documented||sourced;
     if(!match)return null;
     return {id:match.id,name:match.name,url:match.url,mode:match.mode,
       origin,destination,date:typeof date==='string'?date:'',
-      basis:selected?'selected-flight-carrier':'published-route-carrier',
+      basis:selected?'selected-flight-carrier':documented?'published-route-carrier':'documented-route-carrier',
       dateVerified:false,searchPrefilled:false};
   }
   window.NTA_CARRIER_BOOKING={resolve,byName,carriers:directory.map(({id,name,url,mode})=>({id,name,url,mode}))};

@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-21.45",
+  "mvpRevision": "2026-11-23.46",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-21",
@@ -39,8 +39,67 @@ window.NTA_DATA = {
       "HPN",
       "MRI"
     ],
-    "backboneRoutePairs": 66,
+    "backboneRoutePairs": 78,
     "backboneSources": [
+      {
+        "airport": "SEA",
+        "label": "Delta and Alaska Airlines published Detroit–Seattle nonstop flights, current Nov 23–29 2026 schedule",
+        "url": "https://www.directflights.com/DTW-SEA",
+        "checkedAsOf": "2026-11-23",
+        "verifiedPairs": [
+          "DTW-SEA"
+        ],
+        "note": "Nonstop route; do not infer exact service on arbitrary dates."
+      },
+      {
+        "airport": "HNL",
+        "label": "Alaska/Hawaiian Airlines published Honolulu–Kahului and Honolulu–Kona service",
+        "url": "https://www.hawaiianairlines.com/en/flights-from-honolulu-to-maui",
+        "secondarySourceUrl": "https://www.hawaiianairlines.com/en/flights-from-honolulu-to-kona",
+        "checkedAsOf": "2026-11-23",
+        "verifiedPairs": [
+          "HNL-OGG",
+          "HNL-KOA"
+        ],
+        "note": "Route exists; live date-specific departure and fare still require provider verification."
+      },
+      {
+        "airport": "SEA",
+        "label": "Alaska Airlines published Seattle–Anchorage nonstop flights",
+        "url": "https://www.alaskaair.com/en/flights-from-seattle-to-anchorage",
+        "checkedAsOf": "2026-11-23",
+        "verifiedPairs": [
+          "SEA-ANC"
+        ],
+        "note": "Route-level evidence only; not proof of flights on an arbitrary chosen date."
+      },
+      {
+        "airport": "SEA",
+        "label": "Alaska Airlines/Hawaiian Airlines published year-round Hawaii gateways",
+        "url": "https://www.alaskaair.com/en/flights-to-hawaii",
+        "checkedAsOf": "2026-11-23",
+        "verifiedPairs": [
+          "SEA-HNL",
+          "SEA-OGG",
+          "SEA-KOA",
+          "LAX-HNL",
+          "LAX-OGG",
+          "PDX-HNL"
+        ],
+        "note": "Route-level evidence only; flight dates, seats and prices must be checked separately."
+      },
+      {
+        "airport": "ANC",
+        "label": "Alaska Airlines published Los Angeles–Anchorage route and Anchorage visitor guide",
+        "url": "https://www.alaskaair.com/en/flights-from-los-angeles-to-anchorage",
+        "secondarySourceUrl": "https://www.anchorage.net/plan-your-trip/getting-to-alaska/",
+        "checkedAsOf": "2026-11-23",
+        "verifiedPairs": [
+          "LAX-ANC",
+          "PDX-ANC"
+        ],
+        "note": "Route-level evidence only; seasonal/day-of-week specifics are not inferred."
+      },
       {
         "airport": "IAD",
         "label": "Washington Dulles International Airport — Nonstop Destinations",
@@ -238,6 +297,16 @@ window.NTA_DATA = {
     ]
   },
   "airports": [
+    {
+      "code": "SEA",
+      "name": "Seattle–Tacoma International Airport",
+      "city": "Seattle",
+      "state": "WA",
+      "lat": 47.4502,
+      "lon": -122.3088,
+      "type": "hub",
+      "note": "Mainland gateway to Alaska and Hawaiʻi. Route connectivity is sourced from published airline networks; date-specific departures and fares still require provider confirmation."
+    },
     {
       "code": "ABR",
       "name": "Aberdeen Regional Airport",
@@ -4325,6 +4394,54 @@ window.NTA_DATA = {
   ],
   "backboneRoutes": [
     [
+      "DTW",
+      "SEA"
+    ],
+    [
+      "HNL",
+      "OGG"
+    ],
+    [
+      "HNL",
+      "KOA"
+    ],
+    [
+      "SEA",
+      "ANC"
+    ],
+    [
+      "SEA",
+      "HNL"
+    ],
+    [
+      "SEA",
+      "OGG"
+    ],
+    [
+      "SEA",
+      "KOA"
+    ],
+    [
+      "LAX",
+      "ANC"
+    ],
+    [
+      "LAX",
+      "HNL"
+    ],
+    [
+      "LAX",
+      "OGG"
+    ],
+    [
+      "PDX",
+      "ANC"
+    ],
+    [
+      "PDX",
+      "HNL"
+    ],
+    [
       "OGG",
       "KOA"
     ],
@@ -4618,6 +4735,158 @@ window.NTA_DATA = {
     }
   ],
   "servicePatterns": {
+    "HNM|OGG": {
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "airline": "Mokulele Airlines",
+      "label": "Published daily minimum through Jan 9, 2027; timetable times are sourced, fare/seat availability unverified",
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2027-01-09",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "departures": [
+        {
+          "depart": "08:55",
+          "arrive": "09:20",
+          "ident": "9X603",
+          "airline": "Mokulele Airlines"
+        }
+      ],
+      "sourceLabel": "Published current Mokulele / Southern flight timetable, daily minimum",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/HNM/OGG"
+    },
+    "OGG|HNM": {
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "airline": "Mokulele Airlines",
+      "label": "Published daily minimum through Jan 9, 2027; timetable times are sourced, fare/seat availability unverified",
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2027-01-09",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "departures": [
+        {
+          "depart": "16:00",
+          "arrive": "16:26",
+          "ident": "9X722",
+          "airline": "Mokulele Airlines"
+        }
+      ],
+      "sourceLabel": "Published current Mokulele / Southern flight timetable, daily minimum",
+      "sourceUrl": "https://info.flightmapper.net/flight/Southern_Airways_Express_9X_722"
+    },
+    "OGG|MUE": {
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "airline": "Mokulele Airlines",
+      "label": "Published daily minimum through Jan 9, 2027; timetable times are sourced, fare/seat availability unverified",
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2027-01-09",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "departures": [
+        {
+          "depart": "06:00",
+          "arrive": "06:52",
+          "ident": "9X907",
+          "airline": "Mokulele Airlines"
+        }
+      ],
+      "sourceLabel": "Published current Mokulele / Southern flight timetable, daily minimum",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/OGG/MUE"
+    },
+    "MUE|OGG": {
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "airline": "Mokulele Airlines",
+      "label": "Published daily minimum through Jan 9, 2027; timetable times are sourced, fare/seat availability unverified",
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2027-01-09",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "departures": [
+        {
+          "depart": "07:17",
+          "arrive": "08:02",
+          "ident": "9X704",
+          "airline": "Mokulele Airlines"
+        }
+      ],
+      "sourceLabel": "Published current Mokulele / Southern flight timetable, daily minimum",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/MUE/OGG"
+    },
+    "HNL|LNY": {
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "airline": "Mokulele Airlines",
+      "label": "At least one published flight daily during sampled week Nov 30–Dec 6; precise flight time not yet validated",
+      "activeFrom": "2026-11-30",
+      "activeThrough": "2026-12-06",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "sourceLabel": "FlightsFrom Nov 30–Dec 6 day-by-day HNL–LNY flight grid",
+      "sourceUrl": "https://www.flightsfrom.com/HNL-LNY"
+    },
+    "LNY|HNL": {
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "airline": "Mokulele Airlines",
+      "label": "Published Lanai–Honolulu daily recurring service during sampled week; exact departure time unverified",
+      "activeFrom": "2026-11-30",
+      "activeThrough": "2026-12-06",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "sourceLabel": "FlightsFrom current Lanai–Honolulu timetable and Directflights current flight count",
+      "sourceUrl": "https://www.flightsfrom.com/LNY-HNL"
+    },
     "OGG|KOA": {
       "activeFrom": "2026-11-23",
       "activeThrough": "2026-12-31",
