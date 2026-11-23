@@ -39,8 +39,30 @@ window.NTA_DATA = {
       "HPN",
       "MRI"
     ],
-    "backboneRoutePairs": 75,
+    "backboneRoutePairs": 78,
     "backboneSources": [
+      {
+        "airport": "SEA",
+        "label": "Delta and Alaska Airlines published Detroit–Seattle nonstop flights, current Nov 23–29 2026 schedule",
+        "url": "https://www.directflights.com/DTW-SEA",
+        "checkedAsOf": "2026-11-23",
+        "verifiedPairs": [
+          "DTW-SEA"
+        ],
+        "note": "Nonstop route; do not infer exact service on arbitrary dates."
+      },
+      {
+        "airport": "HNL",
+        "label": "Alaska/Hawaiian Airlines published Honolulu–Kahului and Honolulu–Kona service",
+        "url": "https://www.hawaiianairlines.com/en/flights-from-honolulu-to-maui",
+        "secondarySourceUrl": "https://www.hawaiianairlines.com/en/flights-from-honolulu-to-kona",
+        "checkedAsOf": "2026-11-23",
+        "verifiedPairs": [
+          "HNL-OGG",
+          "HNL-KOA"
+        ],
+        "note": "Route exists; live date-specific departure and fare still require provider verification."
+      },
       {
         "airport": "SEA",
         "label": "Alaska Airlines published Seattle–Anchorage nonstop flights",
@@ -4371,6 +4393,18 @@ window.NTA_DATA = {
     ]
   ],
   "backboneRoutes": [
+    [
+      "DTW",
+      "SEA"
+    ],
+    [
+      "HNL",
+      "OGG"
+    ],
+    [
+      "HNL",
+      "KOA"
+    ],
     [
       "SEA",
       "ANC"
