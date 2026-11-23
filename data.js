@@ -4701,6 +4701,158 @@ window.NTA_DATA = {
     }
   ],
   "servicePatterns": {
+    "HNM|OGG": {
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "airline": "Mokulele Airlines (Southern Airways Express)",
+      "label": "Published daily minimum through Jan 9, 2027; timetable times are sourced, fare/seat availability unverified",
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2027-01-09",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "departures": [
+        {
+          "depart": "08:55",
+          "arrive": "09:20",
+          "ident": "9X603",
+          "airline": "Mokulele Airlines"
+        }
+      ],
+      "sourceLabel": "Published current Mokulele / Southern flight timetable, daily minimum",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/HNM/OGG"
+    },
+    "OGG|HNM": {
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "airline": "Mokulele Airlines (Southern Airways Express)",
+      "label": "Published daily minimum through Jan 9, 2027; timetable times are sourced, fare/seat availability unverified",
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2027-01-09",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "departures": [
+        {
+          "depart": "16:00",
+          "arrive": "16:26",
+          "ident": "9X722",
+          "airline": "Mokulele Airlines"
+        }
+      ],
+      "sourceLabel": "Published current Mokulele / Southern flight timetable, daily minimum",
+      "sourceUrl": "https://info.flightmapper.net/flight/Southern_Airways_Express_9X_722"
+    },
+    "OGG|MUE": {
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "airline": "Mokulele Airlines (Southern Airways Express)",
+      "label": "Published daily minimum through Jan 9, 2027; timetable times are sourced, fare/seat availability unverified",
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2027-01-09",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "departures": [
+        {
+          "depart": "06:00",
+          "arrive": "06:52",
+          "ident": "9X907",
+          "airline": "Mokulele Airlines"
+        }
+      ],
+      "sourceLabel": "Published current Mokulele / Southern flight timetable, daily minimum",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/OGG/MUE"
+    },
+    "MUE|OGG": {
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "airline": "Mokulele Airlines (Southern Airways Express)",
+      "label": "Published daily minimum through Jan 9, 2027; timetable times are sourced, fare/seat availability unverified",
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2027-01-09",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "departures": [
+        {
+          "depart": "07:17",
+          "arrive": "08:02",
+          "ident": "9X704",
+          "airline": "Mokulele Airlines"
+        }
+      ],
+      "sourceLabel": "Published current Mokulele / Southern flight timetable, daily minimum",
+      "sourceUrl": "https://zbordirect.com/en/tools/schedule/MUE/OGG"
+    },
+    "HNL|LNY": {
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "airline": "Mokulele Airlines (Southern Airways Express)",
+      "label": "At least one published flight daily during sampled week Nov 30–Dec 6; precise flight time not yet validated",
+      "activeFrom": "2026-11-30",
+      "activeThrough": "2026-12-06",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "sourceLabel": "FlightsFrom Nov 30–Dec 6 day-by-day HNL–LNY flight grid",
+      "sourceUrl": "https://www.flightsfrom.com/HNL-LNY"
+    },
+    "LNY|HNL": {
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "airline": "Mokulele Airlines (Southern Airways Express)",
+      "label": "Published Lanai–Honolulu daily recurring service during sampled week; exact departure time unverified",
+      "activeFrom": "2026-11-30",
+      "activeThrough": "2026-12-06",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "sourceLabel": "FlightsFrom current Lanai–Honolulu timetable and Directflights current flight count",
+      "sourceUrl": "https://www.flightsfrom.com/LNY-HNL"
+    },
     "OGG|KOA": {
       "activeFrom": "2026-11-23",
       "activeThrough": "2026-12-31",
