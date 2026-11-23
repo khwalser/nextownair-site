@@ -1477,7 +1477,15 @@
       const stillChecking=!fareData;
       if(i===0){
         const next=nextConfirmedFlightDate(a,b,departDate);
-        box.innerHTML=`<div class="${stillChecking?'pending-flights':'no-flights'}"><span>${stillChecking?'Checking available flights…':'No selectable flight returned; this does not mean the flight is canceled.'}</span><div class="no-flights-actions">${next?`<button type="button" class="btn tertiary" data-first-next-date>Try ${window.NTA.fmtDate(next,{weekday:'short',month:'short',day:'numeric'})}</button>`:''}<button type="button" class="btn tertiary" data-open-departure-calendar>Other dates</button><a class="btn tertiary" data-external-first-fares href="${externalFareSearchUrl(a,b,departDate)}" target="_blank" rel="noopener">Check airline ↗</a></div></div>`;
+        const airlineHandoff=carrierReservation(a,b,departDate,knownCarrier);
+        const bookingUrl=airlineHandoff?.url||externalFareSearchUrl(a,b,departDate);
+        const bookingLabel=airlineHandoff?`Check ${airlineHandoff.name} ↗`:'Find airline booking ↗';
+        const regionAirportCodes=new Set(['ANC','FAI','ADQ','JNU','OME','DUT','KTN','SIT','AKN','HNL','OGG','MKK','KOA','HNM','LUP','MUE','LNY']);
+        const isRegional=regionAirportCodes.has(a)||regionAirportCodes.has(b);
+        const serviceContext=isRegional&&!publishedDate
+          ?'This flight route is published, but service on this date is not confirmed.'
+          :'No selectable flight returned; this does not mean the flight is canceled.';
+        box.innerHTML=`<div class="${stillChecking?'pending-flights':'no-flights'}"><span>${stillChecking?'Checking available flights…':serviceContext}</span><div class="no-flights-actions">${next?`<button type="button" class="btn tertiary" data-first-next-date>Try ${window.NTA.fmtDate(next,{weekday:'short',month:'short',day:'numeric'})}</button>`:''}<button type="button" class="btn tertiary" data-open-departure-calendar>Other dates</button><a class="btn tertiary" data-external-first-fares href="${bookingUrl}" target="_blank" rel="noopener noreferrer">${bookingLabel}</a></div></div>`;
         const nextButton=box.querySelector('[data-first-next-date]');
         if(nextButton)nextButton.addEventListener('click',()=>{
           state.startDate=next;state.selections={};save();
