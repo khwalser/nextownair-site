@@ -1,0 +1,19 @@
+name: Hawaii EAS evidence ledger integrity
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  ledger:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Recalculate all EAS missing-date evidence counts
+        run: node e2e/eas-evidence-ledger-regression.mjs
+      - name: Validate Alaska Hawaii carrier/date provenance
+        run: node e2e/alaska-hawaii-connectivity-regression.mjs
