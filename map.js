@@ -291,9 +291,11 @@
       if(shouldShow&&!shown)item.layer.addTo(map);
       if(!shouldShow&&shown)map.removeLayer(item.layer);
     });
-    const count=regionEasCount(activeFilter);
+    const displayedRegion=activeFilter==='all'?activeViewRegion:activeFilter;
+    const isViewing=activeFilter==='all'&&activeViewRegion!=='lower48'&&activeViewRegion!=='all';
+    const count=regionEasCount(isViewing?displayedRegion:activeFilter);
     const visibleBackbone=networkLines.filter(item=>item.backbone&&map.hasLayer(item.layer)).length;
-    el.regionStatus.textContent=`Showing ${regionName(activeFilter)} · ${count} EAS communit${count===1?'y':'ies'}${visibleBackbone?` · ${visibleBackbone} hub flight links`:''}`;
+    el.regionStatus.textContent=`${isViewing?'Viewing':'Showing'} ${regionName(isViewing?displayedRegion:activeFilter)} · ${count} EAS communit${count===1?'y':'ies'}${visibleBackbone?` · ${visibleBackbone} hub flight links`:''}`;
     el.filterTools.forEach(btn=>{
       const on=btn.dataset.filter===activeFilter;
       btn.classList.toggle('active',on);btn.setAttribute('aria-pressed',String(on));
