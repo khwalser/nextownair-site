@@ -26,7 +26,8 @@ assert(!D.servicePatterns['IAD|ANC'],'Seasonal IAD–Anchorage may not be advert
 assert(!D.servicePatterns['PHX|HNL'],'Weekly aggregate is insufficient to invent a daily timetable');
 const map=fs.readFileSync(new URL('../map.js',import.meta.url),'utf8');
 assert.match(map,/\.\.\.\(D\.backboneRoutes\|\|\[\]\)/,'Map must use backbone edges shared with route finder');
-assert.match(map,/backbone.*\?\(/,'Hub flight links require distinct region visibility handling');
+assert.match(map,/const shouldShow=item\.backbone/,'Hub flight links require distinct region visibility handling');
+assert.match(map,/activeViewRegion=region/,'Jumping to Alaska/Hawaii must activate regional hub links');
 const itinerary=fs.readFileSync(new URL('../itinerary.js',import.meta.url),'utf8');
 assert.match(itinerary,/const airlineHandoff=carrierReservation\(a,b,departDate,knownCarrier\)/);
 assert.match(itinerary,/This flight route is published, but service on this date is not confirmed/);
