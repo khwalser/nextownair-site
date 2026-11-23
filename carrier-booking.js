@@ -53,7 +53,15 @@
        ['MKK|HNL','MKK|OGG','OGG|KOA'].some(pair=>{
          const parts=pair.split('|');return parts.includes(origin)&&parts.includes(destination);
        }));
-    const sourced=alaskaGateway?byName('Alaska Airlines'):hawaiiPair?byName('Mokulele Airlines'):null;
+    const documentedInterisland=routeListed&&
+      ['HNL|OGG','HNL|KOA'].some(pair=>{
+        const parts=pair.split('|');return parts.includes(origin)&&parts.includes(destination);
+      });
+    const documentedDetroitGateway=routeListed&&endpoints.includes('DTW')&&endpoints.includes('SEA');
+    const sourced=alaskaGateway||documentedInterisland
+      ?byName('Alaska Airlines')
+      :hawaiiPair?byName('Mokulele Airlines')
+      :documentedDetroitGateway?byName('Delta Air Lines'):null;
     const match=selected||documented||sourced;
     if(!match)return null;
     return {id:match.id,name:match.name,url:match.url,mode:match.mode,
