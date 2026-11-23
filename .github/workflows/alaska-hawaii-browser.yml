@@ -1,0 +1,39 @@
+name: Alaska Hawaii browser acceptance
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [fix/alaska-hawaii-route-visibility]
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check e2e/alaska-hawaii-browser.mjs
+      - name: Install Playwright
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save playwright@1.55.0
+      - name: Check preview published
+        run: |
+          for i in {1..32}; do
+            if curl -fsSL --max-time 15 https://deploy-preview-21--nextownair-site.netlify.app/data.js | grep -q '"KOA"'; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - name: Map and route acceptance on phone and desktop
+        env:
+          E2E_BASE_URL: https://deploy-preview-21--nextownair-site.netlify.app
+        run: node e2e/alaska-hawaii-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: alaska-hawaii-browser-evidence
+          path: artifacts/
+          retention-days: 7
