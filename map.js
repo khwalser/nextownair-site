@@ -6,6 +6,7 @@
   let tripLayers=[];
   let networkLines=[];
   let activeFilter='all';
+  let activeViewRegion='lower48';
   const markers=new Map();
   let autoConnectorIndices=new Set(state.autoConnectorIndices||[]);
 
@@ -211,10 +212,23 @@
     try{
       map=window.L.map('map',{scrollWheelZoom:true,minZoom:2}).setView([39.5,-97.5],4);
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:12,attribution:'© OpenStreetMap'}).addTo(map);
-      (D.routes||[]).forEach(r=>{
+      // Route finding already uses both local EAS legs and verified hub
+      // backbone links. Draw both sets so Alaska/Hawaii aren't visually isolated.
+      // Keep cross-region backbone links hidden until a relevant region is
+      // selected, avoiding a web of long lines over the Lower 48.
+      const seenNetworkPairs=new Set();
+      [...(D.routes||[]),...(D.backboneRoutes||[])].forEach(r=>{
         const A=by(r[0]),B=by(r[1]);if(!A||!B)return;
-        const layer=window.L.polyline([[A.lat,A.lon],[B.lat,B.lon]],{...linkStyle(A.code,B.code,{selected:false,known:true}),interactive:false}).addTo(map);
-        networkLines.push({layer,a:A,b:B});
+        const key=[A.code,B.code].sort().join('|');
+        if(seenNetworkPairs.has(key))return;
+        seenNetworkPairs.add(key);
+        const backbone=!(D.routes||[]).some(edge=>[edge[0],edge[1]].sort().join('|')===key);
+        const layer=window.L.polyline([[A.lat,A.lon],[B.lat,B.lon]],{
+          ...linkStyle(A.code,B.code,{selected:false,known:true}),
+          ...(backbone?{color:'#9f84d7',weight:2,opacity:.58,dashArray:'5 7'}:{}),
+          interactive:false
+        }).addTo(map);
+        networkLines.push({layer,a:A,b:B,backbone});
       });
       D.airports.forEach(a=>{
         const m=window.L.marker([a.lat,a.lon],{icon:makeIcon(a),keyboard:true,title:`${a.city}, ${a.state} (${a.code}) — ${airportRegionName(a)}`}).addTo(map);
@@ -238,9 +252,11 @@
     return boxes[region]||boxes.lower48;
   }
   function jumpRegion(region){
+    activeViewRegion=region;
     if(!map)return;
     const b=regionBounds(region);
     try{map.fitBounds(b,{padding:[24,24]});}catch(_){/* noop */}
+    applyRegionFilter();
     el.mapTools.forEach(btn=>btn.classList.toggle('active',btn.dataset.region===region));
     const regionSelect=document.getElementById('mapRegionSelect');
     if(regionSelect)regionSelect.value=region;
@@ -265,13 +281,21 @@
       if(!shouldShow&&shown)map.removeLayer(marker);
     });
     networkLines.forEach(item=>{
-      const shouldShow=activeFilter==='all'||airportRegion(item.a)===activeFilter||airportRegion(item.b)===activeFilter;
+      const selectedLink=state.route.includes(item.a.code)&&state.route.includes(item.b.code);
+      const viewedRegion=activeFilter==='all'?activeViewRegion:activeFilter;
+      const relatedToRegion=airportRegion(item.a)===viewedRegion||airportRegion(item.b)===viewedRegion;
+      const shouldShow=item.backbone
+        ?(viewedRegion!=='all'&&viewedRegion!=='lower48'&&relatedToRegion)||selectedLink
+        :activeFilter==='all'||airportRegion(item.a)===activeFilter||airportRegion(item.b)===activeFilter;
       const shown=map.hasLayer(item.layer);
       if(shouldShow&&!shown)item.layer.addTo(map);
       if(!shouldShow&&shown)map.removeLayer(item.layer);
     });
-    const count=regionEasCount(activeFilter);
-    el.regionStatus.textContent=`Showing ${regionName(activeFilter)} · ${count} EAS communit${count===1?'y':'ies'}`;
+    const displayedRegion=activeFilter==='all'?activeViewRegion:activeFilter;
+    const isViewing=activeFilter==='all'&&activeViewRegion!=='lower48'&&activeViewRegion!=='all';
+    const count=regionEasCount(isViewing?displayedRegion:activeFilter);
+    const visibleBackbone=networkLines.filter(item=>item.backbone&&map.hasLayer(item.layer)).length;
+    el.regionStatus.textContent=`${isViewing?'Viewing':'Showing'} ${regionName(isViewing?displayedRegion:activeFilter)} · ${count} EAS communit${count===1?'y':'ies'}${visibleBackbone?` · ${visibleBackbone} hub flight links`:''}`;
     el.filterTools.forEach(btn=>{
       const on=btn.dataset.filter===activeFilter;
       btn.classList.toggle('active',on);btn.setAttribute('aria-pressed',String(on));
