@@ -39,7 +39,7 @@ window.NTA_DATA = {
       "HPN",
       "MRI"
     ],
-    "backboneRoutePairs": 64,
+    "backboneRoutePairs": 66,
     "backboneSources": [
       {
         "airport": "IAD",
@@ -1916,6 +1916,16 @@ window.NTA_DATA = {
       "lon": -118.3349990845,
       "type": "hub",
       "note": "Connector airport used by one or more EAS communities in the May 2026 DOT report."
+    },
+    {
+      "code": "KOA",
+      "name": "Ellison Onizuka Kona International Airport at Keahole",
+      "city": "Kailua-Kona",
+      "state": "HI",
+      "lat": 19.738765,
+      "lon": -156.045631,
+      "type": "hub",
+      "note": "Regional connection served by Mokulele's published Kahului–Kona nonstop route. Not an EAS subsidized community."
     },
     {
       "code": "HNL",
@@ -4315,6 +4325,14 @@ window.NTA_DATA = {
   ],
   "backboneRoutes": [
     [
+      "OGG",
+      "KOA"
+    ],
+    [
+      "DEN",
+      "ANC"
+    ],
+    [
       "IAD",
       "ANC"
     ],
@@ -4600,6 +4618,109 @@ window.NTA_DATA = {
     }
   ],
   "servicePatterns": {
+    "OGG|KOA": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 2,
+      "airline": "Mokulele Airlines",
+      "label": "Airline-published daily Kahului–Kona service; exact date-specific flight and fare must be confirmed",
+      "sourceLabel": "Mokulele Airlines official current homepage, Kona–Kahului route returning October 1, 2026",
+      "sourceUrl": "https://www.mokuleleairlines.com/getting-back-to-our-routes/",
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "current-published-recurring-pattern"
+    },
+    "KOA|OGG": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-12-31",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 2,
+      "airline": "Mokulele Airlines",
+      "label": "Airline-published daily Kona–Kahului service; exact date-specific flight and fare must be confirmed",
+      "sourceLabel": "Mokulele Airlines official current homepage, Kona–Kahului route returning October 1, 2026",
+      "sourceUrl": "https://www.mokuleleairlines.com/getting-back-to-our-routes/",
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "current-published-recurring-pattern"
+    },
+    "ANC|FAI": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-12-22",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Alaska Airlines",
+      "label": "Daily published Anchorage–Fairbanks nonstop service; at least one daily flight, exact time/fare not verified in-app",
+      "sourceLabel": "Alaska Airlines bookable city-pair route plus FlightConnections December daily schedule and individual flights",
+      "sourceUrl": "https://www.flightsfrom.com/ANC-FAI",
+      "secondarySourceUrl": "https://www.alaskaair.com/en/flights-from-anchorage-to-fairbanks",
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum"
+    },
+    "FAI|ANC": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-12-22",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "Alaska Airlines",
+      "label": "Daily published Fairbanks–Anchorage nonstop service; at least one daily flight, exact time/fare not verified in-app",
+      "sourceLabel": "Alaska Airlines city-pair route and published date-scoped Fairbanks–Anchorage schedule",
+      "sourceUrl": "https://www.airportoverview.com/routes/FAI/ANC",
+      "secondarySourceUrl": "https://www.alaskaair.com/en/flights-from-fairbanks-to-anchorage",
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "dated-published-recurring-pattern-minimum"
+    },
+    "PHX|HNL": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "count": 1,
+      "airline": "American / Southwest / Alaska",
+      "label": "Multiple airlines publish at least one Phoenix–Honolulu nonstop daily within the verified Nov 23–29 week; live booking required",
+      "sourceLabel": "Directflights PHX–HNL 28 weekly departures, week November 23–29, 2026",
+      "sourceUrl": "https://www.directflights.com/PHX-HNL/",
+      "checkedAsOf": "2026-11-23",
+      "evidenceScope": "exact-published-week-minimum"
+    },
+
     "DFW|CVN": {
       "activeFrom": "2026-11-21",
       "activeThrough": "2026-12-31",
