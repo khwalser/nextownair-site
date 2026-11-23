@@ -4738,7 +4738,7 @@ window.NTA_DATA = {
     "HNM|OGG": {
       "checkedAsOf": "2026-11-23",
       "evidenceScope": "dated-published-recurring-pattern-minimum",
-      "airline": "Mokulele Airlines (Southern Airways Express)",
+      "airline": "Mokulele Airlines",
       "label": "Published daily minimum through Jan 9, 2027; timetable times are sourced, fare/seat availability unverified",
       "activeFrom": "2026-11-23",
       "activeThrough": "2027-01-09",
@@ -4766,7 +4766,7 @@ window.NTA_DATA = {
     "OGG|HNM": {
       "checkedAsOf": "2026-11-23",
       "evidenceScope": "dated-published-recurring-pattern-minimum",
-      "airline": "Mokulele Airlines (Southern Airways Express)",
+      "airline": "Mokulele Airlines",
       "label": "Published daily minimum through Jan 9, 2027; timetable times are sourced, fare/seat availability unverified",
       "activeFrom": "2026-11-23",
       "activeThrough": "2027-01-09",
@@ -4794,7 +4794,7 @@ window.NTA_DATA = {
     "OGG|MUE": {
       "checkedAsOf": "2026-11-23",
       "evidenceScope": "dated-published-recurring-pattern-minimum",
-      "airline": "Mokulele Airlines (Southern Airways Express)",
+      "airline": "Mokulele Airlines",
       "label": "Published daily minimum through Jan 9, 2027; timetable times are sourced, fare/seat availability unverified",
       "activeFrom": "2026-11-23",
       "activeThrough": "2027-01-09",
@@ -4822,7 +4822,7 @@ window.NTA_DATA = {
     "MUE|OGG": {
       "checkedAsOf": "2026-11-23",
       "evidenceScope": "dated-published-recurring-pattern-minimum",
-      "airline": "Mokulele Airlines (Southern Airways Express)",
+      "airline": "Mokulele Airlines",
       "label": "Published daily minimum through Jan 9, 2027; timetable times are sourced, fare/seat availability unverified",
       "activeFrom": "2026-11-23",
       "activeThrough": "2027-01-09",
@@ -4850,7 +4850,7 @@ window.NTA_DATA = {
     "HNL|LNY": {
       "checkedAsOf": "2026-11-23",
       "evidenceScope": "dated-published-recurring-pattern-minimum",
-      "airline": "Mokulele Airlines (Southern Airways Express)",
+      "airline": "Mokulele Airlines",
       "label": "At least one published flight daily during sampled week Nov 30–Dec 6; precise flight time not yet validated",
       "activeFrom": "2026-11-30",
       "activeThrough": "2026-12-06",
@@ -4870,7 +4870,7 @@ window.NTA_DATA = {
     "LNY|HNL": {
       "checkedAsOf": "2026-11-23",
       "evidenceScope": "dated-published-recurring-pattern-minimum",
-      "airline": "Mokulele Airlines (Southern Airways Express)",
+      "airline": "Mokulele Airlines",
       "label": "Published Lanai–Honolulu daily recurring service during sampled week; exact departure time unverified",
       "activeFrom": "2026-11-30",
       "activeThrough": "2026-12-06",
