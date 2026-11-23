@@ -6,6 +6,7 @@
   let tripLayers=[];
   let networkLines=[];
   let activeFilter='all';
+  let activeViewRegion='lower48';
   const markers=new Map();
   let autoConnectorIndices=new Set(state.autoConnectorIndices||[]);
 
@@ -251,9 +252,11 @@
     return boxes[region]||boxes.lower48;
   }
   function jumpRegion(region){
+    activeViewRegion=region;
     if(!map)return;
     const b=regionBounds(region);
     try{map.fitBounds(b,{padding:[24,24]});}catch(_){/* noop */}
+    applyRegionFilter();
     el.mapTools.forEach(btn=>btn.classList.toggle('active',btn.dataset.region===region));
     const regionSelect=document.getElementById('mapRegionSelect');
     if(regionSelect)regionSelect.value=region;
@@ -279,10 +282,11 @@
     });
     networkLines.forEach(item=>{
       const selectedLink=state.route.includes(item.a.code)&&state.route.includes(item.b.code);
-      const relatedToRegion=airportRegion(item.a)===activeFilter||airportRegion(item.b)===activeFilter;
+      const viewedRegion=activeFilter==='all'?activeViewRegion:activeFilter;
+      const relatedToRegion=airportRegion(item.a)===viewedRegion||airportRegion(item.b)===viewedRegion;
       const shouldShow=item.backbone
-        ?(activeFilter!=='all'&&activeFilter!=='lower48'&&relatedToRegion)||selectedLink
-        :activeFilter==='all'||relatedToRegion;
+        ?(viewedRegion!=='all'&&viewedRegion!=='lower48'&&relatedToRegion)||selectedLink
+        :activeFilter==='all'||airportRegion(item.a)===activeFilter||airportRegion(item.b)===activeFilter;
       const shown=map.hasLayer(item.layer);
       if(shouldShow&&!shown)item.layer.addTo(map);
       if(!shouldShow&&shown)map.removeLayer(item.layer);
