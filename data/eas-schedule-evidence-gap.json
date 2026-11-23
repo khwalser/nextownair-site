@@ -1,9 +1,9 @@
 {
   "basis": "Existing NexTownAir May 2026 DOT EAS community–hub model; NOT a verified operating-day timetable",
-  "generated": "2026-11-21",
+  "generated": "2026-11-23",
   "totalContractedPairs": 225,
-  "existingDayPatternCovered": 56,
-  "missingDayPatterns": 169,
+  "existingDayPatternCovered": 59,
+  "missingDayPatterns": 166,
   "contractSourceMeaning": "Reported EAS contracted community/hub evidence at the report date; does not prove daily operations, contract renewal or bookability.",
   "missing": [
     {
@@ -585,19 +585,6 @@
       "communityCode": "HIB",
       "hub": "MSP",
       "state": "MN",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
-      "pair": "HNM-OGG",
-      "community": "Hana Airport",
-      "communityCode": "HNM",
-      "hub": "OGG",
-      "state": "HI",
       "contractEvidence": "May 2026 DOT contracted EAS route list",
       "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
       "scheduleDayEvidence": "not_verified",
@@ -1193,19 +1180,6 @@
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
-      "pair": "LNY-HNL",
-      "community": "Lanai Airport",
-      "communityCode": "LNY",
-      "hub": "HNL",
-      "state": "HI",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
       "pair": "LNY-OGG",
       "community": "Lanai Airport",
       "communityCode": "LNY",
@@ -1433,19 +1407,6 @@
       "communityCode": "MSS",
       "hub": "BOS",
       "state": "NY",
-      "contractEvidence": "May 2026 DOT contracted EAS route list",
-      "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
-      "pair": "MUE-OGG",
-      "community": "Waimea Kohala Airport",
-      "communityCode": "MUE",
-      "hub": "OGG",
-      "state": "HI",
       "contractEvidence": "May 2026 DOT contracted EAS route list",
       "contractSource": "https://www.transportation.gov/sites/dot.gov/files/May%202026%20EAS%20Report%2048_HI_PR.pdf",
       "scheduleDayEvidence": "not_verified",
@@ -2295,7 +2256,8 @@
   "notes": [
     "A contracted EAS route is not a verified operating-day timetable.",
     "Alaska DOT attachment linked from the report index displays May-25 in its heading; do not infer 2026 validity without a current order.",
-    "The Alaska Seaplanes public schedule combines seasonal tables; candidate days are not promoted without effective-year boundaries."
+    "The Alaska Seaplanes public schedule combines seasonal tables; candidate days are not promoted without effective-year boundaries.",
+    "Three Hawaii EAS pairs now have bounded source-backed operating patterns (HNM–OGG, MUE–OGG, LNY–HNL); these do not guarantee live fare or seats."
   ],
   "candidateTimetablePairs": 7,
   "promotedEvidence": [
@@ -2494,6 +2456,27 @@
       "timeWindow": "November 23–29, 2026",
       "status": "time_bounded_published_operating_days",
       "note": "Daily nonstop in both directions in cited week, Thanksgiving frequency changes; no extrapolated 2027 dates"
+    },
+    {
+      "pair": "HNM-OGG",
+      "source": "https://zbordirect.com/en/tools/schedule/HNM/OGG",
+      "timeWindow": "Nov 23, 2026–Jan 9, 2027",
+      "status": "time_bounded_published_operating_days",
+      "note": "One sourced daily morning flight in each direction, verified published clock times; no live fare confirmed"
+    },
+    {
+      "pair": "MUE-OGG",
+      "source": "https://zbordirect.com/en/tools/schedule/MUE/OGG",
+      "timeWindow": "Nov 23, 2026–Jan 9, 2027",
+      "status": "time_bounded_published_operating_days",
+      "note": "One sourced daily morning flight in each direction, verified published clock times; no live fare confirmed"
+    },
+    {
+      "pair": "LNY-HNL",
+      "source": "https://www.flightsfrom.com/HNL-LNY",
+      "timeWindow": "Nov 30–Dec 6, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Sampled operating-day evidence only; exact times and prices still unverified"
     }
   ]
 }

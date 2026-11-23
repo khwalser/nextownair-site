@@ -171,4 +171,17 @@ for(const community of ['BFD','DUJ']){
     assert(p.sourceUrl.endsWith(from+'-'+to));
   }
 }
+// Hawaii source promotion must not silently imply live inventory or year-round service.
+for(const [pair,through] of [['HNM-OGG','2027-01-09'],['MUE-OGG','2027-01-09'],['LNY-HNL','2026-12-06']]){
+ assert(!ledger.missing.some(e=>e.pair===pair),'Documented Hawaii timetable must leave missing-day ledger: '+pair);
+ const promoted=ledger.promotedEvidence.find(e=>e.pair===pair);
+ assert(promoted&&promoted.status==='time_bounded_published_operating_days','Source promotion record missing: '+pair);
+ for(const [from,to] of [[...pair.split('-')],[...pair.split('-')].reverse()]){
+  const p=D.servicePatterns[from+'|'+to];
+  assert(p&&p.activeThrough===through,'No timetable extrapolation for '+from+'→'+to);
+  assert.equal(p.evidenceScope,'dated-published-recurring-pattern-minimum');
+  assert(/^https:\/\//.test(p.sourceUrl));
+ }
+}
+assert.equal(ledger.missingDayPatterns,166,'New Hawaii patterns reduce the unresolved evidence gap to 166');
 console.log('PASS: '+ledger.missing.length+' EAS operating-day evidence gaps individually tracked; no fabricated schedule dates');
