@@ -7,7 +7,7 @@ window.NTA_DATA = {
     "asOf": "2026-05-01",
     "coverage": "183 subsidized EAS communities: 112 in the 48 contiguous states, Hawaii, and Puerto Rico, plus 71 Alaska passenger-service communities"
   },
-  "mvpRevision": "2026-11-21.45",
+  "mvpRevision": "2026-11-23.46",
   "routeVerification": {
     "policy": "verified-explicit-edges-only",
     "auditedAsOf": "2026-11-21",
@@ -39,8 +39,45 @@ window.NTA_DATA = {
       "HPN",
       "MRI"
     ],
-    "backboneRoutePairs": 66,
+    "backboneRoutePairs": 75,
     "backboneSources": [
+      {
+        "airport": "SEA",
+        "label": "Alaska Airlines published Seattle–Anchorage nonstop flights",
+        "url": "https://www.alaskaair.com/en/flights-from-seattle-to-anchorage",
+        "checkedAsOf": "2026-11-23",
+        "verifiedPairs": [
+          "SEA-ANC"
+        ],
+        "note": "Route-level evidence only; not proof of flights on an arbitrary chosen date."
+      },
+      {
+        "airport": "SEA",
+        "label": "Alaska Airlines/Hawaiian Airlines published year-round Hawaii gateways",
+        "url": "https://www.alaskaair.com/en/flights-to-hawaii",
+        "checkedAsOf": "2026-11-23",
+        "verifiedPairs": [
+          "SEA-HNL",
+          "SEA-OGG",
+          "SEA-KOA",
+          "LAX-HNL",
+          "LAX-OGG",
+          "PDX-HNL"
+        ],
+        "note": "Route-level evidence only; flight dates, seats and prices must be checked separately."
+      },
+      {
+        "airport": "ANC",
+        "label": "Alaska Airlines published Los Angeles–Anchorage route and Anchorage visitor guide",
+        "url": "https://www.alaskaair.com/en/flights-from-los-angeles-to-anchorage",
+        "secondarySourceUrl": "https://www.anchorage.net/plan-your-trip/getting-to-alaska/",
+        "checkedAsOf": "2026-11-23",
+        "verifiedPairs": [
+          "LAX-ANC",
+          "PDX-ANC"
+        ],
+        "note": "Route-level evidence only; seasonal/day-of-week specifics are not inferred."
+      },
       {
         "airport": "IAD",
         "label": "Washington Dulles International Airport — Nonstop Destinations",
@@ -238,6 +275,16 @@ window.NTA_DATA = {
     ]
   },
   "airports": [
+    {
+      "code": "SEA",
+      "name": "Seattle–Tacoma International Airport",
+      "city": "Seattle",
+      "state": "WA",
+      "lat": 47.4502,
+      "lon": -122.3088,
+      "type": "hub",
+      "note": "Mainland gateway to Alaska and Hawaiʻi. Route connectivity is sourced from published airline networks; date-specific departures and fares still require provider confirmation."
+    },
     {
       "code": "ABR",
       "name": "Aberdeen Regional Airport",
@@ -4324,6 +4371,42 @@ window.NTA_DATA = {
     ]
   ],
   "backboneRoutes": [
+    [
+      "SEA",
+      "ANC"
+    ],
+    [
+      "SEA",
+      "HNL"
+    ],
+    [
+      "SEA",
+      "OGG"
+    ],
+    [
+      "SEA",
+      "KOA"
+    ],
+    [
+      "LAX",
+      "ANC"
+    ],
+    [
+      "LAX",
+      "HNL"
+    ],
+    [
+      "LAX",
+      "OGG"
+    ],
+    [
+      "PDX",
+      "ANC"
+    ],
+    [
+      "PDX",
+      "HNL"
+    ],
     [
       "OGG",
       "KOA"
