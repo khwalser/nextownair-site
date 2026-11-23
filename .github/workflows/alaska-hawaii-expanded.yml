@@ -1,0 +1,38 @@
+name: Expanded Alaska Hawaii itinerary evidence
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check sourced networks and published schedules
+        run: |
+          node e2e/alaska-hawaii-connectivity-regression.mjs
+          node --check data.js
+          node --check itinerary.js
+          node --check carrier-booking.js
+          node e2e/calendar-coverage-regression.mjs
+      - name: Install Playwright
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save playwright@1.55.0
+      - name: Wait for preview
+        run: |
+          for i in {1..30}; do
+            if curl -fsSL --max-time 12 https://deploy-preview-22--nextownair-site.netlify.app/data.js | grep -q 'Seattle–Tacoma International Airport'; then exit 0; fi
+            sleep 5
+          done
+          echo 'Preview not ready' >&2
+          exit 1
+      - name: Test regional trips in real browser with no fabricated offers
+        env:
+          E2E_BASE_URL: https://deploy-preview-22--nextownair-site.netlify.app
+        run: node e2e/alaska-hawaii-expanded-browser.mjs
