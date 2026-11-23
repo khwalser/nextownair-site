@@ -4700,27 +4700,6 @@ window.NTA_DATA = {
       "checkedAsOf": "2026-11-23",
       "evidenceScope": "dated-published-recurring-pattern-minimum"
     },
-    "PHX|HNL": {
-      "activeFrom": "2026-11-23",
-      "activeThrough": "2026-11-29",
-      "days": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6
-      ],
-      "count": 1,
-      "airline": "American / Southwest / Alaska",
-      "label": "Multiple airlines publish at least one Phoenix–Honolulu nonstop daily within the verified Nov 23–29 week; live booking required",
-      "sourceLabel": "Directflights PHX–HNL 28 weekly departures, week November 23–29, 2026",
-      "sourceUrl": "https://www.directflights.com/PHX-HNL/",
-      "checkedAsOf": "2026-11-23",
-      "evidenceScope": "exact-published-week-minimum"
-    },
-
     "DFW|CVN": {
       "activeFrom": "2026-11-21",
       "activeThrough": "2026-12-31",
