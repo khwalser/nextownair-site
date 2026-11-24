@@ -2,8 +2,8 @@
   "basis": "Existing NexTownAir May 2026 DOT EAS community–hub model; NOT a verified operating-day timetable",
   "generated": "2026-11-23",
   "totalContractedPairs": 225,
-  "existingDayPatternCovered": 59,
-  "missingDayPatterns": 166,
+  "existingDayPatternCovered": 64,
+  "missingDayPatterns": 161,
   "contractSourceMeaning": "Reported EAS contracted community/hub evidence at the report date; does not prove daily operations, contract renewal or bookability.",
   "missing": [
     {
@@ -18,23 +18,6 @@
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
-      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
-    },
-    {
-      "pair": "AGN-JNU",
-      "community": "Angoon Seaplane Base",
-      "communityCode": "AGN",
-      "hub": "JNU",
-      "state": "AK",
-      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
-      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
-      "candidateTimetableUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
-      "candidateEvidence": "Carrier schedule page lists flights and operating-day labels, but contains multiple seasonal tables and must be matched to a documented effective period before being used for future calendar dates.",
-      "timetableReviewState": "candidate_effective_period_unresolved",
       "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
@@ -563,23 +546,6 @@
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
-      "pair": "GST-JNU",
-      "community": "Gustavus Airport",
-      "communityCode": "GST",
-      "hub": "JNU",
-      "state": "AK",
-      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
-      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
-      "candidateTimetableUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
-      "candidateEvidence": "Carrier schedule page lists flights and operating-day labels, but contains multiple seasonal tables and must be matched to a documented effective period before being used for future calendar dates.",
-      "timetableReviewState": "candidate_effective_period_unresolved",
-      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
-    },
-    {
       "pair": "HIB-MSP",
       "community": "Range Regional Airport",
       "communityCode": "HIB",
@@ -841,23 +807,6 @@
       "futureTravelDateConfirmed": false,
       "reviewedOn": "2026-11-21",
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
-    },
-    {
-      "pair": "KAE-JNU",
-      "community": "Kake Seaplane Base",
-      "communityCode": "KAE",
-      "hub": "JNU",
-      "state": "AK",
-      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
-      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
-      "candidateTimetableUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
-      "candidateEvidence": "Carrier schedule page lists flights and operating-day labels, but contains multiple seasonal tables and must be matched to a documented effective period before being used for future calendar dates.",
-      "timetableReviewState": "candidate_effective_period_unresolved",
-      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
       "pair": "KCG-AKN",
@@ -1587,23 +1536,6 @@
       "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule"
     },
     {
-      "pair": "PEC-JNU",
-      "community": "Pelican Seaplane Base",
-      "communityCode": "PEC",
-      "hub": "JNU",
-      "state": "AK",
-      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
-      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
-      "candidateTimetableUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
-      "candidateEvidence": "Carrier schedule page lists flights and operating-day labels, but contains multiple seasonal tables and must be matched to a documented effective period before being used for future calendar dates.",
-      "timetableReviewState": "candidate_effective_period_unresolved",
-      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
-    },
-    {
       "pair": "PGA-PHX",
       "community": "Page Municipal Airport",
       "communityCode": "PGA",
@@ -1992,23 +1924,6 @@
       "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
     },
     {
-      "pair": "TKE-JNU",
-      "community": "Tenakee Seaplane Base",
-      "communityCode": "TKE",
-      "hub": "JNU",
-      "state": "AK",
-      "contractEvidence": "Project's Alaska EAS community–hub mapping, cross-referenced to DOT report index",
-      "contractSource": "https://www.transportation.gov/office-policy/aviation-policy/essential-air-service-reports",
-      "scheduleDayEvidence": "not_verified",
-      "futureTravelDateConfirmed": false,
-      "reviewedOn": "2026-11-21",
-      "nextEvidenceNeeded": "Carrier timetable specifying operating weekdays and effective dates, or verified date-specific provider schedule",
-      "candidateTimetableUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
-      "candidateEvidence": "Carrier schedule page lists flights and operating-day labels, but contains multiple seasonal tables and must be matched to a documented effective period before being used for future calendar dates.",
-      "timetableReviewState": "candidate_effective_period_unresolved",
-      "contractCaveat": "The linked Alaska report file displays a May-25 heading; current contract status requires checking newer orders."
-    },
-    {
       "pair": "TUP-BNA",
       "community": "Tupelo Regional Airport",
       "communityCode": "TUP",
@@ -2257,7 +2172,8 @@
     "A contracted EAS route is not a verified operating-day timetable.",
     "Alaska DOT attachment linked from the report index displays May-25 in its heading; do not infer 2026 validity without a current order.",
     "The Alaska Seaplanes public schedule combines seasonal tables; candidate days are not promoted without effective-year boundaries.",
-    "Three Hawaii EAS pairs now have bounded source-backed operating patterns (HNM–OGG, MUE–OGG, LNY–HNL); these do not guarantee live fare or seats."
+    "Three Hawaii EAS pairs now have bounded source-backed operating patterns (HNM–OGG, MUE–OGG, LNY–HNL); these do not guarantee live fare or seats.",
+    "Elfin Cove JNU–ELV is still unresolved: carrier source confirms route but current winter operating days are not established. The five other Juneau-area pairs have narrow verified published timetable windows."
   ],
   "candidateTimetablePairs": 7,
   "promotedEvidence": [
@@ -2477,6 +2393,41 @@
       "timeWindow": "Nov 30–Dec 6, 2026",
       "status": "time_bounded_published_operating_days",
       "note": "Sampled operating-day evidence only; exact times and prices still unverified"
+    },
+    {
+      "pair": "AGN-JNU",
+      "source": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Alaska Seaplanes current seasonal schedule listing at least one published departure on operating weekdays; actual flight/seat/fare availability must be confirmed with carrier."
+    },
+    {
+      "pair": "GST-JNU",
+      "source": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Alaska Seaplanes current seasonal schedule listing at least one published departure on operating weekdays; actual flight/seat/fare availability must be confirmed with carrier."
+    },
+    {
+      "pair": "KAE-JNU",
+      "source": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Alaska Seaplanes current seasonal schedule listing at least one published departure on operating weekdays; actual flight/seat/fare availability must be confirmed with carrier."
+    },
+    {
+      "pair": "PEC-JNU",
+      "source": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Alaska Seaplanes current seasonal schedule listing at least one published departure on operating weekdays; actual flight/seat/fare availability must be confirmed with carrier."
+    },
+    {
+      "pair": "TKE-JNU",
+      "source": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "timeWindow": "Nov 23–29, 2026",
+      "status": "time_bounded_published_operating_days",
+      "note": "Alaska Seaplanes current seasonal schedule listing at least one published departure on operating weekdays; actual flight/seat/fare availability must be confirmed with carrier."
     }
   ]
 }
