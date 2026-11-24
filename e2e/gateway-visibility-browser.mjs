@@ -25,7 +25,8 @@ try{
    assert(overflow<=2,'Horizontal overflow '+width+': '+overflow);
    results.push(code+':5');
   }
-  await page.locator('[data-region="lower48"]').first().click();
+  if(width<=720)await page.locator('#mapRegionSelect').selectOption('lower48');
+  else await page.locator('[data-region="lower48"]').first().click();
   assert(await page.locator('#gatewayConnectionsDetail').isHidden(),'Region navigation closes gateway inspector');
   assert.deepEqual(errors,[],'Browser exceptions at '+width);
   console.log('PASS gateway inspector '+width+'px '+results.join(' '));
