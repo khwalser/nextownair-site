@@ -1,0 +1,21 @@
+name: Alaska Juneau timetable integrity
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  source-timetable:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node --check data.js
+          node --check carrier-booking.js
+          node e2e/alaska-juneau-schedules-regression.mjs
+          node e2e/eas-evidence-ledger-regression.mjs
+          node e2e/alaska-hawaii-connectivity-regression.mjs
