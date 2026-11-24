@@ -40,6 +40,17 @@ window.NTA_DATA = {
       "MRI"
     ],
     "backboneRoutePairs": 78,
+    "regionalCarrierSources": [
+      {
+        "carrier": "Alaska Seaplanes",
+        "verifiedPairs": ["JNU-AGN", "JNU-ELV", "JNU-GST", "JNU-KAE", "JNU-PEC", "JNU-TKE"],
+        "sourceUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+        "destinationSourceUrl": "https://www.flyalaskaseaplanes.com/destinations/elfin-cove.html",
+        "checkedAsOf": "2026-11-23",
+        "evidenceScope": "route-level-only-for-ELV",
+        "note": "The live carrier page contains multiple seasonal tables. ELV service exists but current 2026 winter date-specific times are not established; other five EAS pairs have separately bounded published operating patterns."
+      }
+    ],
     "backboneSources": [
       {
         "airport": "SEA",
