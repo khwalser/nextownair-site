@@ -66,6 +66,14 @@
           <span id="regionStatus" class="region-status" aria-live="polite"></span>
         </div>
       </div>
+      <section class="gateway-connections" aria-label="Gateway flight routes">
+        <div class="gateway-bar">
+          <span class="gateway-heading">Explore gateway routes</span>
+          <button class="gateway-button" type="button" data-gateway="SEA" aria-pressed="false">Seattle (SEA) · <span data-gateway-count="SEA">5</span> routes</button>
+          <button class="gateway-button" type="button" data-gateway="PDX" aria-pressed="false">Portland (PDX) · <span data-gateway-count="PDX">5</span> routes</button>
+        </div>
+        <div id="gatewayConnectionsDetail" class="gateway-detail" hidden aria-live="polite"></div>
+      </section>
       <div id="map" aria-label="Interactive airport map"></div>
       <div class="legend">
         <span class="legend-item"><span class="dot eas"></span>EAS / small-airport</span>
