@@ -1,0 +1,51 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+const raw=fs.readFileSync(new URL('../data.js',import.meta.url),'utf8');
+const booking=fs.readFileSync(new URL('../carrier-booking.js',import.meta.url),'utf8');
+const itinerary=fs.readFileSync(new URL('../itinerary.js',import.meta.url),'utf8');
+const ledger=JSON.parse(fs.readFileSync(new URL('../data/eas-schedule-evidence-gap.json',import.meta.url),'utf8'));
+const ctx={window:{NTA:{addDays:(date,days)=>{const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10)}}}};
+vm.createContext(ctx);vm.runInContext(raw,ctx);vm.runInContext(booking,ctx);
+const D=ctx.window.NTA_DATA,B=ctx.window.NTA_CARRIER_BOOKING;
+const from=itinerary.indexOf('  function publishedServicePattern('),to=itinerary.indexOf('  const FARE_MAX_CONCURRENT',from);
+assert(from>=0&&to>from,'Published pattern calendar functions available');
+ctx.D=D;
+ctx.PUBLISHED_SERVICE_PATTERNS={};
+ctx.fareLegKey=(a,b)=>a+'|'+b;
+ctx.parseYmd=date=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(date);return m?{y:+m[1],m:+m[2],d:+m[3]}:null;};
+vm.runInContext(itinerary.slice(from,to)+'\nthis.pattern=publishedServicePattern;this.calendar=publishedScheduleMonth;',ctx);
+const airportPairs=['AGN','GST','KAE','PEC','TKE'];
+const day='2026-11-25';
+for(const airport of airportPairs){
+  for(const [a,b] of [['JNU',airport],[airport,'JNU']]){
+    const p=ctx.pattern(a,b);
+    assert(p&&p.airline==='Alaska Seaplanes','Published pattern missing '+a+'→'+b);
+    assert(p.activeFrom==='2026-11-23'&&p.activeThrough==='2026-11-29');
+    assert(p.sourceUrl.startsWith('https://www.flyalaskaseaplanes.com/'));
+    const calendar=ctx.calendar(a,b,'2026-11');
+    assert(calendar.days[day].count>=1,'Scheduled Wednesday missing '+a+'→'+b);
+    assert(calendar.days[day].flights.length>=1,'Sourced flight clock times missing '+a+'→'+b);
+    assert(calendar.unknownDates.includes('2026-11-30'),'Out of window must be unverified, not invented');
+    assert(!calendar.days['2026-11-30'],'No schedule extrapolation past one-week evidence window');
+    const link=B.resolve({origin:a,destination:b,date:day});
+    assert(link?.name==='Alaska Seaplanes','Booking handoff must be carrier-specific');
+    assert.equal(link.dateVerified,false,'Published schedule is not booking confirmation');
+    assert.equal(link.searchPrefilled,false,'Do not invent prefilled booking itinerary');
+  }
+}
+const sunday='2026-11-29';
+assert(!ctx.calendar('JNU','PEC','2026-11').days[sunday],'Pelican does not operate on Sunday in reviewed timetable');
+assert(!ctx.calendar('TKE','JNU','2026-11').days[sunday],'Tenakee Sunday not published');
+assert.equal(ctx.calendar('JNU','GST','2026-11').days[sunday].flights[0].ident,'J5 303','Gustavus Sunday schedule differs');
+assert.equal(ctx.calendar('GST','JNU','2026-11').days[sunday].flights[0].ident,'J5 304');
+assert.equal(ctx.calendar('JNU','AGN','2026-11').days[sunday].flights[0].ident,'J5 107');
+const elv=B.resolve({origin:'ELV',destination:'JNU',date:'2026-12-04'});
+assert.equal(elv?.name,'Alaska Seaplanes','Unverified Elfin Cove schedule should still show airline booking link');
+assert.equal(elv?.basis,'verified-route-carrier');
+assert(!ctx.pattern('ELV','JNU'),'Carrier route evidence must never become a published dated timetable');
+assert(ledger.missing.some(e=>e.pair==='ELV-JNU'),'Elfin Cove remains in unresolved timetable ledger');
+assert.equal(ledger.missingDayPatterns,161);
+assert.equal(ledger.existingDayPatternCovered,64);
+assert.equal(B.resolve({origin:'ADK',destination:'ANC',date:day}),null,'Do not guess carriers based on state');
+console.log('PASS five sourced Alaska pairs, Sunday exceptions, seven-day source boundary and safe Elfin Cove booking handoff');
