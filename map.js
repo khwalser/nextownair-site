@@ -180,8 +180,8 @@
         const title=document.createElement('strong');title.textContent=`${a.city}, ${a.state} · ${a.code}`;
         const label=document.createElement('div');label.className='stoplabel';label.textContent=autoInserted?`${routeLabel(i)} · Automatic connection · ${airportRegionName(a)}`:`${routeLabel(i)} · ${a.type==='eas'?'EAS / small-airport stop':'Chosen airport'} · ${airportRegionName(a)}`;
         const controls=document.createElement('div');controls.className='stopcontrols';
-        const up=document.createElement('button');up.type='button';up.className='smallbtn';up.textContent='Move up';up.disabled=i===0||autoInserted;up.setAttribute('aria-label',`Move ${a.city} earlier in trip`);up.addEventListener('click',()=>move(i,-1));
-        const down=document.createElement('button');down.type='button';down.className='smallbtn';down.textContent='Move down';down.disabled=i===n-1||autoInserted;down.setAttribute('aria-label',`Move ${a.city} later in trip`);down.addEventListener('click',()=>move(i,1));
+        const up=document.createElement('button');up.type='button';up.className='smallbtn';up.textContent='Move up';up.disabled=autoInserted||requestedEntries().findIndex(x=>x.index===i)<=0;up.setAttribute('aria-label',`Move ${a.city} earlier in trip`);up.addEventListener('click',()=>move(i,-1));
+        const down=document.createElement('button');down.type='button';down.className='smallbtn';down.textContent='Move down';down.disabled=autoInserted||requestedEntries().findIndex(x=>x.index===i)>=requestedEntries().length-1;down.setAttribute('aria-label',`Move ${a.city} later in trip`);down.addEventListener('click',()=>move(i,1));
         const remove=document.createElement('button');remove.type='button';remove.className='smallbtn remove';remove.textContent=autoInserted?'Automatic':'Remove';remove.setAttribute('aria-label',autoInserted?`${a.city} is an automatic connector`:`Remove ${a.city} from trip`);remove.disabled=autoInserted;if(!autoInserted)remove.addEventListener('click',()=>removeAt(i));
         controls.append(up,down,remove);body.append(title,label,controls);row.append(num,body);el.trip.appendChild(row);
       });
@@ -196,12 +196,20 @@
     const ready=n>=2&&unsupported===0;
     el.plan.classList.toggle('disabled',!ready);
     el.plan.setAttribute('aria-disabled',String(!ready));
+    // An anchor with pointer-events:none is still keyboard-focusable and activatable.
+    // Remove it from tab order until all trip segments have known paths.
+    if(ready)el.plan.removeAttribute('tabindex');
+    else el.plan.setAttribute('tabindex','-1');
     el.returnStart.disabled=n<2 || state.route[n-1]===state.route[0];
     el.returnStart.textContent=(n>1&&state.route[n-1]===state.route[0])?'Round trip complete':'Return to start';
     const transferCount=state.route.slice(0,-1).filter((code,i)=>window.NTA.hasTransferLink&&window.NTA.hasTransferLink(code,state.route[i+1])).length;
     const flightCount=Math.max(0,n-1-transferCount);
     el.status.textContent=n<2?'Choose at least two places to create your first trip segment.':unsupported?`${unsupported} ${unsupported===1?'segment has':'segments have'} no verified path in the current network. Change that destination before continuing.`:`${flightCount} flight leg${flightCount===1?'':'s'}${transferCount?` · ${transferCount} transfer${transferCount===1?'':'s'}`:''} ready. Required connectors are inserted automatically when needed.`;
   }
+  // Block all activation paths, including synthetic clicks and keyboard navigation.
+  el.plan.addEventListener('click',event=>{
+    if(el.plan.getAttribute('aria-disabled')==='true')event.preventDefault();
+  });
   function render(){syncLinks();renderTrip();renderRouteLine();}
 
   function makeIcon(a){
