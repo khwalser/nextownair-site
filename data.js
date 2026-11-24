@@ -40,6 +40,17 @@ window.NTA_DATA = {
       "MRI"
     ],
     "backboneRoutePairs": 78,
+    "regionalCarrierSources": [
+      {
+        "carrier": "Alaska Seaplanes",
+        "verifiedPairs": ["JNU-AGN", "JNU-ELV", "JNU-GST", "JNU-KAE", "JNU-PEC", "JNU-TKE"],
+        "sourceUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+        "destinationSourceUrl": "https://www.flyalaskaseaplanes.com/destinations/elfin-cove.html",
+        "checkedAsOf": "2026-11-23",
+        "evidenceScope": "route-level-only-for-ELV",
+        "note": "The live carrier page contains multiple seasonal tables. ELV service exists but current 2026 winter date-specific times are not established; other five EAS pairs have separately bounded published operating patterns."
+      }
+    ],
     "backboneSources": [
       {
         "airport": "SEA",
@@ -4735,6 +4746,382 @@ window.NTA_DATA = {
     }
   ],
   "servicePatterns": {
+    "JNU|AGN": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "airline": "Alaska Seaplanes",
+      "count": 1,
+      "checkedAsOf": "2026-11-23",
+      "sourceLabel": "Alaska Seaplanes current online flight schedule, November 1 operating schedule section",
+      "sourceUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "label": "Airline-published recurring flight in reviewed Nov 23–29, 2026 window; verify date, weather, seats and fare directly with carrier",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departures": [
+        {
+          "ident": "J5 107",
+          "depart": "13:30",
+          "arrive": "14:10",
+          "airline": "Alaska Seaplanes"
+        }
+      ]
+    },
+    "AGN|JNU": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "airline": "Alaska Seaplanes",
+      "count": 1,
+      "checkedAsOf": "2026-11-23",
+      "sourceLabel": "Alaska Seaplanes current online flight schedule, November 1 operating schedule section",
+      "sourceUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "label": "Airline-published recurring flight in reviewed Nov 23–29, 2026 window; verify date, weather, seats and fare directly with carrier",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departures": [
+        {
+          "ident": "J5 108",
+          "depart": "14:25",
+          "arrive": "15:05",
+          "airline": "Alaska Seaplanes"
+        }
+      ]
+    },
+    "JNU|GST": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "airline": "Alaska Seaplanes",
+      "count": 1,
+      "checkedAsOf": "2026-11-23",
+      "sourceLabel": "Alaska Seaplanes current online flight schedule, November 1 operating schedule section",
+      "sourceUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "label": "Airline-published recurring flight in reviewed Nov 23–29, 2026 window; verify date, weather, seats and fare directly with carrier",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departuresByDow": {
+        "0": [
+          {
+            "ident": "J5 303",
+            "depart": "11:00",
+            "arrive": "11:25",
+            "airline": "Alaska Seaplanes"
+          }
+        ],
+        "1": [
+          {
+            "ident": "J5 301",
+            "depart": "08:00",
+            "arrive": "08:25",
+            "airline": "Alaska Seaplanes"
+          }
+        ],
+        "2": [
+          {
+            "ident": "J5 301",
+            "depart": "08:00",
+            "arrive": "08:25",
+            "airline": "Alaska Seaplanes"
+          }
+        ],
+        "3": [
+          {
+            "ident": "J5 301",
+            "depart": "08:00",
+            "arrive": "08:25",
+            "airline": "Alaska Seaplanes"
+          }
+        ],
+        "4": [
+          {
+            "ident": "J5 301",
+            "depart": "08:00",
+            "arrive": "08:25",
+            "airline": "Alaska Seaplanes"
+          }
+        ],
+        "5": [
+          {
+            "ident": "J5 301",
+            "depart": "08:00",
+            "arrive": "08:25",
+            "airline": "Alaska Seaplanes"
+          }
+        ],
+        "6": [
+          {
+            "ident": "J5 301",
+            "depart": "08:00",
+            "arrive": "08:25",
+            "airline": "Alaska Seaplanes"
+          }
+        ]
+      }
+    },
+    "GST|JNU": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "airline": "Alaska Seaplanes",
+      "count": 1,
+      "checkedAsOf": "2026-11-23",
+      "sourceLabel": "Alaska Seaplanes current online flight schedule, November 1 operating schedule section",
+      "sourceUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "label": "Airline-published recurring flight in reviewed Nov 23–29, 2026 window; verify date, weather, seats and fare directly with carrier",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departuresByDow": {
+        "0": [
+          {
+            "ident": "J5 304",
+            "depart": "11:40",
+            "arrive": "12:05",
+            "airline": "Alaska Seaplanes"
+          }
+        ],
+        "1": [
+          {
+            "ident": "J5 302",
+            "depart": "08:40",
+            "arrive": "09:05",
+            "airline": "Alaska Seaplanes"
+          }
+        ],
+        "2": [
+          {
+            "ident": "J5 302",
+            "depart": "08:40",
+            "arrive": "09:05",
+            "airline": "Alaska Seaplanes"
+          }
+        ],
+        "3": [
+          {
+            "ident": "J5 302",
+            "depart": "08:40",
+            "arrive": "09:05",
+            "airline": "Alaska Seaplanes"
+          }
+        ],
+        "4": [
+          {
+            "ident": "J5 302",
+            "depart": "08:40",
+            "arrive": "09:05",
+            "airline": "Alaska Seaplanes"
+          }
+        ],
+        "5": [
+          {
+            "ident": "J5 302",
+            "depart": "08:40",
+            "arrive": "09:05",
+            "airline": "Alaska Seaplanes"
+          }
+        ],
+        "6": [
+          {
+            "ident": "J5 302",
+            "depart": "08:40",
+            "arrive": "09:05",
+            "airline": "Alaska Seaplanes"
+          }
+        ]
+      }
+    },
+    "JNU|KAE": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "airline": "Alaska Seaplanes",
+      "count": 1,
+      "checkedAsOf": "2026-11-23",
+      "sourceLabel": "Alaska Seaplanes current online flight schedule, November 1 operating schedule section",
+      "sourceUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "label": "Airline-published recurring flight in reviewed Nov 23–29, 2026 window; verify date, weather, seats and fare directly with carrier",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departures": [
+        {
+          "ident": "J5 601",
+          "depart": "08:30",
+          "arrive": "09:25",
+          "airline": "Alaska Seaplanes"
+        }
+      ]
+    },
+    "KAE|JNU": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "airline": "Alaska Seaplanes",
+      "count": 1,
+      "checkedAsOf": "2026-11-23",
+      "sourceLabel": "Alaska Seaplanes current online flight schedule, November 1 operating schedule section",
+      "sourceUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "label": "Airline-published recurring flight in reviewed Nov 23–29, 2026 window; verify date, weather, seats and fare directly with carrier",
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departures": [
+        {
+          "ident": "J5 602",
+          "depart": "09:40",
+          "arrive": "10:35",
+          "airline": "Alaska Seaplanes"
+        }
+      ]
+    },
+    "JNU|PEC": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "airline": "Alaska Seaplanes",
+      "count": 1,
+      "checkedAsOf": "2026-11-23",
+      "sourceLabel": "Alaska Seaplanes current online flight schedule, November 1 operating schedule section",
+      "sourceUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "label": "Airline-published recurring flight in reviewed Nov 23–29, 2026 window; verify date, weather, seats and fare directly with carrier",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departures": [
+        {
+          "ident": "J5 803",
+          "depart": "11:00",
+          "arrive": "11:45",
+          "airline": "Alaska Seaplanes"
+        }
+      ]
+    },
+    "PEC|JNU": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "airline": "Alaska Seaplanes",
+      "count": 1,
+      "checkedAsOf": "2026-11-23",
+      "sourceLabel": "Alaska Seaplanes current online flight schedule, November 1 operating schedule section",
+      "sourceUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "label": "Airline-published recurring flight in reviewed Nov 23–29, 2026 window; verify date, weather, seats and fare directly with carrier",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departures": [
+        {
+          "ident": "J5 804",
+          "depart": "12:00",
+          "arrive": "12:45",
+          "airline": "Alaska Seaplanes"
+        }
+      ]
+    },
+    "JNU|TKE": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "airline": "Alaska Seaplanes",
+      "count": 1,
+      "checkedAsOf": "2026-11-23",
+      "sourceLabel": "Alaska Seaplanes current online flight schedule, November 1 operating schedule section",
+      "sourceUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "label": "Airline-published recurring flight in reviewed Nov 23–29, 2026 window; verify date, weather, seats and fare directly with carrier",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departures": [
+        {
+          "ident": "J5 101",
+          "depart": "08:15",
+          "arrive": "09:30",
+          "airline": "Alaska Seaplanes"
+        }
+      ]
+    },
+    "TKE|JNU": {
+      "activeFrom": "2026-11-23",
+      "activeThrough": "2026-11-29",
+      "airline": "Alaska Seaplanes",
+      "count": 1,
+      "checkedAsOf": "2026-11-23",
+      "sourceLabel": "Alaska Seaplanes current online flight schedule, November 1 operating schedule section",
+      "sourceUrl": "https://www.flyalaskaseaplanes.com/flight-info/flight-schedule-status.html",
+      "evidenceScope": "dated-published-recurring-pattern-minimum",
+      "label": "Airline-published recurring flight in reviewed Nov 23–29, 2026 window; verify date, weather, seats and fare directly with carrier",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "departures": [
+        {
+          "ident": "J5 102",
+          "depart": "09:45",
+          "arrive": "10:15",
+          "airline": "Alaska Seaplanes"
+        }
+      ]
+    },
     "HNM|OGG": {
       "checkedAsOf": "2026-11-23",
       "evidenceScope": "dated-published-recurring-pattern-minimum",

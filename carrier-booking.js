@@ -62,11 +62,17 @@
       ?byName('Alaska Airlines')
       :hawaiiPair?byName('Mokulele Airlines')
       :documentedDetroitGateway?byName('Delta Air Lines'):null;
-    const match=selected||documented||sourced;
+    const regionalCarrier=(regional.routeVerification?.regionalCarrierSources||[])
+      .find(source=>(source.verifiedPairs||[]).some(pair=>{
+        const codes=pair.split('-');
+        return codes.length===2&&codes.includes(origin)&&codes.includes(destination);
+      }));
+    const regionalMatch=regionalCarrier?byName(regionalCarrier.carrier):null;
+    const match=selected||documented||regionalMatch||sourced;
     if(!match)return null;
     return {id:match.id,name:match.name,url:match.url,mode:match.mode,
       origin,destination,date:typeof date==='string'?date:'',
-      basis:selected?'selected-flight-carrier':documented?'published-route-carrier':'documented-route-carrier',
+      basis:selected?'selected-flight-carrier':documented?'published-route-carrier':regionalMatch?'verified-route-carrier':'documented-route-carrier',
       dateVerified:false,searchPrefilled:false};
   }
   window.NTA_CARRIER_BOOKING={resolve,byName,carriers:directory.map(({id,name,url,mode})=>({id,name,url,mode}))};
