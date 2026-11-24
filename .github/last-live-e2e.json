@@ -1,7 +1,7 @@
 {
-  "testedCommit": "11b709a92490375db1cc712d6e93067b0282e915",
-  "runId": "45301719810",
-  "runUrl": "https://github.com/khwalser/nextownair-site/actions/runs/45301719810",
+  "testedCommit": "ac16a96ef7d878384f846837a4c862bafd844a37",
+  "runId": "45487334430",
+  "runUrl": "https://github.com/khwalser/nextownair-site/actions/runs/45487334430",
   "result": "fail",
   "steps": {
     "phase4": "success",
@@ -15,5 +15,5 @@
     "multi": "success",
     "browser": "failure"
   },
-  "checkedAt": "2026-11-24T01:05:18.528Z"
+  "checkedAt": "2026-11-24T21:09:13.336Z"
 }
