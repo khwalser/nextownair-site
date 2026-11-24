@@ -7,6 +7,7 @@
   let networkLines=[];
   let activeFilter='all';
   let activeViewRegion='lower48';
+  let activeGateway=null;
   const markers=new Map();
   let autoConnectorIndices=new Set(state.autoConnectorIndices||[]);
 
@@ -252,6 +253,7 @@
     return boxes[region]||boxes.lower48;
   }
   function jumpRegion(region){
+    if(activeGateway){activeGateway=null;renderGatewayConnections();}
     activeViewRegion=region;
     if(!map)return;
     const b=regionBounds(region);
@@ -260,6 +262,64 @@
     el.mapTools.forEach(btn=>btn.classList.toggle('active',btn.dataset.region===region));
     const regionSelect=document.getElementById('mapRegionSelect');
     if(regionSelect)regionSelect.value=region;
+  }
+  // The default Lower 48 map suppresses hub-to-hub lines to avoid
+  // clutter, but that must never make gateways appear disconnected.
+  // This evidence panel lists every explicitly documented graph edge,
+  // not date-specific service, available seats, or a bookable fare.
+  function gatewayRoutes(code){
+    const seen=new Set();
+    return [...(D.routes||[]).map(pair=>({pair,kind:'eas'})),
+            ...(D.backboneRoutes||[]).map(pair=>({pair,kind:'hub'}))]
+      .filter(({pair})=>pair.length===2&&pair.includes(code))
+      .filter(({pair})=>{const k=pair.slice().sort().join('|');if(seen.has(k))return false;seen.add(k);return true;})
+      .map(({pair,kind})=>({code:pair[0]===code?pair[1]:pair[0],kind}))
+      .filter(item=>Boolean(by(item.code)))
+      .sort((a,b)=>a.code.localeCompare(b.code));
+  }
+  function renderGatewayConnections(){
+    const detail=document.getElementById('gatewayConnectionsDetail');
+    document.querySelectorAll('[data-gateway]').forEach(button=>{
+      const code=button.dataset.gateway;
+      button.classList.toggle('active',code===activeGateway);
+      button.setAttribute('aria-pressed',String(code===activeGateway));
+      const count=button.querySelector('[data-gateway-count]');
+      if(count)count.textContent=String(gatewayRoutes(code).length);
+    });
+    if(!detail)return;
+    detail.replaceChildren();
+    detail.hidden=!activeGateway;
+    if(!activeGateway)return;
+    const origin=by(activeGateway),routes=gatewayRoutes(activeGateway);
+    const heading=document.createElement('strong');
+    heading.textContent=`${origin.city} (${origin.code}): ${routes.length} listed nonstop routes`;
+    const caption=document.createElement('span');caption.className='gateway-caveat';
+    caption.textContent='Network links only. A flight on your date and a live fare must be checked separately.';
+    const list=document.createElement('div');list.className='gateway-route-list';
+    routes.forEach(item=>{
+      const target=by(item.code);
+      const line=document.createElement('span');line.className='gateway-route-item';
+      line.dataset.gatewayRoute=item.code;
+      line.textContent=`${target.city} (${target.code}) · ${item.kind==='eas'?'EAS service':'hub flight link'}`;
+      list.appendChild(line);
+    });
+    detail.append(heading,caption,list);
+  }
+  function focusGateway(code){
+    if(activeGateway===code){activeGateway=null;renderGatewayConnections();jumpRegion('lower48');return;}
+    activeGateway=code;
+    activeFilter='all';activeViewRegion='all';
+    renderGatewayConnections();
+    applyRegionFilter();
+    const a=by(code),others=gatewayRoutes(code).map(item=>by(item.code));
+    if(map&&a&&others.length){
+      try{map.fitBounds(window.L.latLngBounds([a,...others].map(p=>[p.lat,p.lon])),{padding:[28,28],maxZoom:5});}catch(_){/* preserve page if map bounds fail */}
+    }
+  }
+  function initGatewayConnections(){
+    renderGatewayConnections();
+    document.querySelectorAll('[data-gateway]').forEach(btn=>
+      btn.addEventListener('click',()=>focusGateway(btn.dataset.gateway)));
   }
   function initMapTools(){
     el.mapTools.forEach(btn=>btn.addEventListener('click',()=>jumpRegion(btn.dataset.region)));
@@ -284,9 +344,10 @@
       const selectedLink=state.route.includes(item.a.code)&&state.route.includes(item.b.code);
       const viewedRegion=activeFilter==='all'?activeViewRegion:activeFilter;
       const relatedToRegion=airportRegion(item.a)===viewedRegion||airportRegion(item.b)===viewedRegion;
+      const gatewayLink=activeGateway&&(item.a.code===activeGateway||item.b.code===activeGateway);
       const shouldShow=item.backbone
-        ?(viewedRegion!=='all'&&viewedRegion!=='lower48'&&relatedToRegion)||selectedLink
-        :activeFilter==='all'||airportRegion(item.a)===activeFilter||airportRegion(item.b)===activeFilter;
+        ?Boolean(gatewayLink)||(viewedRegion!=='all'&&viewedRegion!=='lower48'&&relatedToRegion)||selectedLink
+        :Boolean(gatewayLink)||activeFilter==='all'||airportRegion(item.a)===activeFilter||airportRegion(item.b)===activeFilter;
       const shown=map.hasLayer(item.layer);
       if(shouldShow&&!shown)item.layer.addTo(map);
       if(!shouldShow&&shown)map.removeLayer(item.layer);
@@ -295,7 +356,9 @@
     const isViewing=activeFilter==='all'&&activeViewRegion!=='lower48'&&activeViewRegion!=='all';
     const count=regionEasCount(isViewing?displayedRegion:activeFilter);
     const visibleBackbone=networkLines.filter(item=>item.backbone&&map.hasLayer(item.layer)).length;
-    el.regionStatus.textContent=`${isViewing?'Viewing':'Showing'} ${regionName(isViewing?displayedRegion:activeFilter)} · ${count} EAS communit${count===1?'y':'ies'}${visibleBackbone?` · ${visibleBackbone} hub flight links`:''}`;
+    el.regionStatus.textContent=activeGateway
+      ?`Viewing ${by(activeGateway)?.city||activeGateway} · ${gatewayRoutes(activeGateway).length} listed routes (not live fares)`
+      :`${isViewing?'Viewing':'Showing'} ${regionName(isViewing?displayedRegion:activeFilter)} · ${count} EAS communit${count===1?'y':'ies'}${visibleBackbone?` · ${visibleBackbone} hub flight links`:''}`;
     el.filterTools.forEach(btn=>{
       const on=btn.dataset.filter===activeFilter;
       btn.classList.toggle('active',on);btn.setAttribute('aria-pressed',String(on));
@@ -363,5 +426,6 @@
   initMapTools();
   initRegionFilters();
   if(!initLeaflet())initFallback();
+  initGatewayConnections();
   render();
 })();
