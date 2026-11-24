@@ -319,3 +319,23 @@ h2{font-size:21px}h3{font-size:18px}
 .itinerary-intro summary{cursor:pointer;display:list-item;font-weight:700;color:#b9ccda}
 .itinerary-intro .lead{margin:6px 0;font-size:13px;line-height:1.45}
 .itinerary-wrap>h1{font-size:clamp(22px,2.2vw,30px);margin:2px 0 4px}
+
+/* Gateway route visibility: explicit flight network, not live inventory */
+.gateway-connections{border:1px solid var(--border2);border-radius:10px;background:#0b1d2b;margin:0 0 7px;padding:7px 9px}
+.gateway-bar{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.gateway-heading{font-size:12px;color:var(--muted);font-weight:750}
+.gateway-button{font:inherit;font-size:12px;line-height:1.25;padding:5px 10px;border-radius:8px;border:1px solid #45637c;background:#10283d;color:#e2f0f8;cursor:pointer}
+.gateway-button:hover,.gateway-button.active{background:#204562;border-color:#7bd4ef}
+.gateway-button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.gateway-detail{padding:8px 2px 2px;font-size:12px;display:grid;gap:5px}
+.gateway-detail[hidden]{display:none}
+.gateway-caveat{color:var(--muted);font-size:11px}
+.gateway-route-list{display:flex;flex-wrap:wrap;gap:5px}
+.gateway-route-item{display:inline-block;padding:4px 7px;border-radius:7px;border:1px solid #36546d;color:#d5e8f3}
+@media(max-width:720px){
+ .gateway-connections{padding:6px 8px}
+ .gateway-bar{gap:5px}
+ .gateway-heading{width:100%;font-size:11px}
+ .gateway-button{flex:1 1 130px}
+ .gateway-route-item{flex:1 1 145px}
+}
