@@ -183,5 +183,17 @@ for(const [pair,through] of [['HNM-OGG','2027-01-09'],['MUE-OGG','2027-01-09'],[
   assert(/^https:\/\//.test(p.sourceUrl));
  }
 }
-assert.equal(ledger.missingDayPatterns,166,'New Hawaii patterns reduce the unresolved evidence gap to 166');
+assert.equal(ledger.missingDayPatterns,161,'Five Alaska Seaplanes EAS pairs lower unresolved ledger to 161');
+for(const community of ['AGN','GST','KAE','PEC','TKE']){
+ const pair=community+'-JNU';
+ assert(!ledger.missing.some(e=>e.pair===pair),'Newly documented Alaska Seaplanes EAS pair must leave unresolved ledger: '+pair);
+ assert(ledger.promotedEvidence.some(e=>e.pair===pair&&e.status==='time_bounded_published_operating_days'));
+ for(const [from,to] of [[community,'JNU'],['JNU',community]]){
+  const pattern=D.servicePatterns[from+'|'+to];
+  assert(pattern&&pattern.activeFrom==='2026-11-23'&&pattern.activeThrough==='2026-11-29','Do not extrapolate seasonal timetable: '+from+'→'+to);
+  assert.equal(pattern.airline,'Alaska Seaplanes');
+  assert.equal(pattern.evidenceScope,'dated-published-recurring-pattern-minimum');
+ }
+}
+assert(ledger.missing.some(e=>e.pair==='ELV-JNU'),'Unresolved current winter Elfin Cove service must remain in ledger');
 console.log('PASS: '+ledger.missing.length+' EAS operating-day evidence gaps individually tracked; no fabricated schedule dates');
