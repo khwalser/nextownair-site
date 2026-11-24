@@ -1,0 +1,29 @@
+name: Alaska published service browser
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  live-preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check e2e/alaska-juneau-browser.mjs
+      - name: Install Playwright
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save playwright@1.55.0
+      - name: Wait for preview
+        run: |
+          for i in {1..30}; do
+            if curl -fsSL --max-time 12 https://deploy-preview-24--nextownair-site.netlify.app/data.js | grep -q 'J5 107'; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - name: Exercise Alaska routes and excluded dates
+        run: node e2e/alaska-juneau-browser.mjs
