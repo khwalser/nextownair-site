@@ -1,0 +1,31 @@
+name: Gateway map route visibility
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  gateway:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node --check map.js
+          node e2e/gateway-route-visibility-regression.mjs
+      - name: Install Playwright
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm install --no-save playwright@1.55.0
+      - name: Wait for preview
+        run: |
+          for i in {1..35}; do
+            if curl -fsSL --max-time 12 https://deploy-preview-25--nextownair-site.netlify.app/index.html | grep -q 'gatewayConnectionsDetail'; then exit 0; fi
+            sleep 5
+          done
+          exit 1
+      - name: Verify Seattle and Portland route display on phone and desktop
+        run: node e2e/gateway-visibility-browser.mjs
