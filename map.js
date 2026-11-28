@@ -153,6 +153,11 @@
     el.plan.href=window.NTA.buildUrl('itinerary.html',state);
     window.NTA.updateAddress('index.html',state);
   }
+  function fitEntireTrip(){
+    if(!map||state.route.length<2)return;
+    const pts=state.route.map(by).filter(Boolean).map(a=>[a.lat,a.lon]);
+    if(pts.length>1){try{map.fitBounds(window.L.latLngBounds(pts),{padding:[48,48],maxZoom:6});}catch(_){/* keep map usable */}}
+  }
   function renderRouteLine(){
     if(!map)return;
     tripLayers.forEach(layer=>{try{map.removeLayer(layer);}catch(_){/* noop */}});tripLayers=[];
@@ -164,7 +169,7 @@
         const layer=window.L.polyline([[A.lat,A.lon],[B.lat,B.lon]],linkStyle(A.code,B.code,{selected:true,known})).addTo(map);
         tripLayers.push(layer);
       }
-      if(pts.length>1){try{map.fitBounds(window.L.latLngBounds(pts),{padding:[48,48],maxZoom:6});}catch(_){/* noop */}}
+      fitEntireTrip();
     }
   }
   function renderTrip(){
@@ -196,6 +201,7 @@
       el.legSummary.innerHTML='<b>Trip segments</b>'+state.route.slice(0,-1).map((code,i)=>{const next=state.route[i+1],known=hasKnownRoute(code,next),transfer=window.NTA.hasTransferLink&&window.NTA.hasTransferLink(code,next);if(!known)unsupported++;return `<div>${transfer?'Transfer':'Flight'} ${i+1}: ${code} → ${next} ${known?'':'<span class="route-warning">· no verified route found</span>'}</div>`;}).join('');
     } else {el.legSummary.hidden=true;el.legSummary.innerHTML='';}
 
+    const fullTrip=document.getElementById('showEntireTrip');if(fullTrip)fullTrip.disabled=n<2;
     const ready=n>=2&&unsupported===0;
     el.plan.classList.toggle('disabled',!ready);
     el.plan.setAttribute('aria-disabled',String(!ready));
@@ -333,6 +339,8 @@
       btn.addEventListener('click',()=>focusGateway(btn.dataset.gateway)));
   }
   function initMapTools(){
+    const entire=document.getElementById('showEntireTrip');
+    if(entire)entire.addEventListener('click',fitEntireTrip);
     el.mapTools.forEach(btn=>btn.addEventListener('click',()=>jumpRegion(btn.dataset.region)));
     const regionSelect=document.getElementById('mapRegionSelect');
     if(regionSelect)regionSelect.addEventListener('change',()=>jumpRegion(regionSelect.value));
