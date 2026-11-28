@@ -213,7 +213,7 @@
     el.returnStart.textContent=(n>1&&state.route[n-1]===state.route[0])?'Round trip complete':'Return to start';
     const transferCount=state.route.slice(0,-1).filter((code,i)=>window.NTA.hasTransferLink&&window.NTA.hasTransferLink(code,state.route[i+1])).length;
     const flightCount=Math.max(0,n-1-transferCount);
-    el.status.textContent=n<2?'Choose at least two places to create your first trip segment.':unsupported?`${unsupported} ${unsupported===1?'segment has':'segments have'} no verified path in the current network. Change that destination before continuing.`:`${flightCount} flight leg${flightCount===1?'':'s'}${transferCount?` · ${transferCount} transfer${transferCount===1?'':'s'}`:''} network link${flightCount===1?'':'s'} identified. Flight dates, schedules, seats and fares still need checking in the itinerary. Required connectors are inserted automatically when needed.`;
+    el.status.textContent=n<2?'Choose at least two places to create your first trip segment.':unsupported?`${unsupported} ${unsupported===1?'segment has':'segments have'} no verified path in the current network. Change that destination before continuing.`:`${flightCount} flight leg${flightCount===1?'':'s'}${transferCount?` · ${transferCount} transfer${transferCount===1?'':'s'}`:''} · network paths identified. Flight dates, schedules, seats and fares still need checking in the itinerary. Required connectors are inserted automatically when needed.`;
   }
   // Block all activation paths, including synthetic clicks and keyboard navigation.
   el.plan.addEventListener('click',event=>{
