@@ -93,7 +93,9 @@
     return `Auto-inserted connector${inserted.length===1?'':'s'}: ${names.join(' → ')}.`;
   }
   function setRoute(next,contextMessage=''){
+    const oldRoute=state.route.slice();
     const fixed=repairRoute(next);
+    const changed=oldRoute.join(',')!==fixed.route.join(',');
     const insertedIndices=fixed.inserted.map(x=>x.index).filter(Number.isInteger);
     autoConnectorIndices=new Set(insertedIndices);
     state=window.NTA.setRoute(state,fixed.route);
@@ -103,7 +105,8 @@
     render();
     const repairText=autoConnectorMessage(fixed.inserted);
     const unresolved=fixed.unresolved.length?` No verified route found for ${fixed.unresolved.map(x=>`${x.from} → ${x.to}`).join(', ')}.`:'';
-    el.finderStatus.textContent=[contextMessage,repairText].filter(Boolean).join(' ')+unresolved;
+    const changes=changed&&oldRoute.length>1?` Trip recalculated: ${oldRoute.join(' → ')} became ${fixed.route.join(' → ')}. Recheck affected flight choices and stays.`:'';
+    el.finderStatus.textContent=[contextMessage,repairText,changes].filter(Boolean).join(' ')+unresolved;
   }
   function addAirport(code){
     const a=by(code);
@@ -114,7 +117,7 @@
     el.search.value='';
     if(map&&markers.has(code)){
       if(activeFilter!=='all'&&!matchesFilter(a))setRegionFilter(airportRegion(a),false);
-      const m=markers.get(code);map.panTo(m.getLatLng());m.openTooltip();
+      const m=markers.get(code);m.openTooltip();
     }
   }
   function requestedEntries(){
@@ -210,7 +213,7 @@
   el.plan.addEventListener('click',event=>{
     if(el.plan.getAttribute('aria-disabled')==='true')event.preventDefault();
   });
-  function render(){syncLinks();renderTrip();renderRouteLine();}
+  function render(){syncLinks();renderTrip();renderRouteLine();applyRegionFilter();}
 
   function makeIcon(a){
     const eas=a.type==='eas';
@@ -349,7 +352,7 @@
       if(!shouldShow&&shown)map.removeLayer(marker);
     });
     networkLines.forEach(item=>{
-      const selectedLink=state.route.includes(item.a.code)&&state.route.includes(item.b.code);
+      const selectedLink=state.route.slice(0,-1).some((code,i)=>(code===item.a.code&&state.route[i+1]===item.b.code)||(code===item.b.code&&state.route[i+1]===item.a.code));
       const viewedRegion=activeFilter==='all'?activeViewRegion:activeFilter;
       const relatedToRegion=airportRegion(item.a)===viewedRegion||airportRegion(item.b)===viewedRegion;
       const gatewayLink=activeGateway&&(item.a.code===activeGateway||item.b.code===activeGateway);
@@ -416,7 +419,7 @@
   el.returnStart.addEventListener('click',()=>{if(state.route.length)addAirport(state.route[0]);});
   el.clear.addEventListener('click',()=>{
     if(state.route.length && !window.confirm('Start over and clear this trip?'))return;
-    state=window.NTA.clearTrip();el.finderStatus.textContent='Trip cleared. Choose a new starting point.';render();
+    state=window.NTA.clearTrip();autoConnectorIndices=new Set();activeGateway=null;el.search.value='';el.finderStatus.textContent='Trip cleared. Choose a new starting point.';renderGatewayConnections();render();
   });
   el.plan.addEventListener('click',ev=>{const supported=state.route.length>=2&&state.route.slice(0,-1).every((code,i)=>hasKnownRoute(code,state.route[i+1]));if(!supported)ev.preventDefault();});
 
