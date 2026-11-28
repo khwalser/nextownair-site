@@ -164,7 +164,7 @@
   let calendarMonthDate=null;
   // On narrow screens keep the large month grid out of the way until requested.
   // Respect manual show/hide across asynchronous itinerary rerenders.
-  let calendarVisibilityPreference=false;
+  let calendarVisibilityPreference=!(window.matchMedia&&window.matchMedia('(max-width: 860px)').matches);
   let calendarLoadVersion=0;
   let calendarAutoLoadKey='';
   let calendarScheduleCompleteKey='';
@@ -1686,7 +1686,7 @@
     selectedFareByLeg.clear();
     syncLinks();el.startDate.value=state.startDate;el.startDateButtonText.textContent=formatStartDate(state.startDate);
     if(state.route.length<2){renderEmpty();return;}
-    el.toolbar.hidden=false;renderRoutebar();showStartCalendar();if(!calendarVisibilityPreference)closeStartCalendar();el.content.innerHTML='';
+    el.toolbar.hidden=false;renderRoutebar();if(calendarVisibilityPreference)showStartCalendar();else closeStartCalendar();el.content.innerHTML='';
     let departDate=state.startDate;
     let previousChosen=null;
     let previousArrivalDate=state.startDate;
