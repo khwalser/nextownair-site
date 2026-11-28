@@ -6,9 +6,7 @@ const routes=[['LEB','BOS','Cape Air'],['ESC','DTW','Delta Connection']];
 const dates=process.env.E2E_AUDIT_DATE?[process.env.E2E_AUDIT_DATE]:['2026-12-07'];
 const maxRequests=Math.min(4,Math.max(1,Number(process.env.E2E_MAX_REQUESTS)||4));
 // Interleave carriers so the small request budget checks both airlines.
-const candidates=dates.flatMap(date=>routes.flatMap(([a,b,carrier])=>[
- {a,b,carrier,date},{a:b,b:a,carrier,date}
-]));
+const candidates=dates.flatMap(date=>routes.map(([a,b,carrier])=>({a,b,carrier,date})));
 const records=[];
 let blocked=null;
 for(const {a,b,carrier,date} of candidates.slice(0,maxRequests)){
@@ -27,6 +25,9 @@ for(const {a,b,carrier,date} of candidates.slice(0,maxRequests)){
   records.push({route:a+'-'+b,modeledCarrier:carrier,date,status:response.status,
    result:response.ok?(live.length?'verified_offers':'no_offers_returned'):'provider_error',
    offerCount:offers.length,verifiedFareCount:live.length,
+   upstreamOfferCount:payload.coverageDiagnostics?.upstreamOfferCount??null,
+   excludedConnecting:payload.coverageDiagnostics?.connectingOffersExcluded??null,
+   excludedMissingFare:payload.coverageDiagnostics?.missingFareOffersExcluded??null,
    carriers:[...new Set(offers.map(o=>o.operatingCarrier).filter(Boolean))],
    error:!response.ok?payload.error||'HTTP '+response.status:null});
  }catch(e){
