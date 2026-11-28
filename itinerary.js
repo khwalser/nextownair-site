@@ -702,6 +702,11 @@
     el.startDateButton.setAttribute('aria-expanded','true');
     const leg=firstLeg();
     if(!leg)return;
+    const scope=document.getElementById('calendarScope');
+    if(scope){
+      const laterFlights=state.route.slice(leg.index+1,-1).some((code,i)=>!isTransferLeg(code,state.route[leg.index+i+2]));
+      scope.textContent=`Calendar shows ${leg.a} → ${leg.b} (first flight leg) only. ${laterFlights?'Later flight legs and connections are not verified by these dates or fares; check each separately.':'Availability and fares still require confirmation before booking.'}`;
+    }
     const gap=isKnownFareCoverageGap(leg.a,leg.b);
     const sourcedPattern=Boolean(publishedServicePattern(leg.a,leg.b));
     if(el.calendarKey)el.calendarKey.hidden=gap||sourcedPattern;
